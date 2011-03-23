@@ -3,7 +3,6 @@ source :gemcutter
 gem 'RedCloth',         '4.1.1'
 gem 'aasm',             '2.1.5'
 gem 'activerecord-oracle_enhanced-adapter', '1.2.4'
-gem 'bcdatabase',       '1.0.1'
 gem 'bluecloth',        '2.0.7'
 #gem 'bundler',         '0.9.24'
 gem 'capistrano',       '2.5.2'
@@ -26,6 +25,12 @@ gem 'fastercsv',        '1.5.3'
 gem 'devise',           '1.0.9'
 gem 'cancan',           '1.5.1'
 gem 'devise_ldap_authenticatable', '0.1.6', :git => 'https://github.com/cschiewek/devise_ldap_authenticatable.git', :tag => '0.1.6'
+
+source 'http://download.bioinformatics.northwestern.edu/gems/'
+gem 'bcsec',            '2.0.4'
+gem 'bcsec-rails',      '2.0.1'
+gem 'bcdatabase',       '1.0.5'
+gem 'schema_qualified_tables', '1.0.0'
 
 group :development do
    gem 'rspec', '1.3.0'

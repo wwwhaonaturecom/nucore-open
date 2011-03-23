@@ -16,6 +16,7 @@ GIT
 
 GEM
   remote: http://rubygems.org/
+  remote: http://download.bioinformatics.northwestern.edu/gems/
   specs:
     Ascii85 (1.0.0)
     RedCloth (4.1.1)
@@ -36,9 +37,23 @@ GEM
     autotest (4.2.5)
     autotest-rails (4.1.0)
       ZenTest
-    bcdatabase (1.0.1)
+    bcdatabase (1.0.5)
       activesupport (>= 2.0)
-      highline (>= 1.4)
+      highline (~> 1.5)
+      i18n
+    bcsec (2.0.4)
+      activerecord (~> 2.3.5)
+      activesupport (~> 2.3.5)
+      bcdatabase (~> 1.0)
+      composite_primary_keys (~> 2.3.5)
+      net-ldap (~> 0.1.1)
+      rubycas-client (~> 2.1.0)
+      rubytree (~> 0.7.0)
+      schema_qualified_tables (~> 1.0)
+      warden (~> 0.10.3)
+    bcsec-rails (2.0.1)
+      bcsec (>= 2.0.0)
+      rails (~> 2.3.5)
     bluecloth (2.0.7)
     cancan (1.5.1)
     capistrano (2.5.2)
@@ -48,6 +63,8 @@ GEM
       net-ssh (>= 2.0.0)
       net-ssh-gateway (>= 1.0.0)
     columnize (0.3.1)
+    composite_primary_keys (2.3.5.1)
+      activerecord (>= 2.3.5)
     creditcard (1.0)
     devise (1.0.9)
       warden (~> 0.10.3)
@@ -55,6 +72,7 @@ GEM
     fastercsv (1.5.3)
     haml (2.2.17)
     highline (1.6.1)
+    i18n (0.5.0)
     linecache (0.43)
     mime-types (1.16)
     mocha (0.9.7)
@@ -97,6 +115,11 @@ GEM
       rake (>= 0.8.1)
     ruby-oci8 (2.0.4)
     ruby-ole (1.2.10.1)
+    rubycas-client (2.1.0)
+      activesupport
+    rubytree (0.7.0)
+    schema_qualified_tables (1.0.0)
+      activerecord (>= 2.3)
     single_test (0.3.7)
     spork (0.7.5)
     spreadsheet (0.6.4.1)
@@ -120,7 +143,9 @@ DEPENDENCIES
   activerecord-oracle_enhanced-adapter (= 1.2.4)
   autotest (= 4.2.5)
   autotest-rails (= 4.1.0)
-  bcdatabase (= 1.0.1)
+  bcdatabase (= 1.0.5)
+  bcsec (= 2.0.4)
+  bcsec-rails (= 2.0.1)
   bluecloth (= 2.0.7)
   cancan (= 1.5.1)
   capistrano (= 2.5.2)
@@ -143,6 +168,7 @@ DEPENDENCIES
   ruby-debug (= 0.10.3)
   ruby-debug-ide (= 0.4.15)
   ruby-oci8 (= 2.0.4)
+  schema_qualified_tables (= 1.0.0)
   single_test
   spork (= 0.7.5)
   spreadsheet (= 0.6.4.1)
