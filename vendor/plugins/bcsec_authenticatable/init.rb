@@ -9,6 +9,7 @@ Bcsec.configure do
 end
 
 
+# Give Devise it's default auth strategy
 Devise.setup do |devise_config|
   devise_config.warden do |manager|
     manager.default_strategies.unshift(:bcsec_authenticatable)
@@ -17,6 +18,7 @@ end
 
 
 config.after_initialize do
+  # Make the user model instances authenticatable via bcsec
   User.devise :bcsec_authenticatable
 
   # BCSec pers config
