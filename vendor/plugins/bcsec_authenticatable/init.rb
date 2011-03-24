@@ -23,7 +23,7 @@ config.after_initialize do
 
   # BCSec pers config
   unless Rails.env.production?
-    pers_db=File.join(File.dirname(__FILE__), 'config', 'environments', "/bcsec_#{Rails.env}.yml")
+    pers_db=File.join(File.dirname(__FILE__), 'config', 'environments', "bcsec_#{Rails.env}.yml")
 
     ActiveRecord::Base.schemas = {
       :cc_pers => YAML::load(File.open(pers_db))['cc_pers']['user']
