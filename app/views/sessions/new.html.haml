@@ -13,10 +13,10 @@
         %ul.form
           %li
             %label== Username
-            = f.text_field :username, :size => 30
+            = text_field_tag :username, params[:username], :size => 30
           %li
             %label== Password
-            = f.password_field :password, :size => 15
+            = password_field_tag :password, nil, :size => 15
         %ul.horiz
           %li= submit_tag 'Login', :class => 'btn'
     .clear
