@@ -1,0 +1,19 @@
+cc_pers:
+  user: cc_pers_username_test
+  password: testing
+  activerecord:
+    adapter: oracle_enhanced
+    database: 192.168.10.12:1521/xe
+#netid:
+#  ldap-servers:
+#    - registry.northwestern.edu
+#  user: cn=foo,ou=service,dc=northwestern,dc=edu
+#  password: [password]
+policy:
+  lockout-duration-seconds: 600
+  lockout-attempts: 5
+#cas:
+#  cas_base_url: http://localhost/cas
+#
+#  # The entry below is for staging
+#  #cas_base_url: https://cas2.nubic.northwestern.edu/cas-staging/
