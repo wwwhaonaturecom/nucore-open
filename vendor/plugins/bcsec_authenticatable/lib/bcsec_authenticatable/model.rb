@@ -7,7 +7,12 @@ module Devise
       end
 
 
-      def after_create
+      def after_save
+        ensure_login_record_exists
+      end
+
+
+      def ensure_login_record_exists
         login = Pers::Login.first(:conditions => { :portal => 'nucore', :username => username })
         Pers::Login.create(:portal_name => 'nucore', :username => username) unless login
       end

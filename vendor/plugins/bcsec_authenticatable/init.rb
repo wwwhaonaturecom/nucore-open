@@ -18,9 +18,6 @@ end
 
 
 config.after_initialize do
-  # Make the user model instances authenticatable via bcsec
-  User.devise :bcsec_authenticatable
-
   # BCSec pers config
   unless Rails.env.production?
     pers_db=File.join(File.dirname(__FILE__), 'config', 'environments', "bcsec_#{Rails.env}.yml")
@@ -48,3 +45,34 @@ config.after_initialize do
     end
   end
 end
+
+
+#
+# For testing with local LDAP server
+#
+
+#Bcsec::Authorities::Netid.class_eval do
+#
+#  Bcsec::Authorities::Netid::LDAP_TO_BCSEC_ATTRIBUTE_MAPPING={
+#    :cn => :username,
+#    :sn => :last_name,
+#    :givenname => :first_name,
+#    :numiddlename => :middle_name,
+#    :title => :title,
+#    :mail => :email,
+#    :telephonenumber => :business_phone,
+#    :facsimiletelephonenumber => :fax,
+#    :employeenumber => :nu_employee_id
+#  }.collect { |ldap_attr, bcsec_attr|
+#    { :ldap => ldap_attr, :bcsec => bcsec_attr }
+#  }
+#
+#
+#  def find_by_criteria(ldap, *criteria)
+#    filter = criteria.collect { |c| create_criteria_filter(c) }.inject { |a, f| a | f }
+#    return [] unless filter
+#    base = "dc=tablexi,dc=com"
+#    ldap.search(:filter => filter, :base => base)
+#  end
+#
+#end

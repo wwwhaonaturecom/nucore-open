@@ -7,9 +7,13 @@ This is a Devise (https://github.com/plataformatec/devise) strategy for Northwes
 Installation
 ============
 
-The strategy and its hooks into the nucore open system are all here in this plugin. The only thing you need to do
-is update app/views/sessions/new.html.haml to use a form like this:
+To use bcsec as nucore's authentication strategy please do the following:
 
+1. In the User class, replace the existing call to #devise with "devise :bcsec_authenticatable"
+
+2. Update the Netid credentials in NetidGateway
+
+3. Update app/views/sessions/new.html.haml to use a form like this:
 
 - form_for resource_name, resource, :url => session_path(resource_name) do |f|
     %ul.form
