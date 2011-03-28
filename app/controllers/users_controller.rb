@@ -27,12 +27,26 @@ class UsersController < ApplicationController
 
   # POST /facilities/:facility_id/facility_users
   def create
-    @user   = User.new(params[:user])
+    pers_user   = Pers::Person.new(params[:user])
     chars   = ("a".."z").to_a + ("1".."9").to_a + ("A".."Z").to_a
     newpass = Array.new(8, '').collect{chars[rand(chars.size)]}.join
-    @user.password = newpass
+    pers_user.plain_text_password = newpass
+
+    @user=User.new(params[:user])
+    @user.password=newpass
+
+    pers_user.entered_by   = session_user.username
+    pers_user.entered_date = Time.zone.now
+    pers_user.entered_ip   = request.remote_ip
 
     begin
+      # validate the email address...because BCSec doesn't  *sigh*
+      if pers_user.valid? && !(pers_user.email =~ /^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,6}$/i)
+        pers_user.errors.add(:email, 'must be a valid email address')
+        raise
+      end
+      
+      pers_user.save!
       @user.save!
       flash[:notice] = 'The user was successfully created.'
       redirect_to facility_users_url
