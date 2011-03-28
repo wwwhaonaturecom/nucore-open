@@ -27,26 +27,12 @@ class UsersController < ApplicationController
 
   # POST /facilities/:facility_id/facility_users
   def create
-    pers_user   = Pers::Person.new(params[:user])
+    @user   = User.new(params[:user])
     chars   = ("a".."z").to_a + ("1".."9").to_a + ("A".."Z").to_a
     newpass = Array.new(8, '').collect{chars[rand(chars.size)]}.join
-    pers_user.plain_text_password = newpass
-
-    @user=User.new(params[:user])
-    @user.password=newpass
-
-    pers_user.entered_by   = session_user.username
-    pers_user.entered_date = Time.zone.now
-    pers_user.entered_ip   = request.remote_ip
+    @user.password = newpass
 
     begin
-      # validate the email address...because BCSec doesn't  *sigh*
-      if pers_user.valid? && !(pers_user.email =~ /^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,6}$/i)
-        pers_user.errors.add(:email, 'must be a valid email address')
-        raise
-      end
-      
-      pers_user.save!
       @user.save!
       flash[:notice] = 'The user was successfully created.'
       redirect_to facility_users_url
@@ -61,7 +47,6 @@ class UsersController < ApplicationController
 
   def new_search
     return unless params[:username]
-
     user_attrs={ :username => params[:username].downcase }
 
     begin
@@ -73,11 +58,6 @@ class UsersController < ApplicationController
         user=NetidGateway.authority.find_users(params[:username].downcase).first
         raise "couldn't find user #{user_attrs[:username]}" unless user
         user_attrs.merge!(:first_name => user.first_name, :last_name => user.last_name, :email => user.email)
-        user = Pers::Person.new(user_attrs)
-        user.entered_by   = session_user.username
-        user.entered_date = Time.zone.now
-        user.entered_ip   = request.remote_ip
-        user.save!
       end
 
       @user=User.find_or_create_by_username(user_attrs)
