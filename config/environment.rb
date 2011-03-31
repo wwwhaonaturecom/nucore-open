@@ -60,8 +60,7 @@ Dir["#{Rails.root}/lib/extensions/*.rb"].each do |file|
   base=base_name.camelize.constantize
 
   base.class_eval %Q<
-    def initialize(*args)
-      super(*args)
+    def after_initialize
       extend #{ext_name.camelize}
     end
   >
