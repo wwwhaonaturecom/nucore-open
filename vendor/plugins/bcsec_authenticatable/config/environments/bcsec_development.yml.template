@@ -4,11 +4,13 @@ cc_pers:
   activerecord:
     adapter: oracle_enhanced
     database: 192.168.10.12:1521/xe
-#netid:
-#  #ldap-servers:
-#  #  - registry.northwestern.edu
-#  user: cn=foo,ou=service,dc=northwestern,dc=edu
-#  password: [password]
+netid:
+  # server: registry.northwestern.edu
+  server: localhost
+  user: user: cn=foo,ou=service,dc=northwestern,dc=edu
+  password: secret
+  port: 389
+  use_tls: false
 policy:
   lockout-duration-seconds: 600
   lockout-attempts: 5

@@ -9,9 +9,10 @@ Installation
 
 To use bcsec as nucore's authentication strategy please do the following:
 
-1. In the User class, replace the existing call to #devise with "devise :bcsec_authenticatable"
+1. In this plugin's config/environments directory copy the *.template files to the same dir.
+   Leave the filename the same, but drop the ".template". Update the authority information in the new files.
 
-2. Update the Netid credentials in NetidGateway
+2. In the User class, replace the existing call to #devise with "devise :bcsec_authenticatable"
 
 3. Update app/views/sessions/new.html.haml to use a form like this:
 
