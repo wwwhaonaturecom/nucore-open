@@ -30,17 +30,30 @@ config.after_initialize do
       pers_parameters :separate_connection => true
       ActiveRecord::Base.schemas = { :cc_pers => auth_yaml['cc_pers']['user'] }
 
-      # Configure netid
-      netid_conf={}
-      auth_yaml['netid'].each{|k,v| netid_conf[k.to_sym]=v }
-
       # Configure authorities
-      authorities(:pers, Bcsec::Authorities::Netid.new(netid_conf))
+      auths=[ :pers ]
+
+      unless Rails.env.test?
+        # Configure netid
+        netid_conf={}
+        auth_yaml['netid'].each{|k,v| netid_conf[k.to_sym]=v }
+        auths << Bcsec::Authorities::Netid.new(netid_conf)
+      end
+
+      authorities(*auths)
 
       ui_mode :http_basic
       api_mode :http_basic
     end
 
+  end
+
+  # The bcsec version of #current_user inteferes with (overwrites?)
+  # Devise's version. Duplicate the Devise version here to ensure it is used.
+  ApplicationController.class_eval do
+    def current_user
+      @current_user ||= warden.authenticate(:scope => :user)
+    end
   end
 end
 

@@ -8,7 +8,7 @@ module Devise
         user = Bcsec.authority.valid_credentials?(:user, params[:username], params[:password])
 
         unless user
-          fail(:invalid)
+          fail(:unauthenticated)
         else
           nucore_user=User.find_by_username user.username
           success!(nucore_user)
