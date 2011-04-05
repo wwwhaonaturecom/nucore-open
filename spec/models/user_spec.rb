@@ -54,9 +54,10 @@ describe User do
     @user.account_price_groups.include?(pg).should == true
   end
 
-  it 'should be locally authenticated' do
-    @user.should be_authenticated_locally
-  end
+  # Test not relevant to NU nucore -- users always externally authenticated
+  #it 'should be locally authenticated' do
+  #  @user.should be_authenticated_locally
+  #end
 
   it 'should not be locally authenticated' do
     @user.encrypted_password=nil
