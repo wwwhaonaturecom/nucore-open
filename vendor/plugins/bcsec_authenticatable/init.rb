@@ -33,7 +33,7 @@ config.after_initialize do
       # Configure authorities
       auths=[ :pers ]
 
-      unless Rails.env.test?
+      if auth_yaml['netid'] and not Rails.env.test?
         # Configure netid
         netid_conf={}
         auth_yaml['netid'].each{|k,v| netid_conf[k.to_sym]=v }
@@ -91,6 +91,25 @@ end
 #  }.collect { |ldap_attr, bcsec_attr|
 #    { :ldap => ldap_attr, :bcsec => bcsec_attr }
 #  }
+#
+#
+#  protected
+#
+#  def create_user(ldap_entry)
+#    Bcsec::User.new(one_value(ldap_entry, :uid)).tap do |u|
+#      # directly mappable attrs
+#      Bcsec::Authorities::Netid::LDAP_TO_BCSEC_ATTRIBUTE_MAPPING.collect { |map|
+#        [map[:ldap], :"#{map[:bcsec]}="]
+#      }.each do |ldap_attr, user_setter|
+#        u.send user_setter, one_value(ldap_entry, ldap_attr)
+#      end
+#      u.username='fstump'
+#
+#      # more fiddly ones
+#      u.city, u.address =
+#        extract_address_elements(one_value(ldap_entry, :postaladdress))
+#    end
+#  end
 #
 #
 #  def find_by_criteria(ldap, *criteria)
