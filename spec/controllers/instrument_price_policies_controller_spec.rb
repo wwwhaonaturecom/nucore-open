@@ -43,6 +43,7 @@ describe InstrumentPricePoliciesController do
     before :each do
       @method=:get
       @action=:new
+      @params.merge!(:start_date => @price_policy.start_date.to_s)
     end
 
     it_should_allow_managers_only do
@@ -60,7 +61,7 @@ describe InstrumentPricePoliciesController do
       @method=:get
       @action=:edit
       set_policy_date
-      @params.merge!(:id => @price_policy.id, :start_date => @price_policy.start_date.to_s)
+      @params.merge!(:id => @price_policy.start_date.to_s)
     end
 
     it_should_allow_managers_only
@@ -100,7 +101,7 @@ describe InstrumentPricePoliciesController do
         @method=:put
         @action=:update
         set_policy_date
-        @params.merge!(:id => @price_policy.id)
+        @params.merge!(:id => @price_policy.start_date.to_s)
       end
 
       it_should_allow_managers_only :redirect
@@ -114,7 +115,7 @@ describe InstrumentPricePoliciesController do
         @method=:put
         @action=:update
         set_policy_date
-        @params.merge!(:id => @price_policy.id)
+        @params.merge!(:id => @price_policy.start_date.to_s)
       end
 
       it_should_allow_managers_only :redirect
