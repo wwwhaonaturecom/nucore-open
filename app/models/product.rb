@@ -22,7 +22,7 @@ class Product < ActiveRecord::Base
 
   def current_price_policies
     current_policies = {}
-    PricePolicy.find(:all, :conditions => ["start_date <= ? AND #{self.class.name.downcase}_id = ?", Time.zone.now, self.id]).each { |pp|
+    PricePolicy.find(:all, :conditions => ["#{self.class.name.downcase}_id = ? AND start_date <= ? AND expire_date > ?", self.id, Time.zone.now, Time.zone.now]).each { |pp|
       unless current_policies[pp.price_group_id].nil?
         current_policies[pp.price_group_id] = pp if pp.start_date > current_policies[pp.price_group_id].start_date
       else
@@ -59,5 +59,11 @@ class Product < ActiveRecord::Base
   
   def to_s_with_status
     (name || '') + (is_archived? ? ' (inactive)' : '')
+  end
+
+  def after_create
+    [ PriceGroup.northwestern.first, PriceGroup.external.first ].each do |pg|
+      PriceGroupProduct.create!(:product => self, :price_group => pg)
+    end
   end
 end

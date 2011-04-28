@@ -1,19 +1,5 @@
-class InstrumentPricePoliciesController < ApplicationController
-  admin_tab     :all
-  before_filter :authenticate_user!
-  before_filter :check_acting_as
-  before_filter :init_current_facility
-  before_filter :init_instrument
-  before_filter :init_instrument_price_policy, :except => [ :index, :new ]
-
-  load_and_authorize_resource
-
-  layout 'two_column'
-  
-  def initialize
-    @active_tab = 'admin_products'
-    super
-  end
+# TODO: extract the common logic between here and the other *PricePoliciesController into super class
+class InstrumentPricePoliciesController < PricePoliciesController
 
   # GET /price_policies
   def index
@@ -28,35 +14,40 @@ class InstrumentPricePoliciesController < ApplicationController
 
   # GET /price_policies/new
   def new
-    @price_groups   = current_facility.price_groups
-    @start_date     = (Date.today + (@instrument.price_policies.first.nil? ? 0 : 1)).strftime("%m/%d/%Y")
-    @price_policies = @price_groups.map{ |pg| InstrumentPricePolicy.new({:price_group_id => pg.id, :instrument_id => @instrument.id, :start_date => @start_date, :usage_mins => 15 }) }
+    price_groups   = current_facility.price_groups
+    start_date     = Date.today + (@instrument.price_policies.first.nil? ? 0 : 1)
+    @expire_date    = PricePolicy.generate_expire_date(start_date).strftime("%m/%d/%Y")
+    @start_date=start_date.strftime("%m/%d/%Y")
+    @price_policies = price_groups.map{ |pg| InstrumentPricePolicy.new({:price_group_id => pg.id, :instrument_id => @instrument.id, :start_date => @start_date, :usage_mins => 15 }) }
   end
 
   # GET /price_policies/1/edit
   def edit
-    @price_groups = current_facility.price_groups
     @start_date   = start_date_from_params
-    raise ActiveRecord::RecordNotFound unless @start_date > Date.today
     @price_policies = InstrumentPricePolicy.for_date(@instrument, @start_date)
-
-    raise ActiveRecord::RecordNotFound unless @price_policies.count > 0
+    @price_policies.delete_if{|pp| pp.assigned_to_order? }
+    raise ActiveRecord::RecordNotFound if @price_policies.blank?
+    @expire_date=@price_policies.first.expire_date.to_date
   end
 
   # POST /price_policies
   def create
-    @price_groups = current_facility.price_groups
+    price_groups = current_facility.price_groups
     @interval     = params[:interval].to_i
     @start_date   = params[:start_date]
-    @price_policies = @price_groups.map do |price_group|
-      price_policy = InstrumentPricePolicy.new(params["instrument_price_policy#{price_group.id}"].reject {|k,v| k == 'restrict_purchase' })
+    @expire_date   = params[:expire_date]
+    price_groups.delete_if {|pg| !pg.can_purchase? @instrument }
+    @price_policies = price_groups.map do |price_group|
+      pp_param=params["instrument_price_policy#{price_group.id}"]
+      price_policy = InstrumentPricePolicy.new(pp_param.reject {|k,v| k == 'restrict_purchase' })
       price_policy.price_group       = price_group
       price_policy.instrument        = @instrument
       price_policy.start_date        = Time.zone.parse(@start_date)
+      price_policy.expire_date       = Time.zone.parse(@expire_date)
       price_policy.usage_mins        = @interval
       price_policy.reservation_mins  = @interval
       price_policy.overage_mins      = @interval
-      price_policy.restrict_purchase = params["instrument_price_policy#{price_group.id}"]['restrict_purchase'] && params["instrument_price_policy#{price_group.id}"]['restrict_purchase'] == 'true' ? true : false
+      price_policy.restrict_purchase = pp_param['restrict_purchase'] && pp_param['restrict_purchase'] == 'true' ? true : false
       price_policy
     end
     
@@ -74,13 +65,16 @@ class InstrumentPricePoliciesController < ApplicationController
 
   # PUT /price_policies/1
   def update
-    @price_groups   = current_facility.price_groups
     @start_date     = start_date_from_params
+    @expire_date    = params[:expire_date]
     @price_policies = InstrumentPricePolicy.for_date(@instrument, @start_date)
     @price_policies.each { |price_policy|
-      price_policy.attributes = params["instrument_price_policy#{price_policy.price_group.id}"].reject {|k,v| k == 'restrict_purchase' }
+      pp_param=params["instrument_price_policy#{price_policy.price_group.id}"]
+      next unless pp_param
+      price_policy.attributes = pp_param.reject {|k,v| k == 'restrict_purchase' }
       price_policy.start_date = Time.zone.parse(params[:start_date])
-      price_policy.restrict_purchase = params["instrument_price_policy#{price_policy.price_group.id}"]['restrict_purchase'] && params["instrument_price_policy#{price_policy.price_group.id}"]['restrict_purchase'] == 'true' ? true : false
+      price_policy.expire_date = Time.zone.parse(@expire_date) unless @expire_date.blank?
+      price_policy.restrict_purchase = pp_param['restrict_purchase'] && pp_param['restrict_purchase'] == 'true' ? true : false
     }
 
     respond_to do |format|
@@ -97,7 +91,6 @@ class InstrumentPricePoliciesController < ApplicationController
 
   # DELETE /price_policies/1
   def destroy
-    @price_groups   = current_facility.price_groups
     @start_date     = start_date_from_params
     raise ActiveRecord::RecordNotFound unless @start_date > Date.today
     @price_policies = InstrumentPricePolicy.for_date(@instrument, @start_date)
@@ -114,26 +107,6 @@ class InstrumentPricePoliciesController < ApplicationController
         format.html { redirect_to facility_instrument_price_policies_url(current_facility, @instrument)  }
       end
     end
-  end
-
-  def init_instrument
-    @instrument = current_facility.instruments.find_by_url_name!(params[:instrument_id])
-  end
-
-  #
-  # Override CanCan's find -- it won't properly search by zoned date
-  def init_instrument_price_policy
-    @instrument_price_policy=InstrumentPricePolicy.for_date(@instrument, start_date_from_params).first
-  end
-
-
-  private
-
-  def start_date_from_params
-    start_date=params[:id] || params[:start_date]
-    return unless start_date
-    format=start_date.include?('/') ? "%m/%d/%Y" : "%Y-%m-%d"
-    Date.strptime(start_date, format)
   end
 
 end

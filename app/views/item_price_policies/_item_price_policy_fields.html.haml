@@ -5,22 +5,20 @@
 
 %li
   = label_tag :start_date 
-  = text_field_tag "start_date", @start_date.class.name == 'Date' ? @start_date.strftime("%m/%d/%Y") : @start_date, :id => 'datepicker'
+  = text_field_tag "start_date", format_date(@start_date), :id => 'start_datepicker'
+  = label_tag :expire_date
+  = text_field_tag "expire_date", format_date(@expire_date), :id => 'expire_datepicker'
 %li
   %table
     %tr
-      %th.centered Prevent Purchase
       %th Price Group
       %th Type
       %th.centered Unit Cost
       %th.centered Unit Adjustment
     - @price_policies.each do |pp|
       - pg = pp.price_group
+      - next unless pg.can_purchase? @item
       %tr
-        - if pg.is_master_internal?
-          %td= hidden_field_tag "item_price_policy#{pg.id}[restrict_purchase]", false
-        - else
-          %td.centered= check_box_tag "item_price_policy#{pg.id}[restrict_purchase]", 'true', pp.restrict_purchase?, :class => "restrict_purchase"
         %td=h pg.name
         %td= pg.type_string
         - if !pg.is_internal?

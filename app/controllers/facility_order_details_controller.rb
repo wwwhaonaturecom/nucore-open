@@ -15,18 +15,6 @@ class FacilityOrderDetailsController < ApplicationController
   def edit
     @order        = current_facility.orders.find(params[:order_id])
     @order_detail = @order.order_details.find(params[:id])
-
-    if @order_detail.cancelled?
-      redirect_to :action => :show
-    elsif current_user.manager_of?(current_facility)
-      render :edit
-    else
-      if @order_detail.state == 'new' || @order_detail.state == 'inprocess'
-        render :edit
-      else
-        redirect_to :action => :show
-      end
-    end
   end
 
   # PUT /facilities/:facility_id/orders/:order_id/order_details/:id
@@ -43,16 +31,19 @@ class FacilityOrderDetailsController < ApplicationController
         # process account change
         process_account_change
 
+        od_params=params[:order_detail]
+
         # process all changes except order status
-        @order_detail.attributes = params[:order_detail].reject{|k, v| k == :order_status_id}
-        @order_detail.actual_cost = params[:order_detail][:actual_cost].gsub(/[^\d\.]/,'')
-        @order_detail.actual_subsidy = params[:order_detail][:actual_subsidy].gsub(/[^\d\.]/,'')
+        @order_detail.attributes = od_params.reject{|k, v| k == :order_status_id}
+        @order_detail.actual_cost = od_params[:actual_cost].gsub(/[^\d\.]/,'') if od_params[:actual_cost]
+        @order_detail.actual_subsidy = od_params[:actual_subsidy].gsub(/[^\d\.]/,'') if od_params[:actual_subsidy]
         @order_detail.updated_by = session_user.id
+        @order_detail.assign_price_policy unless params[:assign_price_policy].blank?
         @order_detail.save!
 
         # process order status change
-        if params[:order_detail][:order_status_id]
-          os = OrderStatus.find(params[:order_detail][:order_status_id])
+        if od_params[:order_status_id]
+          os = OrderStatus.find(od_params[:order_status_id])
           # cancel instrument orders
           if os.root == OrderStatus.cancelled.first && @order_detail.reservation
             raise "Order # #{@order_detail} failed cancellation." unless @order_detail.cancel_reservation(session_user, os, true)
@@ -65,13 +56,12 @@ class FacilityOrderDetailsController < ApplicationController
         flash[:notice] = 'The order has been updated successfully'
         if @order_detail.new? || @order_detail.inprocess? || @order_detail.cancelled?
           redirect_to facility_orders_path(current_facility) and return
-        elsif @order_detail.reviewable?
-          redirect_to review_facility_orders_path(current_facility) and return
-        else
-          redirect_to :action => 'show' and return
+        elsif @order_detail.complete?
+          redirect_to show_problems_facility_orders_path(current_facility) and return
         end
       rescue Exception => e
         flash.now[:error] = 'An error was encounted while updating the order'
+        Rails.logger.warn "#{e.message}\n#{e.backtrace.join("\n")}"
         raise ActiveRecord::Rollback
       end
     end
@@ -91,11 +81,6 @@ class FacilityOrderDetailsController < ApplicationController
       begin
         # process account change
         process_account_change
-
-        # process credit
-        if @order_detail.dispute_resolved_credit && @order_detail.dispute_resolved_credit > 0
-          @order_detail.current_purchase_account_transaction.resolve_dispute_with_credit!(@order_detail.dispute_resolved_credit, :created_by => session_user.id)
-        end
 
         # resolve current purchase account transaction (in case no credit or move have adjusted it yet)
         current_txn = @order_detail.current_purchase_account_transaction
@@ -124,11 +109,6 @@ class FacilityOrderDetailsController < ApplicationController
     render :action => 'edit'
   end
 
-  # GET /facilities/:facility_id/orders/:order_id/order_details/:id
-  def show
-    @order        = current_facility.orders.find(params[:order_id])
-    @order_detail = @order.order_details.find(params[:id])
-  end
 
   # GET /facilities/:facility_id/orders/:order_id/order_details/:order_detail_id/new_price
   def new_price

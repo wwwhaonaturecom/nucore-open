@@ -20,9 +20,7 @@ class OrderDetail < ActiveRecord::Base
   validates_numericality_of :actual_cost, :if => lambda { |o| o.actual_cost_changed?}
   validates_numericality_of :actual_subsidy, :if => lambda { |o| o.actual_subsidy_changed?}
   validates_presence_of :dispute_reason, :if => :dispute_at
-  validates_presence_of :dispute_resolved_at, :dispute_resolved_reason, :if => :dispute_resolved_reason || :dispute_resolved_credit || :dispute_resolved_at
-  validates_numericality_of :dispute_resolved_credit, :greater_than => 0, :allow_nil => true
-  validate :credit_less_than_cost?, :if => :dispute_resolved_credit
+  validates_presence_of :dispute_resolved_at, :dispute_resolved_reason, :if => :dispute_resolved_reason || :dispute_resolved_at
   validate :account_usable_by_order_owner?
   validates_length_of :note, :maximum => 25, :allow_blank => true, :allow_nil => true
 
@@ -43,28 +41,23 @@ class OrderDetail < ActiveRecord::Base
   aasm_initial_state    :new
   aasm_state            :new
   aasm_state            :inprocess
-  aasm_state            :reviewable
-  aasm_state            :complete
+  aasm_state            :complete, :enter => :assign_price_policy
   aasm_state            :cancelled
 
   aasm_event :to_new do
-    transitions :to => :new, :from => [:reviewable, :inprocess]
+    transitions :to => :new, :from => :inprocess
   end
 
   aasm_event :to_inprocess do
-    transitions :to => :inprocess, :from => [:new, :reviewable]
-  end
-
-  aasm_event :to_reviewable do
-    transitions :to => :reviewable, :from => [:new, :inprocess], :guard => :reservation_over?
+    transitions :to => :inprocess, :from => :new
   end
 
   aasm_event :to_complete do
-    transitions :to => :complete, :from => [:reviewable], :guard => :has_purchase_account_transaction?
+    transitions :to => :complete, :from => [:new, :inprocess], :guard => :has_purchase_account_transaction_and_completed_reservation?
   end
 
   aasm_event :to_cancelled do
-    transitions :to => :cancelled, :from => [:new, :inprocess, :reviewable], :guard => :reservation_canceled?
+    transitions :to => :cancelled, :from => [:new, :inprocess], :guard => :reservation_canceled?
   end
   # END acts_as_state_machine
 
@@ -76,24 +69,12 @@ class OrderDetail < ActiveRecord::Base
     self.save
   end
 
-  def reservation_over?
-    if !product.is_a?(Instrument) || reservation.actual_end_at || reservation.reserve_end_at < Time.zone.now
-      true
-    else
-      false
-    end
-  end
-
-  def has_purchase_account_transaction?
-    !purchase_account_transactions.empty?
-  end
-
   def reservation_canceled?
     reservation.nil? || !reservation.canceled_at.nil?
   end
 
   def init_purchase_account_transaction
-    PurchaseAccountTransaction.new({:account_id => account_id, :facility_id => product.facility_id, :description => "Order # #{self.to_s}", :transaction_amount => (actual_total - dispute_resolved_credit.to_f), :order_detail_id => id, :is_in_dispute => false})
+    PurchaseAccountTransaction.new({:account_id => account_id, :facility_id => product.facility_id, :description => "Order # #{self.to_s}", :transaction_amount => actual_total, :order_detail_id => id, :is_in_dispute => false})
   end
 
   def cost
@@ -147,10 +128,6 @@ class OrderDetail < ActiveRecord::Base
     errors.add("account_id", "is not valid for the orderer") unless AccountUser.find(:first, :conditions => ['user_id = ? AND account_id = ? AND deleted_at IS NULL', order.user_id, account_id])
   end
 
-  def credit_less_than_cost?
-    errors.add("dispute_resolved_credit", "must not be greater than the total of the order detail") if dispute_resolved_credit > actual_total
-  end
-
   def can_dispute?
     return false unless self.complete?
     pending_transaction = purchase_account_transactions.find(:first,
@@ -186,16 +163,11 @@ class OrderDetail < ActiveRecord::Base
     response = validate_service_meta
     return response unless response.nil?
 
-    # is there an actual price / estimated price (checks to make sure there is a valid price group/price policy)
-    return "A price cannot be determined using the payment method selected" unless price_policy_id && ((estimated_cost && estimated_subsidy) || (actual_cost && actual_subsidy))
-
-    # is the user still a member of the appropriate price group and getting the best price?
-    if product.is_a?(Instrument)
-      pp = reservation.cheapest_price_policy((order.user.price_groups + account.price_groups).flatten.uniq)
-    else
-      pp = product.cheapest_price_policy((order.user.price_groups + account.price_groups).flatten.uniq)
+    order.user.price_groups.each do |price_group|
+      return nil if PriceGroupProduct.find_by_price_group_id_and_product_id(price_group.id, product.id)
     end
-    return "PRICE GROUP / POLICY ERROR" if pp.nil? || pp.id != price_policy_id
+
+    return 'No assigned price groups allow purchase of this product'
   end
 
   def valid_for_purchase?
@@ -262,10 +234,30 @@ class OrderDetail < ActiveRecord::Base
   end
 
   def update_account(new_account)
-    # set account id
     self.account_id        = new_account.id
     self.estimated_cost    = nil
     self.estimated_subsidy = nil
+
+    # is account valid for facility
+    return unless product.facility.can_pay_with_account?(account)
+
+    policy_holder=product
+    est_args=[ quantity ]
+
+    if product.is_a?(Instrument)
+      return unless reservation
+      policy_holder=reservation
+      est_args=[ reservation.reserve_start_at, reservation.reserve_end_at ]
+    end
+
+    pp = policy_holder.cheapest_price_policy((order.user.price_groups + new_account.price_groups).flatten.uniq)
+    return unless pp
+    costs = pp.estimate_cost_and_subsidy(*est_args)
+    self.estimated_cost    = costs[:cost]
+    self.estimated_subsidy = costs[:subsidy]
+  end
+
+  def assign_price_policy
     self.actual_cost       = nil
     self.actual_subsidy    = nil
     self.price_policy_id   = nil
@@ -273,23 +265,18 @@ class OrderDetail < ActiveRecord::Base
     # is account valid for facility
     return unless product.facility.can_pay_with_account?(account)
 
-    # is reservation valid
+    policy_holder=product
+    calc_args=[ quantity ]
+
     if product.is_a?(Instrument)
-      if !reservation.nil?
-        pp = reservation.cheapest_price_policy((order.user.price_groups + new_account.price_groups).flatten.uniq)
-        return unless pp
-        costs = pp.estimate_cost_and_subsidy(reservation.reserve_start_at, reservation.reserve_end_at)
-        self.price_policy_id   = pp.id
-        self.estimated_cost    = costs[:cost]
-        self.estimated_subsidy = costs[:subsidy]
-      end
-      return
+      return unless reservation
+      policy_holder=reservation
+      calc_args=[ reservation ]
     end
 
-    # set cost and subsidy for items and services
-    pp = product.cheapest_price_policy((order.user.price_groups + new_account.price_groups).flatten.uniq)
+    pp = policy_holder.cheapest_price_policy((order.user.price_groups + account.price_groups).flatten.uniq)
     return unless pp
-    costs = pp.calculate_cost_and_subsidy(quantity)
+    costs = pp.calculate_cost_and_subsidy(*calc_args)
     self.price_policy_id = pp.id
     self.actual_cost     = costs[:cost]
     self.actual_subsidy  = costs[:subsidy]
@@ -297,6 +284,10 @@ class OrderDetail < ActiveRecord::Base
 
   def to_s
     "#{order.id}-#{id}"
+  end
+
+  def cost_estimated?
+    price_policy.nil? && estimated_cost && estimated_subsidy && actual_cost.nil? && actual_subsidy.nil?
   end
 
   def in_dispute?
@@ -331,7 +322,7 @@ class OrderDetail < ActiveRecord::Base
       else
         self.actual_subsidy = 0
         self.actual_cost    = fee
-        return self.change_status!(OrderStatus.reviewable.first)
+        return self.change_status!(OrderStatus.complete.first)
       end
     end
   end
@@ -351,12 +342,26 @@ class OrderDetail < ActiveRecord::Base
     actual_subsidy.to_f > 0 || estimated_subsidy.to_f > 0
   end
 
-  protected
+
+  #
+  # If this +OrderDetail+ is #complete? and either:
+  #   A) Does not have a +PricePolicy+ or
+  #   B) Has a reservation with missing usage information
+  # the method will return true, otherwise false
+  def problem_order?
+    complete? && (price_policy.nil? || (reservation && (reservation.actual_start_at.nil? || reservation.actual_end_at.nil?)))
+  end
+
+  private
 
   # initialize order detail status with product status
   def init_status
     self.order_status = product.try(:initial_order_status)
     self.state = product.initial_order_status.root.name.downcase.gsub(/ /,'')
+  end
+
+  def has_purchase_account_transaction_and_completed_reservation?
+    !purchase_account_transactions.empty? && (!product.is_a?(Instrument) || (reservation && (reservation.actual_end_at || reservation.reserve_end_at < Time.zone.now)))
   end
 
 end

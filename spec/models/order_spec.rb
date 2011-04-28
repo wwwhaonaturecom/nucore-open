@@ -21,6 +21,77 @@ describe Order do
     @order.new?.should be true
   end
 
+
+  context 'total cost' do
+
+    before :each do
+      @facility       = Factory.create(:facility)
+      @facility_account = @facility.facility_accounts.create(Factory.attributes_for(:facility_account))
+      @user           = Factory.create(:user)
+      @account        = Factory.create(:nufs_account, :account_users_attributes => [Hash[:user => @user, :created_by => @user, :user_role => 'Owner']])
+      @order          = @user.orders.create(Factory.attributes_for(:order, :created_by => @user.id))
+      @item           = @facility.items.create(Factory.attributes_for(:item, :facility_account_id => @facility_account.id))
+    end
+
+    context 'actual' do
+      before :each do
+        @cost=@subsidy=0
+
+        (1..4).each do |i|
+          cost, subsidy=10 * i, 5 * i
+          @cost += cost
+          @subsidy += subsidy
+          @order.order_details.create(
+            Factory.attributes_for(
+              :order_detail,
+              :product_id => @item.id,
+              :account_id => @account.id,
+              :actual_cost => cost,
+              :actual_subsidy => subsidy
+            )
+          )
+        end
+
+        @total=@cost-@subsidy
+      end
+
+      [ :total, :subsidy, :cost ].each do |method_name|
+        it "should have equal #{method_name}" do
+          @order.method(method_name).call.should == instance_variable_get("@#{method_name}".to_sym)
+        end
+      end
+    end
+
+    context 'estimated' do
+      before :each do
+        @estimated_cost=@estimated_subsidy=0
+
+        (1..4).each do |i|
+          cost, subsidy=10 * i, 5 * i
+          @estimated_cost += cost
+          @estimated_subsidy += subsidy
+          @order.order_details.create(
+            Factory.attributes_for(
+              :order_detail,
+              :product_id => @item.id,
+              :account_id => @account.id,
+              :estimated_cost => cost,
+              :estimated_subsidy => subsidy
+            )
+          )
+        end
+
+        @estimated_total=@estimated_cost-@estimated_subsidy
+      end
+
+      [ :estimated_total, :estimated_subsidy, :estimated_cost ].each do |method_name|
+        it "should have equal #{method_name}" do
+          @order.method(method_name).call.should == instance_variable_get("@#{method_name}".to_sym)
+        end
+      end
+    end
+  end
+
   context 'invalidate_order state transition' do
     ## TODO decide what tests need to go here
   end
@@ -73,6 +144,7 @@ describe Order do
       @price_group  = Factory.create(:price_group, :facility => @facility)
       @order_status = Factory.create(:order_status)
       @service      = @facility.services.create(Factory.attributes_for(:service, :initial_order_status_id => @order_status.id, :facility_account_id => @facility_account.id))
+      Factory.create(:price_group_product, :product => @service, :price_group => @price_group, :reservation_window => nil)
       @service_pp   = Factory.create(:service_price_policy, :service => @service, :price_group => @price_group)
       @user         = Factory.create(:user)
       @pg_member    = Factory.create(:user_price_group_member, :user => @user, :price_group => @price_group)
@@ -97,17 +169,6 @@ describe Order do
       # should add account to facility orders, accounts (through order_details) collections
       @facility.orders.should == [@order]
       @facility.order_details.accounts.should == [@account]
-    end
-
-    it "should check for price group changes before purchase" do
-      @order.order_details.create(:product_id => @service.id, :quantity => 1, :price_policy_id => @service_pp.id, :account_id => @account.id, :actual_cost => 10, :actual_subsidy => 5)
-      define_open_account(@service.account, @account.account_number)
-      @order.validate_order!.should be true
-
-      @pg_member.destroy
-      @order.invalidate!
-      @order.reload
-      @order.validate_order!.should be false
     end
 
     it "should check for facility active/inactive changes before purchase" do
@@ -137,6 +198,7 @@ describe Order do
     it "should check for schedule rule changes before purchase" do
       @instrument    = @facility.instruments.create(Factory.attributes_for(:instrument, :facility_account => @facility_account))
       @instrument_pp = Factory.create(:instrument_price_policy, :instrument => @instrument, :price_group => @price_group)
+      Factory.create(:price_group_product, :product => @instrument, :price_group => @price_group)
       # default rule, 9am - 5pm all days
       @rule          = @instrument.schedule_rules.create(Factory.attributes_for(:schedule_rule))
       @order_detail  = @order.order_details.create(:product_id      => @instrument.id,    :quantity => 1,

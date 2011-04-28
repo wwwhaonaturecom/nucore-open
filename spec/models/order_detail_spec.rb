@@ -33,12 +33,28 @@ describe OrderDetail do
   end
 
   context "update account" do
-    it "should set the account id"
-    it "should set the actual cost for items and services"
-    it "should set the estimated cost for instruments"
-    it "should set the price policy"
-    it "should set costs to nil if there is no valid price policy"
-    it "should set the price policy to nil if there is no valid price policy"
+    before(:each) do
+      @facility = Factory.create(:facility)
+      @facility_account = @facility.facility_accounts.create(Factory.attributes_for(:facility_account))
+      @user     = Factory.create(:user)
+      @item     = @facility.items.create(Factory.attributes_for(:item, :facility_account_id => @facility_account.id))
+      @account  = Factory.create(:nufs_account, :account_users_attributes => [Hash[:user => @user, :created_by => @user, :user_role => 'Owner']])
+      @order    = @user.orders.create(Factory.attributes_for(:order, :created_by => @user.id))
+      @order_detail = @order.order_details.create(Factory.attributes_for(:order_detail).update(:product_id => @item.id, :account_id => @account.id))
+      @price_group = Factory.create(:price_group, :facility => @facility)
+      Factory.create(:price_group_product, :product => @item, :price_group => @price_group, :reservation_window => nil)
+      UserPriceGroupMember.create!(:price_group => @price_group, :user => @user)
+      @pp=Factory.create(:item_price_policy, :item => @item, :price_group => @price_group)
+    end
+
+    it 'should set estimated costs and assign account' do
+      @order_detail.update_account(@account)
+      @order_detail.account.should == @account
+      costs=@pp.estimate_cost_and_subsidy(@order_detail.quantity)
+      @order_detail.estimated_cost.should == costs[:cost]
+      @order_detail.estimated_subsidy.should == costs[:subsidy]
+      @order_detail.should be_cost_estimated
+    end
   end
 
   context "item purchase validation" do
@@ -56,11 +72,6 @@ describe OrderDetail do
       @order_detail.update_attributes(:actual_cost => 20, :actual_subsidy => 10, :price_policy_id => @item_pp.id)
     end
 
-    it "should be valid for an item purchase with valid attributes" do
-      define_open_account(@order_detail.product.account, @order_detail.account.account_number)
-      @order_detail.valid_for_purchase?.should == true
-    end
-
     it "should not be valid if there is no account" do
       @order_detail.update_attributes(:account_id => nil)
       @order_detail.valid_for_purchase?.should_not == true
@@ -68,24 +79,33 @@ describe OrderDetail do
 
     it "should not be valid if the chart string account does not match the product account"
 
-    it "should not be valid if there is no actual price" do
-      @order_detail.update_attributes(:actual_cost => nil, :actual_subsidy => nil)
-      @order_detail.valid_for_purchase?.should_not == true
-    end
+    context 'needs open account' do
+      before :each do
+        Factory.create(:price_group_product, :product => @item, :price_group => @price_group, :reservation_window => nil)
+        define_open_account(@order_detail.product.account, @order_detail.account.account_number)
+      end
 
-    it "should not be valid if a price policy is not selected" do
-      @order_detail.update_attributes(:price_policy_id => nil)
-      @order_detail.valid_for_purchase?.should_not == true
-    end
+      it "should be valid for an item purchase with valid attributes" do
+        @order_detail.valid_for_purchase?.should == true
+      end
 
-    it "should not be valid if the user is not approved for the product" do
-      @item.update_attributes(:requires_approval => true)
-      @order_detail.reload # reload to update related item
-      @order_detail.valid_for_purchase?.should_not == true
+      it "should be valid if there is no actual price" do
+        @order_detail.update_attributes(:actual_cost => nil, :actual_subsidy => nil)
+        @order_detail.valid_for_purchase?.should == true
+      end
 
-      ProductUser.create({:product => @item, :user => @user, :approved_by => @user.id})
-      define_open_account(@order_detail.product.account, @order_detail.account.account_number)
-      @order_detail.valid_for_purchase?.should == true
+      it "should be valid if a price policy is not selected" do
+        @order_detail.update_attributes(:price_policy_id => nil)
+        @order_detail.valid_for_purchase?.should == true
+      end
+
+      it "should not be valid if the user is not approved for the product" do
+        @item.update_attributes(:requires_approval => true)
+        @order_detail.reload # reload to update related item
+        @order_detail.valid_for_purchase?.should_not == true
+        ProductUser.create({:product => @item, :user => @user, :approved_by => @user.id})
+        @order_detail.valid_for_purchase?.should == true
+      end
     end
   end
 
@@ -159,10 +179,61 @@ describe OrderDetail do
     end
   end
 
-  context "instrument purchase validation" do
-    it "should validate for a valid instrument with reservation"
-    it "should not be valid if an instrument reservation is not valid"
-    it "should not be valid if there is no estimated or actual price"
+  context 'instrument' do
+
+#    before :each do
+#      @facility       = Factory.create(:facility)
+#      @facility_account = @facility.facility_accounts.create(Factory.attributes_for(:facility_account))
+#      @user           = Factory.create(:user)
+#      @account        = Factory.create(:nufs_account, :account_users_attributes => [Hash[:user => @user, :created_by => @user, :user_role => 'Owner']])
+#      @price_group    = Factory.create(:price_group, :facility => @facility)
+#      @pg_user_member = Factory.create(:user_price_group_member, :user => @user, :price_group => @price_group)
+#      @order          = @user.orders.create(Factory.attributes_for(:order, :facility_id => @facility.id, :account_id => @account.id, :created_by => @user.id))
+#      @instrument     = @facility.instruments.create(Factory.attributes_for(:instrument, :facility_account_id => @facility_account.id))
+#      @order_detail   = @order.order_details.create(Factory.attributes_for(:order_detail).update(:product_id => @instrument.id, :account_id => @account.id))
+#    end
+
+
+    context 'problem orders' do
+
+#      before :each do
+#        @rule           = @instrument.schedule_rules.create(Factory.attributes_for(:schedule_rule).merge(:start_hour => 0, :end_hour => 17))
+#        @instrument_pp  = @instrument.instrument_price_policies.create(Factory.attributes_for(:instrument_price_policy, :price_group_id => @price_group.id))
+#        @reservation    = @instrument.reservations.create(:reserve_start_date => Date.today+1.day, :reserve_start_hour => 10,
+#                                                          :reserve_start_min => 0, :reserve_start_meridian => 'am',
+#                                                          :duration_value => 60, :duration_unit => 'minutes')
+#
+#        @order_detail.reservation=@reservation
+#        define_open_account(@order_detail.product.account, @order_detail.account.account_number)
+#        Factory.create(:price_group_product, :product => @instrument, :price_group => @price_group)
+#
+#        PurchaseAccountTransaction.create!(
+#          :order_detail => @order_detail,
+#          :transaction_amount => 10,
+#          :facility => @facility,
+#          :account => @account,
+#          :created_by => @user.id,
+#          :is_in_dispute => false
+#        )
+#
+#        @order_detail.to_inprocess!
+#        @order_detail.to_complete!
+#      end
+
+
+      # The setup for instrument order tests is absolutely painful...
+      it 'should test that an order with no actual start date is a problem'
+      it 'should test that an order with no actual end date is a problem'
+      it 'should test that an order with actuals is not a problem'
+
+    end
+
+    context "instrument purchase validation" do
+      it "should validate for a valid instrument with reservation"
+      it "should not be valid if an instrument reservation is not valid"
+      it "should not be valid if there is no estimated or actual price"
+    end
+
   end
 
   context "state management" do
@@ -192,19 +263,61 @@ describe OrderDetail do
       @order_detail.version.should == 2
     end
 
-    it "should allow anyone to transition from 'inprocess' to 'reviewable', increment version" do
+
+    it "should not transition from 'inprocess' to 'completed' if there is no purchase account transaction" do
       @order_detail.to_inprocess!
-      @order_detail.to_reviewable!
-      @order_detail.state.should == 'reviewable'
-      @order_detail.version.should == 3
+      @order_detail.to_complete!
+      @order_detail.state.should == 'inprocess'
+      @order_detail.version.should == 2
     end
 
-    it "should not transition from 'reviewable' to 'completed' if there is no purchase account transaction" do
-      @order_detail.to_inprocess!
-      @order_detail.to_reviewable!
-      @order_detail.to_complete!
-      @order_detail.state.should == 'reviewable'
-      @order_detail.version.should == 3
+
+    context 'exits with #assign_price_policy' do
+
+      before :each do
+        @price_group3 = Factory.create(:price_group, :facility => @facility)
+        UserPriceGroupMember.create!(:price_group => @price_group3, :user => @user)
+        Factory.create(:price_group_product, :product => @item, :price_group => @price_group3, :reservation_window => nil)
+
+        PurchaseAccountTransaction.create!(
+          :order_detail => @order_detail,
+          :transaction_amount => 10,
+          :facility => @facility,
+          :account => @account,
+          :created_by => @user.id,
+          :is_in_dispute => false
+        )
+
+        @order_detail.reload
+      end
+
+
+      it 'should assign a price policy' do
+        pp=Factory.create(:item_price_policy, :item => @item, :price_group => @price_group3)
+        @order_detail.price_policy.should be_nil
+        @order_detail.to_inprocess!
+        @order_detail.to_complete!
+        @order_detail.state.should == 'complete'
+        @order_detail.price_policy.should == pp
+        @order_detail.should_not be_cost_estimated
+        @order_detail.should_not be_problem_order
+
+        costs=pp.calculate_cost_and_subsidy(@order_detail.quantity)
+        @order_detail.actual_cost.should == costs[:cost]
+        @order_detail.actual_subsidy.should == costs[:subsidy]
+      end
+
+
+      it 'should not assign a price policy' do
+        @order_detail.price_policy.should be_nil
+        @order_detail.to_inprocess!
+        @order_detail.to_complete!
+        @order_detail.state.should == 'complete'
+        @order_detail.price_policy.should be_nil
+        @order_detail.should be_problem_order
+      end
+
     end
+
   end
 end

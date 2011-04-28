@@ -3,7 +3,6 @@ class InstrumentPricePolicy < PricePolicy
 
   belongs_to :instrument, :class_name => 'Product', :foreign_key => :instrument_id
 
-  validates_numericality_of :reservation_window, :only_integer => true, :greater_than => 0, :unless => :restrict_purchase, :message => 'must be a whole number'
   validates_numericality_of :minimum_cost, :usage_rate, :reservation_rate, :overage_rate, :usage_subsidy, :overage_subsidy, :reservation_subsidy, :cancellation_cost, :allow_nil => true, :greater_than_or_equal_to => 0
   validates_inclusion_of :usage_mins, :reservation_mins, :overage_mins, :in => @@intervals, :unless => :restrict_purchase
   validates_presence_of :usage_rate, :unless => lambda { |o| o.usage_subsidy.nil? || o.restrict_purchase?}
@@ -26,7 +25,7 @@ class InstrumentPricePolicy < PricePolicy
   end
   
   def self.current_date(instrument)
-    ipp = instrument.instrument_price_policies.find(:first, :conditions => ['TRUNC(start_date) <= ?', Time.zone.now], :order => 'start_date DESC')
+    ipp = instrument.instrument_price_policies.find(:first, :conditions => ['TRUNC(start_date) <= ? AND TRUNC(expire_date) > ?', Time.zone.now, Time.zone.now], :order => 'start_date DESC')
     ipp ? ipp.start_date.to_date : nil
   end
 
@@ -42,6 +41,24 @@ class InstrumentPricePolicy < PricePolicy
 
   def self.intervals
     @@intervals
+  end
+
+  def reservation_window
+    pgp=PriceGroupProduct.find_by_price_group_id_and_product_id(price_group.id, instrument.id)
+    return pgp ? pgp.reservation_window : 0
+  end
+
+  def product
+    return instrument
+  end
+
+  def restrict_purchase=(state)
+    price_group_product=super
+
+    if price_group_product and (!state or state == 0)
+      price_group_product.reservation_window=PriceGroupProduct::DEFAULT_RESERVATION_WINDOW
+      price_group_product.save!
+    end
   end
 
   def subsidy_less_than_rate?
@@ -83,14 +100,14 @@ class InstrumentPricePolicy < PricePolicy
     costs
   end
 
-  def calculate_actual_instrument_costs (reservation)
+  def calculate_cost_and_subsidy (reservation)
     ## TODO update cancellation costs
     ## calculate actuals for cancelled reservations
     if (reservation.canceled_at)
       if (reservation.reserve_start_at - reserve.canceled_at)/60 >= instrument.min_cancel_hours.to_i * 60
         actual_cost = cancellation_cost
         actual_subsidy = 0
-        return {:actual_cost => actual_cost, :actual_subsidy => actual_subsidy}
+        return {:cost => actual_cost, :subsidy => actual_subsidy}
       else
         ## TODO how to calculate this
         return nil
@@ -101,7 +118,7 @@ class InstrumentPricePolicy < PricePolicy
     if reservation_rate.to_f == 0 && usage_rate.to_f == 0 && overage_rate.to_f == 0
       actual_cost = minimum_cost || 0
       actual_subsidy = 0
-      return {:actual_cost => actual_cost, :actual_subsidy => actual_subsidy}
+      return {:cost => actual_cost, :subsidy => actual_subsidy}
     end
 
     ## the instrument has a reservation cost only
@@ -119,7 +136,7 @@ class InstrumentPricePolicy < PricePolicy
         actual_cost    = minimum_cost
         actual_subsidy = 0
       end
-      return {:actual_cost => actual_cost, :actual_subsidy => actual_subsidy}
+      return {:cost => actual_cost, :subsidy => actual_subsidy}
     end
 
     ## make sure actuals are entered
@@ -181,6 +198,6 @@ class InstrumentPricePolicy < PricePolicy
       actual_cost    = minimum_cost
       actual_subsidy = 0
     end
-    return {:actual_cost => actual_cost, :actual_subsidy => actual_subsidy}
+    return {:cost => actual_cost, :subsidy => actual_subsidy}
   end
 end

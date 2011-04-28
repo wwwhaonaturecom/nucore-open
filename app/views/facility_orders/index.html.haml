@@ -35,7 +35,7 @@
         %th{ :colspan => 2 }== Quantity / #{sortable 'product'}
         %th= sortable 'assigned_to'
         %th= sortable 'status'
-        %th.currency Total
+        %th.currency Price
       -## THE DETAIL ROWS
       - @order_details.each do |od|
         - order = od.order
@@ -63,7 +63,12 @@
                 %li=h "Note: #{od.note}"
           %td=h od.assigned_user.nil? ? '' : od.assigned_user.full_name
           %td=h od.order_status.name
-          %td.currency=h number_to_currency(od.total)
+          - if od.cost_estimated?
+            %td.estimated_cost.currency= h number_to_currency od.estimated_total
+          - elsif od.price_policy.nil?
+            %td.currency Unassigned
+          - else
+            %td.actual_cost.currency= h number_to_currency od.actual_total
       -## THE FOOTER CONTROL ROW
       %tr.borderless
         %td
@@ -84,3 +89,4 @@
         %td
           = submit_tag "Update Orders"
   = will_paginate(@order_details)
+  = render :partial => '/price_display_footnote', :locals => { :admin => true }

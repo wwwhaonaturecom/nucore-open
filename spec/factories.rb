@@ -103,13 +103,12 @@ Factory.define :instrument_price_policy, :class => InstrumentPricePolicy do |o|
   o.unit_subsidy 0
   o.reservation_rate 1
   o.reservation_subsidy 0
-  o.reservation_window 1
   o.reservation_mins 1
   o.minimum_cost 1
   o.usage_mins 1
   o.overage_mins 1
   o.start_date Time.zone.now.beginning_of_day
-  o.restrict_purchase false
+  o.expire_date Time.zone.now+1.month
 end
 
 Factory.define :item, :class => Item do |o|
@@ -127,7 +126,7 @@ Factory.define :item_price_policy, :class => ItemPricePolicy do |o|
   o.unit_cost 1
   o.unit_subsidy 0
   o.start_date Date.today
-  o.restrict_purchase false
+  o.expire_date Time.zone.now+1.month
 end
 
 Factory.define :service, :class => Service do |o|
@@ -156,7 +155,7 @@ Factory.define :service_price_policy, :class => ServicePricePolicy do |o|
   o.unit_cost 1
   o.unit_subsidy 0
   o.start_date Date.today
-  o.restrict_purchase false
+  o.expire_date Time.zone.now+1.month
 end
 
 Factory.define :schedule_rule, :class => ScheduleRule do |o|
@@ -204,4 +203,8 @@ end
 
 Factory.define :response_set do |s|
   s.sequence(:access_code) { |n| "#{n}#{n}#{n}" }
+end
+
+Factory.define :price_group_product do |pgp|
+  pgp.reservation_window 1
 end

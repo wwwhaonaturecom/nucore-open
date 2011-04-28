@@ -11,7 +11,13 @@ class Reservation < ActiveRecord::Base
 
   validates_presence_of :instrument_id, :reserve_start_at, :reserve_end_at
   validate :does_not_conflict_with_other_reservation, :satisfies_minimum_length, :satisfies_maximum_length, :instrument_is_available_to_reserve, :in_the_future, :if => :reserve_start_at && :reserve_end_at && :reservation_changed?
-  validate :actuals_past, :if => :actual_start_at && :actual_end_at
+
+  validates_each [ :actual_start_at, :actual_end_at ] do |record,attr,value|
+    if value
+      errors.add(attr.to_s,'cannot be in the future') if Time.zone.now < value
+    end
+  end
+
   validate :starts_before_ends
   #validate :in_window, :if => :has_order_detail?
   #validate minimum_cost met
@@ -27,10 +33,6 @@ class Reservation < ActiveRecord::Base
   named_scope :upcoming, lambda { |*t| {:conditions => ["reservations.reserve_end_at >= ? AND reservations.canceled_at IS NULL AND (orders.state = 'purchased' OR orders.state IS NULL)", t.blank? ? Time.zone.now : t], :order => 'reserve_end_at asc', :joins => ['LEFT JOIN order_details ON order_details.id = reservations.order_detail_id', 'LEFT JOIN orders ON orders.id = order_details.order_id']} }
   named_scope :limit,    lambda { |n| {:limit => n}}
 
-  def actuals_past
-    errors.add('actual_start_date','cannot be in the future') if Time.zone.now < actual_start_at
-    errors.add('actual_end_date','cannot be in the future') if Time.zone.now < actual_end_at
-  end
 
   def starts_before_ends
     if reserve_start_at && reserve_end_at
@@ -376,6 +378,7 @@ class Reservation < ActiveRecord::Base
   end
 
   # return the cheapest available price policy that
+  # * is not expired
   # * is not restricted
   # * is included in the provided price groups
   def cheapest_price_policy(groups = [])
@@ -383,7 +386,7 @@ class Reservation < ActiveRecord::Base
     min = nil
     cheapest_total = 0
     instrument.current_price_policies.each { |pp|
-      if !pp.restrict_purchase? && groups.include?(pp.price_group)
+      if !pp.expired? && !pp.restrict_purchase? && groups.include?(pp.price_group)
         costs = pp.estimate_cost_and_subsidy(reserve_start_at, reserve_end_at)
         unless costs.nil?
           total = costs[:cost] - costs[:subsidy]
@@ -398,18 +401,23 @@ class Reservation < ActiveRecord::Base
   end
 
   # return the longest available reservation window that:
+  # * is not part of an expired price policy
   # * is not part of a restricted price policy
   # * is included in the provided price groups
   # * is within the reservation windows of the available price policies
   def longest_reservation_window_price_policy(groups = [])
-    return nil if groups.empty?
-    return nil if reserve_start_at.nil?
-    longest = nil
+    return nil if groups.empty? or reserve_start_at.nil?
+
+    longest, longest_window = nil, nil
     diff = ((reserve_start_at - Time.zone.now)/(60*60*24)).to_i
+
     instrument.current_price_policies.each { |pp|
-      if !pp.restrict_purchase? && groups.include?(pp.price_group) && diff <= pp.reservation_window
-        if longest.nil? || pp.reservation_window > longest.reservation_window
+      window=pp.reservation_window
+
+      if !pp.expired? && !pp.restrict_purchase? && groups.include?(pp.price_group) && diff <= window
+        if longest_window.nil? || window > longest_window
           longest = pp
+          longest_window=window
         end
       end
     }
@@ -467,7 +475,7 @@ class Reservation < ActiveRecord::Base
   # TODO does this need to be more robust?
   def can_edit_actuals?
     return false if order_detail.nil?
-    order_detail.reviewable?
+    order_detail.complete?
   end
 
   def reservation_changed?

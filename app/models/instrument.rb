@@ -95,11 +95,19 @@ class Instrument < Product
     if schedule_rules.empty?
       false
     elsif group_ids.nil?
-      current_price_policies.any?{|pp| !pp.restrict_purchase?}
+      current_price_policies.any?{|pp| !pp.expired? && !pp.restrict_purchase?}
     elsif group_ids.empty?
       false
     else
-      current_price_policies.any?{|pp| !pp.restrict_purchase? && group_ids.include?(pp.price_group_id)}
+      current_price_policies.any?{|pp| !pp.expired? && !pp.restrict_purchase? && group_ids.include?(pp.price_group_id)}
+    end
+  end
+
+  def is_approved_for? (user)
+    if requires_approval?
+      return requires_approval? && !product_users.find_by_user_id(user.id).nil?
+    else
+      true
     end
   end
 end

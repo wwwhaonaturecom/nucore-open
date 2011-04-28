@@ -25,7 +25,6 @@ describe InstrumentPricePoliciesController do
 
     it_should_allow_operators_only do |user|
       assigns[:instrument].should == @instrument
-      assigns[:current_price_policies].should == [@price_policy]
       response.should render_template('instrument_price_policies/index.html.haml')
 
       if user.facility_staff?
@@ -43,11 +42,13 @@ describe InstrumentPricePoliciesController do
     before :each do
       @method=:get
       @action=:new
-      @params.merge!(:start_date => @price_policy.start_date.to_s)
     end
 
     it_should_allow_managers_only do
       assigns[:instrument].should == @instrument
+      assigns[:start_date].should_not be_nil
+      assigns[:expire_date].should_not be_nil
+      assigns[:price_policies].should be_is_a Array
       response.should be_success
       response.should render_template('instrument_price_policies/new.html.haml')
     end
@@ -64,7 +65,24 @@ describe InstrumentPricePoliciesController do
       @params.merge!(:id => @price_policy.start_date.to_s)
     end
 
-    it_should_allow_managers_only
+    it_should_allow_managers_only :success, 'to edit assigned effective price policy' do
+      assigns[:start_date].should == Date.strptime(@params[:id], "%Y-%m-%d")
+      assigns[:price_policies].should == [ @price_policy ]
+      should render_template('edit')
+    end
+
+
+    it 'should not allow edit of assigned effective price policy' do
+      @account  = Factory.create(:nufs_account, :account_users_attributes => [Hash[:user => @director, :created_by => @director, :user_role => 'Owner']])
+      @order    = @director.orders.create(Factory.attributes_for(:order, :created_by => @director.id))
+      @order_detail = @order.order_details.create(Factory.attributes_for(:order_detail).update(:product_id => @instrument.id, :account_id => @account.id, :price_policy => @price_policy))
+      UserPriceGroupMember.create!(:price_group => @price_group, :user => @director)
+      maybe_grant_always_sign_in :director
+      do_request
+      assigns[:start_date].should == Date.strptime(@params[:id], "%Y-%m-%d")
+      assigns[:price_policies].should be_empty
+      should render_template '404.html.erb'
+    end
 
   end
 
@@ -72,9 +90,13 @@ describe InstrumentPricePoliciesController do
   context 'policy params' do
 
     before :each do
+      @start_date=Time.zone.now+1.year
+      @expire_date=PricePolicy.generate_expire_date(@start_date)
+
       @params.merge!({
         :interval => 5,
-        :start_date => (Time.zone.now+1.year).to_s
+        :start_date => @start_date.to_s,
+        :expire_date => @expire_date.to_s
       })
 
       @authable.price_groups.each do |pg|
@@ -129,6 +151,12 @@ describe InstrumentPricePoliciesController do
 
   def set_policy_date
     @price_policy.start_date=Time.zone.now+1.year
+    @price_policy.expire_date=PricePolicy.generate_expire_date(@price_policy.start_date)
+
+    unless @price_policy.valid?
+      puts @price_policy.expire_date.to_s
+    end
+
     assert @price_policy.save
   end
 

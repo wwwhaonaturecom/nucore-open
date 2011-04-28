@@ -163,6 +163,18 @@ input.btn:hover {
   text-align: right;
 }
 
+.disabled {
+  color: #D1D1D1;
+}
+
+.estimated_cost {
+    color: orange;
+}
+
+.actual_cost {
+    color: green;
+}
+
 /***************************************
 main layout ids
 ***************************************/

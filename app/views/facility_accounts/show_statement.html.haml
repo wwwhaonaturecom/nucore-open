@@ -35,24 +35,18 @@
         - if at.is_a?(PaymentAccountTransaction)
           %td Payment received. Thank you.
         - else
-          %td= link_to at.description, order_order_detail_path(at.order_detail.order, at.order_detail)
+          %td= link_to at.description, edit_facility_order_order_detail_path(current_facility, at.order_detail.order, at.order_detail)
         %td.centered
           - if at.is_in_dispute?
             In Dispute
-        %td.currency=h number_to_currency at.transaction_amount
-    %tr
-      %td.currency.borderless{:colspan => 4}
-        %b Previous Balance
-      %td.currency.borderless= number_to_currency @balance_prev
-    %tr
-      %td.currency.borderless{:colspan => 4}
-        %b New Payments/Credits
-      %td.currency.borderless= number_to_currency @new_payments
-    %tr
-      %td.currency.borderless{:colspan => 4}
-        %b New Purchases
-      %td.currency.borderless= number_to_currency @new_purchases
-    %tr
-      %td.currency.borderless{:colspan => 4}
-        %b Balance Due
-      %td.currency.borderless= number_to_currency @balance_due
+        %td.currency
+          - if od.cost_estimated?
+            %span.estimated_cost
+              = h number_to_currency od.estimated_total
+          - elsif od.price_policy.nil?
+            Unassigned
+          - else
+            %span.actual_cost
+              = h number_to_currency at.transaction_amount
+
+  = render :partial => '/price_display_footnote'

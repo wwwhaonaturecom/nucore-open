@@ -64,6 +64,7 @@ ActionController::Routing::Routes.draw do |map|
     end
 
     facility.resources :reports,  :only => [:index], :collection => {:instrument_utilization => [:get, :post], :product_order_summary => [:get, :post]}
+    facility.resources :price_group_products, :only => [ :edit, :update ]
 
     facility.schedule 'schedule', :controller => 'facilities', :action => 'schedule'
     facility.agenda   'agenda',   :controller => 'facilities', :action => 'agenda'
@@ -75,12 +76,14 @@ ActionController::Routing::Routes.draw do |map|
 
     facility.resources :users, :except => [:edit, :update], :collection => {:username_search => :post, :new_search => :get} do |user|
       user.switch_to '/switch_to', :controller => 'users', :action => 'switch_to', :conditions => {:method => :get}
+      user.orders    'orders',   :controller => 'users', :action => 'orders'
+      user.accounts  'accounts', :controller => 'users', :action => 'accounts'
     end
 
     facility.resources :facility_accounts, :controller => 'facility_facility_accounts', :only => [:index, :new, :create, :edit, :update]
 
-    facility.resources :orders, :controller => 'facility_orders', :only => [:index, :show], :collection => {:batch_update => :post, :review => :get, :review_batch_update => :post, :disputed => :get} do |order|
-      order.resources :order_details, :controller => 'facility_order_details', :only => [:edit, :update, :show] do |order_detail|
+    facility.resources :orders, :controller => 'facility_orders', :only => [:index, :show], :collection => {:batch_update => :post, :show_problems => :get, :disputed => :get} do |order|
+      order.resources :order_details, :controller => 'facility_order_details', :only => [:edit, :update ] do |order_detail|
         order_detail.new_price '/new_price', :controller => 'facility_order_details', :action => 'new_price', :conditions => {:method => :get}
         order_detail.resolve_dispute '/resolve_dispute', :controller => 'facility_order_details', :action => 'resolve_dispute', :conditions => {:method => :put}
         order_detail.resources :reservations, :controller => 'facility_reservations', :only => [:edit, :update, :show]
