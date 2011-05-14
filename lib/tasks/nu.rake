@@ -25,7 +25,12 @@ namespace :nu do
             )
 
             begin
-              usr.save!
+              if usr.valid?
+                usr.save!
+              else
+                puts "IIII Invalid user (#{usr.email})! IIII"
+                usr.errors.each{|attr, msg| puts "#{attr} #{msg}"}
+              end
             rescue => e
               log("Could not save Pers::Person #{per.username}, #{per.id}", e)
             else
@@ -105,16 +110,45 @@ namespace :nu do
         begin
           basename=File.basename(file_path, File.extname(file_path))
           clazz=basename.camelize.constantize
-          has_cols=clazz.instance_methods & cols2update
-          next if has_cols.blank?
 
+          unless clazz.respond_to? :column_names
+            puts "#{clazz.name} is not an ActiveRecord. Next."
+            next
+          end
+
+          has_cols=clazz.column_names & cols2update
+
+          if has_cols.blank?
+            puts "#{clazz.name} has no columns to update. Next."
+            next
+          end
+
+          puts "Updating columns #{has_cols.join(', ')} of #{clazz.name}..."
+          
           clazz.all.each do |obj|
             has_cols.each do |col|
-              personnel_id=obj.method(col.to_sym).call
+              personnel_id=obj[col.to_sym]
+
+              if personnel_id.blank?
+                puts "Null value for #{col} on #{clazz.name} instance #{obj.id}. Next."
+                next
+              end
+
               uid=personnel_to_user[personnel_id]
-              raise "No user id found for personnel_id #{personnel_id}! (table #{clazz.name.tableize})" unless uid
-              obj.method("#{col.to_sym}=").call(uid)
-              obj.save!
+
+              if uid.blank?
+                puts "No user id found for personnel_id #{personnel_id}! (#{clazz.name.tableize.singularize}##{col}). Next."
+                next
+              end
+
+              obj[col]=uid
+
+              if obj.valid?
+                obj.save!
+              else
+                puts "IIII Invalid record (#{clazz.name} #{obj.id})! IIII"
+                obj.errors.each{|attr, msg| puts "#{attr} #{msg}"}
+              end                            
             end
           end
         rescue => e
