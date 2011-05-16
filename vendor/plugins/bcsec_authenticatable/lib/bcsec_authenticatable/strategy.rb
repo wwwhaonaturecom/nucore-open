@@ -5,14 +5,23 @@ module Devise
     class BcsecAuthenticatable < Base
 
       def authenticate!
+        return succeed_authentication(params[:username]) if  Bcsec.authority.auth_disabled?
+
         user = Bcsec.authority.valid_credentials?(:user, params[:username], params[:password])
 
         unless user
           fail(:unauthenticated)
         else
-          nucore_user=User.find_by_username user.username
-          success!(nucore_user)
+          succeed_authentication(user.username)
         end
+      end
+
+
+      private
+
+      def succeed_authentication(username)
+        nucore_user=User.find_by_username username
+        success!(nucore_user)
       end
 
     end

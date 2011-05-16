@@ -60,6 +60,9 @@ end
 
 # Make it easy to access the configured authorities
 Bcsec::Authorities::Composite.class_eval do
+  auth_file=File.join(File.dirname(__FILE__), 'config', 'environments', "bcsec_#{Rails.env}.yml")
+  @@auth_yaml=YAML::load(File.open(auth_file))
+
 
   def pers
     authorities[0]
@@ -69,6 +72,9 @@ Bcsec::Authorities::Composite.class_eval do
     authorities[1]
   end
 
+  def auth_disabled?
+    @@auth_yaml['policy']['disable_authentication']
+  end
 end
 
 
