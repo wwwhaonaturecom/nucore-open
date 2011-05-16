@@ -46,4 +46,5 @@ group :development do
    gem 'ruby-debug', '0.10.3'
    #gem 'ruby-debug-ide', '0.4.15'
    gem 'single_test'
+   gem 'ci_reporter'
 end
