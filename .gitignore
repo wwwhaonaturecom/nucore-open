@@ -2,6 +2,7 @@ log/
 tmp/
 .bundle/
 .idea/
+.rvmrc*
 sqlnet.log
 config/database.yml
 vendor/plugins/bcsec_authenticatable/config/environments/bcsec_test.yml
