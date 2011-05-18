@@ -16,7 +16,6 @@ class FacilityStatementsController < ApplicationController
   # GET /facilities/:facility_id/statements
   def index
     @statements = current_facility.statements.find(:all, :order => 'statements.created_at DESC').paginate(:page => params[:page])
-    flash.now[:notice] = 'No statements have been sent' if @statements.empty?
   end
 
   # GET /facilities/:facility_id/statements/pending
@@ -63,7 +62,7 @@ class FacilityStatementsController < ApplicationController
     @account_balances = {}
     order_details = current_facility.order_details.complete
     order_details.each do |od|
-      @account_balances[od.account_id] = @account_balances[od.account_id].to_f + od.total
+      @account_balances[od.account_id] = @account_balances[od.account_id].to_f + od.total.to_f
     end
     @accounts = Account.find(@account_balances.keys)
   end

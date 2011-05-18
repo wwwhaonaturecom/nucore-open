@@ -6,9 +6,11 @@
 - content_for :sidebar do
   = render :partial => 'admin/shared/sidenav_billing', :locals => { :sidenav_tab => 'credit_cards' }
 
-%h2 Manage Credit Cards
+%h2 Reconcile Credit Cards
 
-- unless @accounts.empty?
+- if @accounts.empty?
+  %p.notice There are no credit cards with completed orders to be reconciled at this time
+- else
   - form_tag(credit_cards_facility_accounts_path, :method => :get) do
     %p
       = select_tag :selected_account, @accounts.collect{|a| "<option value=\"#{a.id}\"#{a == @selected ? ' selected="selected"' : ''}>#{a.to_s}</option>" }.join('')
