@@ -15,7 +15,7 @@ class StatementsController < ApplicationController
   # GET /accounts/:account_id/statements
   def index
     facility_ids = @account.order_details.find(:all, :select => 'orders.facility_id', :joins => :order, :group => :facility_id).collect {|od| od.facility_id}
-    @facilities  = Facility.find(:all, facility_ids, :order => :name)
+    @facilities  = Facility.find(facility_ids, :order => :name)
   end
 
   # GET /accounts/:account_id/facilities/:facility_id/statements/:id
@@ -25,7 +25,7 @@ class StatementsController < ApplicationController
 
     case params[:id]
       when 'recent'
-        @order_details = @account.order_details.for_facility_with_price_policy(@facility)
+        @order_details = @account.order_details.for_facility(@facility)
         @order_details = @order_details.paginate(:page => params[:page])
       when 'list'
         action='list'
