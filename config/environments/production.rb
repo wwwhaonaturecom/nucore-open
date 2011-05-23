@@ -11,12 +11,12 @@ config.action_view.cache_template_loading            = true
 
 config.action_mailer.raise_delivery_errors = false
 config.action_mailer.delivery_method       = :smtp
-config.action_mailer.default_url_options   = { :host => "nucore.example.com", :protocol => 'https' }
+config.action_mailer.default_url_options   = { :host => "nucore.northwestern.edu", :protocol => 'https' }
 config.action_mailer.smtp_settings         = {
-  :address        => 'mail.example.com',
+  :address        => 'ns.northwestern.edu',
   :port           => 25,
-  :domain         => 'example.com',
+  :domain         => 'northwestern.edu',
 }
 
-GOOGLE_ANALYTICS_KEY = nil
+GOOGLE_ANALYTICS_KEY = 'UA-19053506-1'
 RAKE_PATH = '/opt/ruby-enterprise/bin/'
