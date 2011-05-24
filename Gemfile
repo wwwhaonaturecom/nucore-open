@@ -32,6 +32,12 @@ gem 'nokogiri',         '1.4.4'
 gem 'i18n',             '0.4.0'
 gem 'devise_ldap_authenticatable', '0.1.6', :git => 'https://github.com/cschiewek/devise_ldap_authenticatable.git', :tag => '0.1.6'
 
+source 'http://download.bioinformatics.northwestern.edu/gems/'
+gem 'bcsec',            '2.0.4', :require => 'pers'
+gem 'bcsec-rails',      '2.0.1'
+gem 'bcdatabase',       '1.0.5'
+gem 'schema_qualified_tables', '1.0.0'
+
 group :development do
    gem 'rspec', '1.3.0'
    gem 'rspec-rails', '1.3.2'
