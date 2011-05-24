@@ -18,35 +18,46 @@ config.after_initialize do
     portal 'nucore'
 
     # BCSec pers config
-    unless Rails.env.production?
+    if Rails.env.development? || Rails.env.test?
       auth_file=File.join(File.dirname(__FILE__), 'config', 'environments', "bcsec_#{Rails.env}.yml")
-      auth_yaml=YAML::load(File.open(auth_file))
-
-      # Point to a bcsec central authentication parameters file for
-      # cc_pers, netid LDAP, and policy values
-      central auth_file
-
-      # Configure pers
-      pers_parameters :separate_connection => true
-      ActiveRecord::Base.schemas = { :cc_pers => auth_yaml['cc_pers']['user'] }
-
-      # Configure authorities
-      auths=[ :pers ]
-
-      if auth_yaml['netid'] and not Rails.env.test?
-        # Configure netid
-        netid_conf={}
-        auth_yaml['netid'].each{|k,v| netid_conf[k.to_sym]=v }
-        auths << Bcsec::Authorities::Netid.new(netid_conf)
-      end
-
-      authorities(*auths)
-
-      ui_mode :http_basic
-      api_mode :http_basic
+    else
+      auth_file=File.join('/', 'etc', 'nubic', 'bcsec-dev.yml')
     end
 
+    auth_yaml=YAML::load(File.open(auth_file))
+
+    # Point to a bcsec central authentication parameters file for
+    # cc_pers, netid LDAP, and policy values
+    central auth_file
+
+    # Configure pers
+    pers_usr=auth_yaml['cc_pers']['user']
+    pers_usr='cc_pers' if pers_usr.blank?
+
+    pers_parameters :separate_connection => true
+    ActiveRecord::Base.schemas = { :cc_pers => pers_usr }
+
+    # Configure authorities
+    auths=[ :pers ]
+
+    case Rails.env
+      when 'test'
+      when 'development'
+        if auth_yaml['netid']
+          netid_conf={}
+          auth_yaml['netid'].each{|k,v| netid_conf[k.to_sym]=v }
+          auths << Bcsec::Authorities::Netid.new(netid_conf)
+        end
+      else
+        auths << :netid
+    end
+
+    authorities(*auths)
+
+    ui_mode :http_basic
+    api_mode :http_basic
   end
+
 
   # The bcsec version of #current_user inteferes with (overwrites?)
   # Devise's version. Duplicate the Devise version here to ensure it is used.
@@ -60,9 +71,13 @@ end
 
 # Make it easy to access the configured authorities
 Bcsec::Authorities::Composite.class_eval do
-  auth_file=File.join(File.dirname(__FILE__), 'config', 'environments', "bcsec_#{Rails.env}.yml")
-  @@auth_yaml=YAML::load(File.open(auth_file))
 
+  @@auth_yaml=nil
+
+  if Rails.env.development?
+    auth_file=File.join(File.dirname(__FILE__), 'config', 'environments', "bcsec_#{Rails.env}.yml")
+    @@auth_yaml=YAML::load(File.open(auth_file))
+  end
 
   def pers
     authorities[0]
@@ -73,7 +88,7 @@ Bcsec::Authorities::Composite.class_eval do
   end
 
   def auth_disabled?
-    @@auth_yaml['policy']['disable_authentication']
+    @@auth_yaml && @@auth_yaml['policy']['disable_authentication']
   end
 end
 
