@@ -2,7 +2,7 @@ set :application, "nucore"
 
 set  :user, "jgi913"
 set  :deploy_to, "/var/www/apps/nucore_dev"
-set  :rails_env, "staging"
+set  :rails_env, "production"
 role :web, "admin-staging.nubic.northwestern.edu"                          # Your HTTP server, Apache/etc
 role :app, "admin-staging.nubic.northwestern.edu"                          # This may be the same as your `Web` server
 role :db,  "admin-staging.nubic.northwestern.edu", :primary => true        # This is where Rails migrations will run
@@ -30,6 +30,7 @@ namespace :deploy do
     run "ln -s #{deploy_to}/Constants.rb #{release_path}/config/Constants.rb"
     run "ln -s #{deploy_to}/files #{release_path}/public/files"
     run "ln -s #{deploy_to}/database.yml #{release_path}/vendor/plugins/nucs/config/database.yml"
+    run "ln -s #{deploy_to}/bcsec_production.yml #{release_path}/vendor/plugins/bcsec_authenticatable/config/environments/bcsec_production.yml"
   end
   task :bundle_install do
     run "cd #{release_path} && ~/.gem/ruby/1.8/bin/./bundle install ../../shared/bundle"
