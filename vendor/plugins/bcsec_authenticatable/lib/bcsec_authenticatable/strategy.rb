@@ -6,7 +6,7 @@ module Devise
 
       def authenticate!
         return succeed_authentication(params[:username]) if  Bcsec.authority.auth_disabled?
-        return fail(:unauthenticated) if params[:username].blank? || params[:password].blank?
+        return fail(:invalid) if params[:username].blank? || params[:password].blank?
 
         user = Bcsec.authority.valid_credentials?(:user, params[:username], params[:password])
 
