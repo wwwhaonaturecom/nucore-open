@@ -1,19 +1,13 @@
 # Be sure to restart your server when you modify this file.
+require 'nucore'
 
-File.open("#{Rails.root}/config/database.yml") do |yml|
-  config=YAML.load(yml)
-
-  ## Commented out as production nucore uses Bcdatabase to populate database.yml
-  ## so the database.yml file is NOT parseable via normal strategies.
-  #if config[Rails.env]['adapter'] == 'oracle_enhanced'
-    ActiveRecord::ConnectionAdapters::OracleEnhancedAdapter.class_eval do
-      self.emulate_integers_by_column_name = true
-      self.default_sequence_start_value = 1
-    end
-  #else
-  #  ActiveRecord::ConnectionAdapters::MysqlAdapter.class_eval do
-  #    require File.join(Rails.root, 'lib', 'mysql_driver_extension')
-  #    include MysqlDriverExtension
-  #  end
-  #end
+if NUCore::Database.oracle?
+  ActiveRecord::ConnectionAdapters::OracleEnhancedAdapter.class_eval do
+    self.emulate_integers_by_column_name = true
+    self.default_sequence_start_value = 1
+  end
+else
+  ActiveRecord::ConnectionAdapters::MysqlAdapter.class_eval do
+    include NUCore::Database::MySQL::DriverExtension
+  end
 end
