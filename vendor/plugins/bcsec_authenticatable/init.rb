@@ -21,7 +21,7 @@ config.after_initialize do
     if Rails.env.development? || Rails.env.test?
       auth_file=File.join(File.dirname(__FILE__), 'config', 'environments', "bcsec_#{Rails.env}.yml")
     else
-      auth_file=File.join('/', 'etc', 'nubic', 'bcsec-dev.yml')
+      auth_file=File.join('/', 'etc', 'nubic', 'bcsec-prod.yml')
     end
 
     auth_yaml=YAML::load(File.open(auth_file))
