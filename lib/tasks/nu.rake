@@ -10,6 +10,36 @@ namespace :nu do
     end
   end
 
+  
+  namespace :journal do
+
+    desc 'meets needs of Task #32337'
+    task :render_and_move, [:render_dir, :move_dir] => :environment do |t, args|
+      from_dir, to_dir=args.render_dir, args.move_dir
+      raise 'Must specify a directory to render in and a directory to move to' unless from_dir && to_dir
+
+      today=Date.today.to_s
+      window_date=DateTime.parse("#{today} 23:00:00")
+      journals=Journal.find(:all, :conditions => ['created_at >= ? AND created_at < ? AND is_successful IS NULL', window_date-1.day, window_date])
+
+      next if journals.empty? # break out the task
+
+      xml_name="#{today}_nucore_journals.xml"
+      xml_src=File.join(from_dir, xml_name)
+      xml_dest=File.join(to_dir, xml_name)
+      
+      File.open(xml_src, 'w') do |xml|
+        journals.each do |journal|
+          av=ActionView::Base.new(Rails::Configuration.new.view_path)
+          xml << av.render(:partial => 'facility_journals/rake_show.xml.haml', :locals => { :journal => journal, :journal_rows => journal.journal_rows })
+        end
+      end
+
+      FileUtils.mv(xml_src, xml_dest)
+    end
+
+  end
+
 
   namespace :migrate do
 
