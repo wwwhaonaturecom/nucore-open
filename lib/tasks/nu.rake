@@ -30,6 +30,7 @@ namespace :nu do
       
       File.open(xml_src, 'w') do |xml|
         journals.each do |journal|
+          # props to http://www.omninerd.com/articles/render_to_string_in_Rails_Models_or_Rake_Tasks
           av=ActionView::Base.new(Rails::Configuration.new.view_path)
           xml << av.render(:partial => 'facility_journals/rake_show.xml.haml', :locals => { :journal => journal, :journal_rows => journal.journal_rows })
         end
