@@ -1,4 +1,16 @@
 namespace :nu do
+
+  desc 'update related to Task #32369'
+  task :add_activity_01 => :environment do |t, args|
+    NufsAccount.all.each do |nufs|
+      validator=NucsValidator.new(nufs.account_number)
+      next unless validator.project && validator.activity.nil?
+      nufs.account_number=nufs.account_number.gsub("-#{validator.project}", "-#{validator.project}-01")
+      nufs.save!
+    end
+  end
+
+
   namespace :migrate do
 
     task :users, [:fake, :backtrace] => :environment do |t, args|
