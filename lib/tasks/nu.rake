@@ -19,7 +19,7 @@ namespace :nu do
       raise 'Must specify a directory to render in and a directory to move to' unless from_dir && to_dir
 
       today=Date.today.to_s
-      window_date=DateTime.parse("#{today} 23:00:00")
+      window_date=Time.zone.parse("#{today} 17:00:00")
       journals=Journal.find(:all, :conditions => ['created_at >= ? AND created_at < ? AND is_successful IS NULL', window_date-1.day, window_date])
 
       next if journals.empty? # break out the task
