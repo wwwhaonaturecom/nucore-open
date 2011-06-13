@@ -23,8 +23,7 @@ namespace :nu do
       journals=Journal.find(:all, :conditions => ['created_at >= ? AND created_at < ? AND is_successful IS NULL', window_date-1.day, window_date])
 
       next if journals.empty? # break out the task
-
-      xml_name="#{today}_nucore_journals.xml"
+      xml_name="#{today.gsub(/-/,'')}_CCC_UPLOAD.XML"
       xml_src=File.join(from_dir, xml_name)
       xml_dest=File.join(to_dir, xml_name)
       
