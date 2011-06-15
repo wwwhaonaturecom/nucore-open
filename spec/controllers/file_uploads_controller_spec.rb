@@ -8,8 +8,6 @@ describe FileUploadsController do
       {:controller => 'file_uploads', :action => 'upload', :facility_id => 'alpha', :product => 'services', :product_id => '1'}
     params_from(:post, "/facilities/alpha/services/1/files").should ==
       {:controller => 'file_uploads', :action => 'create', :facility_id => 'alpha', :product => 'services', :product_id => '1'}
-    params_from(:post, "/facilities/alpha/services/1/files/survey_upload").should == 
-      {:controller => 'file_uploads', :action => 'survey_create', :facility_id => 'alpha', :product => 'services', :product_id => '1'}
     # params_from(:post, "/facilities/alpha/services/1/yui_files").should == 
     #   {:controller => 'file_uploads', :action => 'yui_create', :facility_id => 'alpha', :product => 'services', :product_id => '1'}
   end
@@ -98,77 +96,60 @@ describe FileUploadsController do
   end
 
 
-  context 'survey_upload' do
+  context 'product_survey' do
 
     before :each do
       @method=:get
-      @action=:survey_upload
-      @params={
-        :facility_id => @authable.url_name,
-        :product => 'services',
-        :product_id => @service.url_name,
-      }
-    end
-
-    it_should_allow_managers_only
-
-  end
-
-
-  context 'survey_create' do
-
-    before :each do
-      @method=:post
-      @action=:survey_create
-      @params={
-        :facility_id => @authable.url_name,
-        :product => 'services',
-        :product_id => @service.url_name,
-        :survey => {}
-      }
+      @action=:product_survey
+      @params={ :facility_id => @authable.url_name, :product => @service.id, :product_id => @service.url_name }
     end
 
     it_should_allow_managers_only do
       assigns[:product].should == @service
+      assigns[:file].should be_kind_of FileUpload
+      assigns[:file].should be_new_record
+      assigns[:survey].should be_kind_of ExternalService
+      assigns[:survey].should be_new_record
+    end
+
+  end
+
+
+  context 'create_product_survey' do
+
+    before :each do
+      @method=:post
+      @action=:create_product_survey
+      @survey_param=ExternalServiceManager.survey_service.name.downcase.to_sym
+      @ext_service_location='http://remote.surveysystem.com/surveys'
+      @params={
+        :facility_id => @authable.url_name,
+        :product => @service.id,
+        :product_id => @service.url_name,
+        @survey_param => {
+          :location => @ext_service_location
+        }
+      }
+    end
+
+    it 'should do nothing if location not given' do
+      @params[@survey_param]=nil
+      maybe_grant_always_sign_in :director
+      do_request
+      assigns[:product].should == @service
+      assigns[:survey].should be_kind_of ExternalService
       assigns[:survey].should be_new_record
       assigns[:survey].errors.on_base.should_not be_nil
-      should render_template :survey_upload
     end
 
-    it "should not allow surveys with > 1 section" do
-      @params[:survey][:upload]=File.new("#{Rails.root}/spec/files/kitchen_sink_survey.rb")
-      sign_in @admin
-      do_request
+    it_should_allow_managers_only :redirect do
       assigns[:product].should == @service
-
-      # This is a valid test, and it should work in Oracle. It doesn't work with MySQL.
-      # I believe this is because tests against MySQL run in a transaction (not so w/ Oracle)
-      # and Service#import_survey imports via a system call
-      assert_equal 0, @service.reload.surveys.size if NUCore::Database.oracle?
+      @service.reload.external_services.size.should == 1
+      @service.external_services[0].location.should == @ext_service_location
+      should set_the_flash
+      assert_redirected_to product_survey_path(@authable, @service.parameterize, @service)
     end
 
-    it "should allow upload after a failed upload" do
-      @params[:survey][:upload]=File.new("#{Rails.root}/spec/files/kitchen_sink_survey.rb")
-      sign_in @admin
-      do_request
-      assigns[:product].should == @service
-      # should not create survey
-      assert_equal 0, @service.surveys.size
-      # try again
-      @params[:survey][:upload] = File.new("#{Rails.root}/spec/files/alpha_survey.rb")
-      do_request
-      assigns[:product].should == @service
-
-      if NUCore::Database.oracle?
-        # These are valid tests, and they should work in Oracle. They doesn't work with MySQL.
-        # I believe this is because tests against MySQL run in a transaction (not so w/ Oracle)
-        # and Service#import_survey imports via a system call
-        assert assigns[:survey].valid?
-        assert_equal 1, @service.surveys.size
-      end
-    end
-
-    it 'should test :file_upload param'
   end
 
 
