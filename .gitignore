@@ -17,3 +17,4 @@ vendor/plugins/nucs/vendor
 .tmp
 *~
 .*~
+*.swp
