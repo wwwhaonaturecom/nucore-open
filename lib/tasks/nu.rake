@@ -32,10 +32,12 @@ namespace :nu do
           # props to http://www.omninerd.com/articles/render_to_string_in_Rails_Models_or_Rake_Tasks
           av=ActionView::Base.new(Rails::Configuration.new.view_path)
           xml << av.render(:partial => 'facility_journals/rake_show.xml.haml', :locals => { :journal => journal, :journal_rows => journal.journal_rows })
+          puts av.render(:partial => 'facility_journals/rake_show.text.haml', :locals => {:journal => journal})
         end
       end
 
       FileUtils.mv(xml_src, xml_dest)
+      Notifier.deliver_journal_created(:journals => journals, :filename => xml_dest)
     end
 
   end

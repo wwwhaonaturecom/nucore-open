@@ -125,4 +125,26 @@ class Notifier < ActionMailer::Base
     part :content_type => "text/html",
         :body => render_message("statement.html", :user => args[:user], :facility => args[:facility], :account => args[:account], :statement => args[:statement])
   end
+
+  def journal_created(args)
+    journals              = args[:journals]
+    filename              = args[:filename]
+
+    admin_email_addresses = User.find(:all,
+      :joins => :user_roles,
+      :conditions => {'user_roles.role' => UserRole.administrator},
+      :select => :email
+    ).collect(&:email)
+
+    subject     'Journal File Created'
+    recipients  (TEST_EMAIL_ONLY ? TEST_EMAIL : admin_email_addresses)
+
+    part "text/plain" do |p|
+      p.body = render_message(
+        "journal_created.text",
+        :journals => journals,
+        :filename => filename
+      )
+    end
+  end
 end
