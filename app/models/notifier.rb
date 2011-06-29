@@ -128,7 +128,6 @@ class Notifier < ActionMailer::Base
 
   def journal_created(args)
     journals              = args[:journals]
-    filename              = args[:filename]
 
     admin_email_addresses = User.find(:all,
       :joins => :user_roles,
@@ -142,8 +141,7 @@ class Notifier < ActionMailer::Base
     part "text/plain" do |p|
       p.body = render_message(
         "journal_created.text",
-        :journals => journals,
-        :filename => filename
+        :journals => journals
       )
     end
   end

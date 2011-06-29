@@ -15,6 +15,9 @@ namespace :nu do
 
     desc 'meets needs of Task #32337'
     task :render_and_move, [:render_dir, :move_dir] => :environment do |t, args|
+      # needed to humanize dates/datetimes
+      include ApplicationHelper
+
       from_dir, to_dir=args.render_dir, args.move_dir
       raise 'Must specify a directory to render in and a directory to move to' unless from_dir && to_dir
 
@@ -27,17 +30,18 @@ namespace :nu do
       xml_src=File.join(from_dir, xml_name)
       xml_dest=File.join(to_dir, xml_name)
       
+      av=ActionView::Base.new(Rails::Configuration.new.view_path)
       File.open(xml_src, 'w') do |xml|
         journals.each do |journal|
           # props to http://www.omninerd.com/articles/render_to_string_in_Rails_Models_or_Rake_Tasks
-          av=ActionView::Base.new(Rails::Configuration.new.view_path)
           xml << av.render(:partial => 'facility_journals/rake_show.xml.haml', :locals => { :journal => journal, :journal_rows => journal.journal_rows })
           puts av.render(:partial => 'facility_journals/rake_show.text.haml', :locals => {:journal => journal})
+          puts
         end
       end
 
       FileUtils.mv(xml_src, xml_dest)
-      Notifier.deliver_journal_created(:journals => journals, :filename => xml_dest)
+      Notifier.deliver_journal_created(:journals => journals)
     end
 
   end
@@ -67,7 +71,7 @@ namespace :nu do
               :last_name => per.last_name,
               :username => per.username
             )
-
+end
             retried=false
 
             begin
