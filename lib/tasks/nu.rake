@@ -17,7 +17,6 @@ namespace :nu do
     task :render_and_move, [:render_dir, :move_dir] => :environment do |t, args|
       # needed to humanize dates/datetimes
       include ApplicationHelper
-
       from_dir, to_dir=args.render_dir, args.move_dir
       raise 'Must specify a directory to render in and a directory to move to' unless from_dir && to_dir
 
@@ -71,7 +70,7 @@ namespace :nu do
               :last_name => per.last_name,
               :username => per.username
             )
-end
+
             retried=false
 
             begin
