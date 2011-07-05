@@ -2,14 +2,6 @@ require 'bcsec_authenticatable'
 require 'bcdatabase/active_record/schema_qualified_tables'
 
 
-# Give Devise it's default auth strategy
-Devise.setup do |devise_config|
-  devise_config.warden do |manager|
-    manager.default_strategies.unshift(:bcsec_authenticatable)
-  end
-end
-
-
 config.after_initialize do
   Bcsec.configure do
 
@@ -72,11 +64,11 @@ end
 # Make it easy to access the configured authorities
 Bcsec::Authorities::Composite.class_eval do
 
-  @@auth_yaml=nil
+  cattr_accessor :auth_yaml
 
   if Rails.env.development?
     auth_file=File.join(File.dirname(__FILE__), 'config', 'environments', "bcsec_#{Rails.env}.yml")
-    @@auth_yaml=YAML::load(File.open(auth_file))
+    self.auth_yaml=YAML::load(File.open(auth_file))
   end
 
   def pers
@@ -88,7 +80,7 @@ Bcsec::Authorities::Composite.class_eval do
   end
 
   def auth_disabled?
-    @@auth_yaml && @@auth_yaml['policy']['disable_authentication']
+    auth_yaml && auth_yaml['policy']['disable_authentication']
   end
 end
 
