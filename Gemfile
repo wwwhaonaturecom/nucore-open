@@ -1,10 +1,8 @@
 source :gemcutter
 
-gem 'RedCloth',         '4.2.7'
 gem 'aasm',             '2.2.0'
 gem 'mysql2',           '0.2.11'
 gem 'activerecord-oracle_enhanced-adapter', '1.3.0'
-gem 'bluecloth',        '2.1.0'
 gem 'capistrano',       '2.6.0'
 gem 'paperclip',        '2.3.12'
 gem 'rails',            '3.0.9'
@@ -42,7 +40,7 @@ group :development do
    gem 'mocha', '0.9.7' # TODO: remove?
    gem 'factory_girl_rails', '1.0.1'
    gem 'shoulda', '2.11.3'
-   gem 'ruby-debug19', '0.11.6'
+   gem 'ruby-debug', '0.10.3'
    gem 'single_test', '0.4.0'
    gem 'ci_reporter'
    #gem 'sqlite3-ruby'
