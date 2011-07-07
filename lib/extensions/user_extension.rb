@@ -18,6 +18,11 @@ module UserExtension
   end
 
 
+  def password=(pwd)
+    @_bcsec_password=pwd
+  end
+
+
   def after_create
     raise 'could not create pers record' unless Pers::Person.find_or_create_by_username({
       :first_name => first_name,
@@ -25,13 +30,29 @@ module UserExtension
       :email => email,
       :username => username,
       :entered_date => Time.zone.now,
-      :plain_text_password => password
+      :plain_text_password => @_bcsec_password
     })
   end
 
 
   def after_save
     ensure_login_record_exists
+  end
+
+
+  def after_update
+    pers=Pers::Person.find_by_username(username)
+    raise 'could not find pers record' unless pers
+
+    pers.update_attributes({
+      :first_name => first_name,
+      :last_name => last_name,
+      :email => email,
+      :changed_date => Time.zone.now,
+      :plain_text_password => @_bcsec_password
+    })
+
+    pers.save!
   end
 
 
