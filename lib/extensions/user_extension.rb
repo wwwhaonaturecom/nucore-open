@@ -1,5 +1,9 @@
 module UserExtension
 
+  # bcsec wants this for logging
+  alias_attribute :personnel_id, :id
+
+
   def price_groups
     groups = price_group_members.collect{ |pgm| pgm.price_group }
     # check internal/external membership
