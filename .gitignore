@@ -5,6 +5,8 @@ tmp/
 .rvmrc
 sqlnet.log
 config/database.yml
+config/ldap.yml
+config/Constants.rb
 vendor/engines/nucs/Gemfile
 vendor/engines/nucs/Gemfile.lock
 vendor/engines/nucs/config/database.yml
