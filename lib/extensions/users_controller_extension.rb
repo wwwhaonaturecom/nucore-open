@@ -5,7 +5,7 @@ module UsersControllerExtension
     user_attrs={ :username => params[:username].downcase }
 
     begin
-      user = Bcsec.authority.find_user(params[:username].downcase) # search both pers and netid
+      user = Bcsec.authority.pers.find_user(params[:username].downcase) # search both pers and netid
       raise "couldn't find user #{user_attrs[:username]}" unless user
       user_attrs.merge!(:first_name => user.first_name, :last_name => user.last_name, :email => user.email)
       @user=User.find_or_create_by_username(user_attrs)
@@ -20,7 +20,7 @@ module UsersControllerExtension
     flash[:notice] = "The user has been added successfully."
 
     if session_user.manager_of?(current_facility)
-      flash[:notice] += "  You may wish to <a href=\"#{facility_facility_user_map_user_url(current_facility, user.personnel_id)}\">add a facility role</a> for this user."
+      flash[:notice]=(flash[:notice] + "  You may wish to <a href=\"#{facility_facility_user_map_user_url(current_facility, @user.personnel_id)}\">add a facility role</a> for this user.").html_safe
     end
 
     redirect_to facility_users_url(current_facility)

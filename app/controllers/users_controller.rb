@@ -47,10 +47,10 @@ class UsersController < ApplicationController
 
   def new_search
     if params[:username]
-      @user = User.find(:first, :conditions => ["LOWER(username) = ?", params[:username].downcase])
+      @user = User.where("LOWER(username) = ?", params[:username].downcase).first
       flash[:notice] = "The user has been added successfully."
       if session_user.manager_of?(current_facility)
-        flash[:notice] += "  You may wish to <a href=\"#{facility_facility_user_map_user_url(current_facility, @user)}\">add a facility role</a> for this user."
+        flash[:notice]=(flash[:notice] + "  You may wish to <a href=\"#{facility_facility_user_map_user_url(current_facility, @user)}\">add a facility role</a> for this user.").html_safe
       end
       # send email
       Notifier.new_user(:user => @user, :password => nil).deliver
