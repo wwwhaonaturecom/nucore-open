@@ -1,0 +1,72 @@
+#control {
+    float: right;
+}
+
+#filter {
+    float: left;
+}
+
+.options {
+    margin-top: 1em;
+}
+
+.options a {
+    color: black;
+    display: block;
+    padding-top: 3px;
+    text-decoration: none;
+}
+
+.options a:hover {
+    text-decoration: underline;
+}
+
+.options li {
+    float: left;
+    padding-right: 10px;
+}
+
+.options li label {
+    padding-left: 2px;
+}
+
+.options ul {
+    display: none;
+    position: absolute;
+    z-index: 2;
+    width: 60px;
+}
+
+button {
+    margin-top: 1em;
+    color: black !important;
+    font-weight: normal !important;
+    background: #EFEFEF !important;
+    border: 1px solid #C1C1C1 !important;
+}
+
+#tabs {
+    clear: both;
+}
+
+#error-msg {
+    display: none;
+}
+
+#tabs .ui-widget-content {
+    color: black;
+    background-color: white;
+}
+
+.pagination {
+    text-align: center;
+}
+
+.pagination a {
+    color: blue !important;
+}
+
+.ui-widget {
+    border-radius: 0 !important;
+}
+

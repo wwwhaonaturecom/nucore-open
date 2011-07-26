@@ -1,0 +1,56 @@
+= content_for :head_content do
+  = stylesheet_link_tag 'reports'
+  = render :partial => 'report_head'
+  :javascript
+    $(function() {
+      initGeneralReportsUI(#{@selected_index});
+    });
+
+= content_for :h1 do
+  =h current_facility
+
+%p.error#error-msg
+
+= form_tag request.fullpath, :remote => true, :id => 'refresh-form'  do
+  %ul#filter.options
+    %li
+      %label Start Date
+      = text_field_tag :date_start, params[:date_start] || human_datetime(@date_start, :date_only => true), :class => 'datepicker'
+    %li
+      %label End Date
+      = text_field_tag :date_end, params[:date_end] || human_datetime(@date_end, :date_only => true), :class => 'datepicker'
+    %li
+      %label Order Status
+      = select_tag 'status_filter', options_for_select(OrderStatus.all.collect(&:name), @state)
+    
+  %ul#control.options
+    %li#refresh
+      %button Update
+    %li#export
+      %div
+        %button Export
+        %button Options &amp; Formats
+      %ul.btn
+        %li= link_to 'All Data', '#', :id => 'general_report_data'
+      
+  %div#tabs
+    %ul
+      %li
+        %a{:href => product_facility_reports_path }
+          %span Product
+      %li
+        %a{:href => account_facility_reports_path }
+          %span Account
+      %li
+        %a{:href => account_owner_facility_reports_path }
+          %span Account Owner
+      %li
+        %a{:href => purchaser_facility_reports_path }
+          %span Purchaser
+      %li
+        %a{:href => price_group_facility_reports_path }
+          %span Price Group
+
+
+
+
