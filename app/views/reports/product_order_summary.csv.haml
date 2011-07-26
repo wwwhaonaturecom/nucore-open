@@ -1,6 +1,6 @@
 Product,Purchaser,Payment Source,Payment Source Owner,Order Date,Quantity,Amount,Adjustment
 - require 'csv'
-= CSV.generate do |csv|
+= FasterCSV.generate do |csv|
   - @reportables.each do |od|
     - csv << [ od.product,         |
                od.order.user,         |
