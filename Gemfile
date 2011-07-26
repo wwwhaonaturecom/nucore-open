@@ -25,7 +25,7 @@ gem 'jquery-rails',     '1.0.12'
 gem 'foreigner',        '1.0.3'
 gem 'awesome_nested_set', '2.0.1'
 gem 'exception_notification', :require => 'exception_notifier'
-gem 'fastercsv'
+gem 'fastercsv',        '1.5.4'
 
 source 'http://download.bioinformatics.northwestern.edu/gems/'
 gem 'bcsec',             '2.1.1', :require => 'pers'
