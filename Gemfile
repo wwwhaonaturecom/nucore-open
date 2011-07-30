@@ -47,3 +47,7 @@ group :development do
    gem 'ci_reporter'
    #gem 'sqlite3-ruby'
 end
+
+group :production, :staging do
+  gem 'dispatcher'
+end
