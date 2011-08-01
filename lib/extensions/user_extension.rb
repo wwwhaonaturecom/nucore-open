@@ -58,7 +58,11 @@ module UserExtension
 
   def ensure_login_record_exists
     login = Pers::Login.first(:conditions => { :portal => 'nucore', :username => username })
-    Pers::Login.create(:portal_name => 'nucore', :username => username) unless login
+
+    unless login
+      Bcaudit::AuditInfo.current_user=self # Task #34971 : must satisfy Pers::Base#ensure_bcauditable
+      Pers::Login.create(:portal_name => 'nucore', :username => username)
+    end
   end
 
 end
