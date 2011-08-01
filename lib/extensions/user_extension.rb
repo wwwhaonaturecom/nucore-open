@@ -61,7 +61,7 @@ module UserExtension
 
     unless login
       Bcaudit::AuditInfo.current_user=self # Task #34971 : must satisfy Pers::Base#ensure_bcauditable
-      Pers::Login.create(:portal_name => 'nucore', :username => username)
+      Pers::Login.create!(:portal_name => 'nucore', :username => username)
     end
   end
 
