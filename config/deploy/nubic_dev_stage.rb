@@ -14,7 +14,7 @@ ssh_options[:forward_agent] = true
 set :repository, "git@github.com:tablexi/nucore-nu.git"
 set :deploy_via, :export
 set :scm, "git"
-set :branch, "master"
+set :branch, "rails3"
 
 default_environment["LD_LIBRARY_PATH"] = "/usr/lib/oracle/11.1/client64/lib"
 default_environment["ORACLE_HOME"] = "/usr/lib/oracle/11.1/client64/lib"
@@ -29,8 +29,8 @@ namespace :deploy do
     run "ln -s #{deploy_to}/database.yml #{release_path}/config/database.yml"
     run "ln -s #{deploy_to}/Constants.rb #{release_path}/config/Constants.rb"
     run "ln -s #{deploy_to}/files #{release_path}/public/files"
-    run "ln -s #{deploy_to}/database.yml #{release_path}/vendor/plugins/nucs/config/database.yml"
-    run "ln -s #{deploy_to}/bcsec_production.yml #{release_path}/vendor/plugins/bcsec_authenticatable/config/environments/bcsec_production.yml"
+    run "ln -s #{deploy_to}/database.yml #{release_path}/vendor/engines/nucs/config/database.yml"
+    #run "ln -s #{deploy_to}/bcsec_production.yml #{release_path}/vendor/plugins/bcsec_authenticatable/config/environments/bcsec_production.yml"
   end
   task :bundle_install do
     run "cd #{release_path} && ~/.gem/ruby/1.8/bin/./bundle install ../../shared/bundle"
