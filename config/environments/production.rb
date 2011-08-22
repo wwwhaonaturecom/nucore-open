@@ -58,6 +58,9 @@ Nucore::Application.configure do
   config.middleware.use ExceptionNotifier,
     :sender_address       => EXCEPTIONS_SENDER,
     :exception_recipients => EXCEPTIONS_RECIPIENTS
+
+  # Where a surveyor external service redirects to when a survey is completed
+  config.surveyor_redirects_to='https://nucore.northwestern.edu'
 end
 
 # What's this for?
