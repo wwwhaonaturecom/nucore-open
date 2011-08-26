@@ -58,6 +58,8 @@ config.after_initialize do
       @current_user ||= warden.authenticate(:scope => :user)
     end
   end
+
+  Bcaudit::Configuration.add_audit_logger(false)
 end
 
 
