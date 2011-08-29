@@ -22,14 +22,14 @@ namespace :nu do
 
       today=Date.today.to_s
       window_date=Time.zone.parse("#{today} 17:00:00")
-      journals=Journal.find(:all, :conditions => ['created_at >= ? AND created_at < ? AND is_successful IS NULL', window_date-1.day, window_date])
+      journals=Journal.where('created_at >= ? AND created_at < ? AND is_successful IS NULL', window_date-1.day, window_date).all
 
       next if journals.empty? # break out the task
       xml_name="#{today.gsub(/-/,'')}_CCC_UPLOAD.XML"
       xml_src=File.join(from_dir, xml_name)
       xml_dest=File.join(to_dir, xml_name)
       
-      av=ActionView::Base.new(Rails::Configuration.new.view_path)
+      av=ActionView::Base.new(Rails.application.config.view_path)
       File.open(xml_src, 'w') do |xml|
         journals.each do |journal|
           # props to http://www.omninerd.com/articles/render_to_string_in_Rails_Models_or_Rake_Tasks
@@ -40,7 +40,6 @@ namespace :nu do
       end
 
       FileUtils.mv(xml_src, xml_dest)
-      Notifier.deliver_journal_created(:journals => journals)
     end
 
   end
