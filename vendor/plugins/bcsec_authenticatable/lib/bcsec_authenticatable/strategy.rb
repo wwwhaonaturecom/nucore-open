@@ -10,7 +10,7 @@ module Devise
 
         # Must set these attribues for Bcaudit otherwise a "No audit info available.
         # Please configure Bcaudit before saving." error will pop up on credential checking
-        Bcaudit::AuditInfo.current_ip=request.ip
+        Bcaudit::AuditInfo.current_ip=request.remote_ip
         user = Bcsec.authority.valid_credentials?(:user, params[:username], params[:password])
 
         unless user
