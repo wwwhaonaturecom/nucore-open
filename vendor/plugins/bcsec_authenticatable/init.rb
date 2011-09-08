@@ -1,3 +1,4 @@
+require 'bcsec'
 require 'bcsec_authenticatable'
 require 'bcdatabase/active_record/schema_qualified_tables'
 
@@ -45,9 +46,6 @@ config.after_initialize do
     end
 
     authorities(*auths)
-
-    ui_mode :http_basic
-    api_mode :http_basic
   end
 
 
@@ -59,30 +57,32 @@ config.after_initialize do
     end
   end
 
+
+  # Silence noisy log warnings
   Bcaudit::Configuration.add_audit_logger(false)
-end
 
+  
+  # Make it easy to access the configured authorities
+  Bcsec::Authorities::Composite.class_eval do
 
-# Make it easy to access the configured authorities
-Bcsec::Authorities::Composite.class_eval do
+    cattr_accessor :auth_yaml
 
-  cattr_accessor :auth_yaml
+    if Rails.env.development?
+      auth_file=File.join(File.dirname(__FILE__), 'config', 'environments', "bcsec_#{Rails.env}.yml")
+      self.auth_yaml=YAML::load(File.open(auth_file))
+    end
 
-  if Rails.env.development?
-    auth_file=File.join(File.dirname(__FILE__), 'config', 'environments', "bcsec_#{Rails.env}.yml")
-    self.auth_yaml=YAML::load(File.open(auth_file))
-  end
+    def pers
+      authorities[0]
+    end
 
-  def pers
-    authorities[0]
-  end
+    def netid
+      authorities[1]
+    end
 
-  def netid
-    authorities[1]
-  end
-
-  def auth_disabled?
-    auth_yaml && auth_yaml['policy']['disable_authentication']
+    def auth_disabled?
+      auth_yaml && auth_yaml['policy']['disable_authentication']
+    end
   end
 end
 

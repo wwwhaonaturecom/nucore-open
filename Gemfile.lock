@@ -67,9 +67,6 @@ GEM
       rubytree (~> 0.7.0)
       schema_qualified_tables (~> 1.0)
       warden (~> 1.0)
-    bcsec-rails (3.0.0)
-      bcsec (>= 2.1.0)
-      rails (~> 3.0)
     builder (2.1.2)
     cancan (1.6.5)
     capistrano (2.6.0)
@@ -215,7 +212,6 @@ DEPENDENCIES
   awesome_nested_set (= 2.0.1)
   bcdatabase (= 1.0.6)
   bcsec (= 2.1.1)
-  bcsec-rails (= 3.0.0)
   cancan (= 1.6.5)
   capistrano (= 2.6.0)
   ci_reporter

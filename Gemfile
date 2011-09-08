@@ -29,7 +29,6 @@ gem 'fastercsv',        '1.5.4'
 
 source 'http://download.bioinformatics.northwestern.edu/gems/'
 gem 'bcsec',             '2.1.1', :require => 'pers'
-gem 'bcsec-rails',       '3.0.0'
 gem 'bcdatabase',        '1.0.6'
 gem 'schema_qualified_tables', '1.0.0'
 

@@ -159,6 +159,9 @@ Nucore::Application.routes.draw do |map|
   map.complete_survey '/facilities/:facility_id/services/:service_id/surveys/:external_service_id/complete',
                                 :controller => 'surveyors', :action => 'complete', :conditions => {:method => [:get, :post]}
 
+  # legacy routes
+  match '/login', :to => redirect('/users/sign_in')
+
   # The priority is based upon order of creation:
   # first created -> highest priority.
 
