@@ -160,7 +160,9 @@ Nucore::Application.routes.draw do |map|
                                 :controller => 'surveyors', :action => 'complete', :conditions => {:method => [:get, :post]}
 
   # legacy routes
-  match '/login', :to => redirect('/users/sign_in')
+  devise_scope :user do
+    get 'login' => 'devise/sessions#new'
+  end
 
   # The priority is based upon order of creation:
   # first created -> highest priority.
