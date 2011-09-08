@@ -12,7 +12,6 @@ module Devise
         # Please configure Bcaudit before saving." error will pop up on credential checking
         Bcaudit::AuditInfo.current_ip=request.ip
         user = Bcsec.authority.valid_credentials?(:user, params[:username], params[:password])
-        Bcaudit::AuditInfo.current_user=user
 
         unless user
           fail(:unauthenticated)
