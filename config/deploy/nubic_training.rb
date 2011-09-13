@@ -29,6 +29,7 @@ namespace :deploy do
     run "ln -s #{deploy_to}/database.yml #{release_path}/config/database.yml"
     run "ln -s #{deploy_to}/Constants.rb #{release_path}/config/Constants.rb"
     run "ln -s #{deploy_to}/files #{release_path}/public/files"
+    run "ln -s #{deploy_to}/database.yml #{release_path}/vendor/engines/nucs/config/database.yml"
   end
   task :bundle_install do
     run "cd #{release_path} && ~/.gem/ruby/1.8/bin/./bundle install ../../shared/bundle"
