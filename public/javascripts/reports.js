@@ -47,7 +47,7 @@ function getUpdateTabUrl(ui)
 }
 
 
-function initGeneralReportsUI(selectedIndex)
+function initReportsUI(selectedIndex)
 {
     // create reports tabs
     $('#tabs').tabs({
@@ -62,8 +62,8 @@ function initGeneralReportsUI(selectedIndex)
         load: function(event, ui) {
             // every time a tab loads make sure the export urls are set to export current report
             var url=getUpdateTabUrl(ui);
-            $('#export').attr('href', url + '&export_id=general_report&format=csv');
-            $('#export-all').attr('href', url + '&export_id=general_report_data&format=csv');
+            $('#export').attr('href', url + '&export_id=report&format=csv');
+            //$('#export-all').attr('href', url + '&export_id=report_data&format=csv');
         },
 
         ajaxOptions: {

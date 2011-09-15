@@ -1,0 +1,8 @@
+%table
+  %tr
+    - @headers.each do |heading|
+      %th.centered= heading
+
+  = render :partial => 'report_rows'
+
+= will_paginate @rows

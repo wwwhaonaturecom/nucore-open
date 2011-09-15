@@ -65,13 +65,26 @@ Nucore::Application.routes.draw do |map|
       bundle.resources :bundle_products, :controller => 'bundle_products', :except => [:show]
     end
 
-    facility.resources :reports,  :only => [:index], :collection => {
+    facility.resources :general_reports, :collection => {
         :product => [:get, :post],
         :account => [:get, :post],
         :account_owner => [:get, :post],
         :purchaser => [:get, :post],
-        :price_group => [:get, :post],
-        :instrument_utilization => [:get, :post],
+        :price_group => [:get, :post]
+    }
+
+    facility.resources :instrument_reports, :collection => {
+        :instrument => [:get, :post],
+        :account => [:get, :post],
+        :account_owner => [:get, :post],
+        :purchaser => [:get, :post]
+    }
+
+    facility.resources :instrument_day_reports, :collection => {
+        :actual_quantity => [:get, :post],
+        :reserved_quantity => [:get, :post],
+        :reserved_hours => [:get, :post],
+        :actual_hours => [:get, :post]
     }
 
     facility.resources :price_group_products, :only => [ :edit, :update ]
