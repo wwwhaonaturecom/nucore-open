@@ -15,7 +15,7 @@ class InstrumentPricePoliciesController < PricePoliciesController
   # GET /price_policies/new
   def new
     price_groups   = current_facility.price_groups
-    start_date     = Date.today + (@instrument.price_policies.first.nil? ? 0 : 1)
+    start_date     = Date.today
     @expire_date    = PricePolicy.generate_expire_date(start_date).strftime("%m/%d/%Y")
     @start_date=start_date.strftime("%m/%d/%Y")
     @price_policies = price_groups.map{ |pg| InstrumentPricePolicy.new({:price_group_id => pg.id, :instrument_id => @instrument.id, :start_date => @start_date, :usage_mins => 15 }) }
@@ -42,8 +42,8 @@ class InstrumentPricePoliciesController < PricePoliciesController
       price_policy = InstrumentPricePolicy.new(pp_param.reject {|k,v| k == 'restrict_purchase' })
       price_policy.price_group       = price_group
       price_policy.instrument        = @instrument
-      price_policy.start_date        = Time.zone.parse(@start_date)
-      price_policy.expire_date       = Time.zone.parse(@expire_date)
+      price_policy.start_date        = parse_usa_date(@start_date)
+      price_policy.expire_date       = parse_usa_date(@expire_date)
       price_policy.usage_mins        = @interval
       price_policy.reservation_mins  = @interval
       price_policy.overage_mins      = @interval
