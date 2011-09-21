@@ -8,9 +8,6 @@ module Devise
         return succeed_authentication(params[:username]) if  Bcsec.authority.auth_disabled?
         return fail(:invalid) if params[:username].blank? || params[:password].blank?
 
-        # Must set these attribues for Bcaudit otherwise a "No audit info available.
-        # Please configure Bcaudit before saving." error will pop up on credential checking
-        Bcaudit::AuditInfo.current_ip=request.remote_ip
         user = Bcsec.authority.valid_credentials?(:user, params[:username], params[:password])
 
         unless user
