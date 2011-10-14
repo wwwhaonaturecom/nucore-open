@@ -102,7 +102,7 @@ describe User do
     @user.should_not be_external
   end
 
-  it 'should not be external user' do
+  it 'should be external user' do
     @user.username=@user.email
     @user.should be_external
   end
