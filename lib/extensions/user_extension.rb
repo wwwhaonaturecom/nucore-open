@@ -4,6 +4,13 @@ module UserExtension
   alias_attribute :personnel_id, :id
 
 
+  def self.extended(base)
+    base.class.after_create :find_or_create_person
+    base.class.after_save :ensure_login_record_exists
+    base.class.after_update :update_person
+  end
+
+
   def price_groups
     groups = price_group_members.collect{ |pgm| pgm.price_group }
     # check internal/external membership
@@ -23,24 +30,19 @@ module UserExtension
   end
 
 
-  def after_create
-    raise 'could not create pers record' unless Pers::Person.find_or_create_by_username({
+  def find_or_create_person
+    raise 'could not create pers record' if Pers::Person.find_or_create_by_username({
       :first_name => first_name,
       :last_name => last_name,
       :email => email,
       :username => username,
       :entered_date => Time.zone.now,
       :plain_text_password => @_bcsec_password
-    })
+    }).new_record?
   end
 
 
-  def after_save
-    ensure_login_record_exists
-  end
-
-
-  def after_update
+  def update_person
     pers=Pers::Person.find_by_username(username)
     raise 'could not find pers record' unless pers
 
@@ -58,11 +60,7 @@ module UserExtension
 
   def ensure_login_record_exists
     login = Pers::Login.first(:conditions => { :portal => 'nucore', :username => username })
-
-    unless login
-      Bcaudit::AuditInfo.current_user=self # Task #34971 : must satisfy Pers::Base#ensure_bcauditable
-      Pers::Login.create!(:portal_name => 'nucore', :username => username)
-    end
+    Pers::Login.create!(:portal_name => 'nucore', :username => username) unless login
   end
 
 end
