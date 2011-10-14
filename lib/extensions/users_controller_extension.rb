@@ -28,17 +28,21 @@ module UsersControllerExtension
 
 
   def username_search
+    username = params[:username_lookup].downcase
     # look up username in cc_pers
-    @user = Bcsec.authority.pers.find_user(params[:username_lookup].downcase)
+    @user = Bcsec.authority.pers.find_user(username)
 
     if @user.nil? && (params[:has_netid] == 'yes')
       begin
-        @user=Bcsec.authority.netid.find_user(params[:username_lookup].downcase)
+        @user=Bcsec.authority.netid.find_user(username)
         @user.username=params[:username_lookup].downcase if @user # because Bcsec::Authorities::Netid#create_user intentionally excludes the username
       rescue => e
         Rails.logger.error("#{e.message}\n#{e.backtrace.join("\n")}")
       end
     end
+    
+    @db_user = User.find(:first, :conditions => ["LOWER(username) = ?", username])
+    @user_already_exists = @db_user.present?
 
     render :layout => false
   end
