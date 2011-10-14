@@ -32,7 +32,7 @@ gem 'bcsec',             '2.1.1', :require => 'pers'
 gem 'bcdatabase',        '1.0.6'
 gem 'schema_qualified_tables', '1.0.0'
 
-group :development do
+group :development do                          
    gem 'rspec-rails', '2.6.1'
    gem 'spork', '0.7.5'
    gem 'ZenTest', '4.5.0' # TODO: remove?
@@ -44,6 +44,7 @@ group :development do
    gem 'ruby-debug', '0.10.3'
    gem 'single_test', '0.4.0'
    gem 'ci_reporter'
+   gem 'timecop'
    #gem 'sqlite3-ruby'
 end
 
