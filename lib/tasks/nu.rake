@@ -10,6 +10,53 @@ namespace :nu do
     end
   end
 
+
+  desc 'fix related to Task #36727'
+  task :provision_users => :environment do |t, args|
+    # bcsec's ensuring to satisfy bcaudit on save is
+    # handled in nucore by Bcaudit::Middleware which is
+    # loaded at bcsec_authenticatable's initialization.
+    # Since it's rack middleware, and therefore depends
+    # on being a request-response cycle, it doesn't work
+    # for tasks. Ideally there would be a bcsec-provided
+    # mock to handle this, but there isn't, so overwrite
+    # the method that ensures bcaudit satisfaction so that
+    # this task can proceed.
+    Pers::Base.class_eval %Q<
+      protected
+
+      def ensure_bcauditable
+        Bcaudit::AuditInfo.current_user = Pers::Person.find_by_username('csi597')
+      end
+    >
+
+    User.all.each do |user|
+      if Pers::Person.find_by_username(user.username).nil?
+        password=nil
+
+        if user.external?
+          chars=("a".."z").to_a + ("1".."9").to_a + ("A".."Z").to_a
+          password=Array.new(8, '').collect{chars[rand(chars.size)]}.join
+        end
+
+        Pers::Person.create!({
+          :first_name => user.first_name,
+          :last_name => user.last_name,
+          :email => user.email,
+          :username => user.username,
+          :entered_date => Time.zone.now,
+          :plain_text_password => password
+        })
+
+        Notifier.new_user(:user => user, :password => password).deliver if user.external?
+      end
+
+      if Pers::Login.first(:conditions => {:portal => 'nucore', :username => user.username}).nil?
+        Pers::Login.create!(:portal_name => 'nucore', :username => user.username)
+      end
+    end
+  end
+
   
   namespace :journal do
 

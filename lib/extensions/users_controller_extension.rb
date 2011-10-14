@@ -10,7 +10,7 @@ module UsersControllerExtension
       user_attrs.merge!(:first_name => user.first_name, :last_name => user.last_name, :email => user.email)
       @user=User.find_or_create_by_username(user_attrs)
       @user.ensure_login_record_exists
-      Notifier.deliver_new_user(:user => @user, :password => nil)
+      Notifier.new_user(:user => @user, :password => nil).deliver
     rescue => e
       Rails.logger.error("#{e.message}\n#{e.backtrace.join("\n")}")
       flash[:error] = 'An error was encountered while attempting to add the user.'
