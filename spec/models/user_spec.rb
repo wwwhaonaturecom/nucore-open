@@ -2,6 +2,26 @@ require 'spec_helper'
 
 describe User do
 
+  #
+  # bcsec's ensuring to satisfy bcaudit on save is
+  # handled in nucore by Bcaudit::Middleware which is
+  # loaded at bcsec_authenticatable's initialization.
+  # Since it's rack middleware, and therefore depends
+  # on being a request-response cycle, it doesn't work
+  # for tests. Ideally there would be a bcsec-provided
+  # mock to handle this, but there isn't, so overwrite
+  # the method that ensures bcaudit satisfaction so that
+  # tests can proceed. Doing so allows the NU user
+  # provisioning that takes place in user_extension to
+  # work, making it testable
+  before :all do
+    Pers::Base.class_eval %Q<
+      protected
+
+      def ensure_bcauditable
+      end
+    >
+  end
 
   before :each do
     @user=Factory.create(:user)
@@ -76,6 +96,17 @@ describe User do
   it 'should respond to ldap_attributes' do
     @user.should be_respond_to :ldap_attributes
   end
+
+  it 'should not be external user' do
+    @user.username.should_not == @user.email
+    @user.should_not be_external
+  end
+
+  it 'should not be external user' do
+    @user.username=@user.email
+    @user.should be_external
+  end
+
 
   it "should belong to Cancer Center price group if the user is in the Cancer Center view"
 
