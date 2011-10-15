@@ -29,14 +29,28 @@ namespace :nucs do
     desc "Imports all GE001, GL066, and Grants Budget Tree data"
     task :all, [:path_to_files_dir] => :environment do |t, args|
       dir=args.path_to_files_dir
-      Rake::Task['nucs:import:GL066'].invoke(File.join(dir, 'GL066-BudgetedChartStrings.txt'))
-      Rake::Task['nucs:import:grants_budget_tree'].invoke(File.join(dir, 'GrantsBudgetTree.txt'))
-      Rake::Task['nucs:import:GE001:funds'].invoke(File.join(dir, 'GE001-#1Fund.txt'))
-      Rake::Task['nucs:import:GE001:departments'].invoke(File.join(dir, 'GE001-#2Dept.txt'))
-      Rake::Task['nucs:import:GE001:projects_activities'].invoke(File.join(dir, 'GE001-#3ProjectActivity.txt'))
-      Rake::Task['nucs:import:GE001:programs'].invoke(File.join(dir, 'GE001-#4Program.txt'))
-      Rake::Task['nucs:import:GE001:accounts'].invoke(File.join(dir, 'GE001-#5Account.txt'))
-      Rake::Task['nucs:import:GE001:chart_field1s'].invoke(File.join(dir, 'GE001-#6ChartField1.txt'))
+
+      files=[
+          File.join(dir, 'GL066-BudgetedChartStrings.txt'),
+          File.join(dir, 'GrantsBudgetTree.txt'),
+          File.join(dir, 'GE001-#1Fund.txt'),
+          File.join(dir, 'GE001-#2Dept.txt'),
+          File.join(dir, 'GE001-#3ProjectActivity.txt'),
+          File.join(dir, 'GE001-#4Program.txt'),
+          File.join(dir, 'GE001-#5Account.txt'),
+          File.join(dir, 'GE001-#6ChartField1.txt')
+      ]
+
+      files.each {|file| raise "Aborting import! file #{file} has zero length" if File.stat(file).size == 0 }
+
+      Rake::Task['nucs:import:GL066'].invoke(files[0])
+      Rake::Task['nucs:import:grants_budget_tree'].invoke(files[1])
+      Rake::Task['nucs:import:GE001:funds'].invoke(files[2])
+      Rake::Task['nucs:import:GE001:departments'].invoke(files[3])
+      Rake::Task['nucs:import:GE001:projects_activities'].invoke(files[4])
+      Rake::Task['nucs:import:GE001:programs'].invoke(files[5])
+      Rake::Task['nucs:import:GE001:accounts'].invoke(files[6])
+      Rake::Task['nucs:import:GE001:chart_field1s'].invoke(files[7])
     end
 
 
