@@ -14,7 +14,7 @@ ssh_options[:forward_agent] = true
 set :repository, "git@github.com:tablexi/nucore-nu.git"
 set :deploy_via, :export
 set :scm, "git"
-set :branch, "master"
+set :branch, "reservations_management"
 
 default_environment["LD_LIBRARY_PATH"] = "/usr/lib/oracle/11.1/client64/lib"
 default_environment["ORACLE_HOME"] = "/usr/lib/oracle/11.1/client64/lib"
