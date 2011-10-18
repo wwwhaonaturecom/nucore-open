@@ -7,28 +7,29 @@ pdf_config={
 
 prawn_document pdf_config do |pdf|
 
-  pdf.font_size = 9.5
-
-  #pdf.text @facility.to_s, :size => 20, :style => :bold
-  #pdf.text "Invoice ##{@account.id}-#{@statement.id}"
-  
+  pdf.font_size = 9
+ 
+  # NU Logo
   pdf.image "#{Rails.root}/public/images/logo-nu.jpg"
   
+  # INVOICE DETAILS
   invoice_details = [["Invoice:", "#{@account.id}-#{@statement.id}"],
-  					["Date:", @statement.created_at.strftime("%m/%d/%Y")]];
+            ["Date:", @statement.created_at.strftime("%m/%d/%Y")]];
   invoice_details << ["Purchase Order:", @account.account_number] if @account.is_a?(PurchaseOrderAccount)
   invoice_details << ["Billing Period", "#{@statement.first_order_detail_date.strftime("%m/%d/%Y")} - #{@statement.created_at.strftime("%m/%d/%Y")}"];
   
-  invoice_details_table = pdf.make_table(invoice_details) do |t|
-  	t.cells.style(:borders => [], :padding => 2)
+  invoice_details_inner_table = pdf.make_table(invoice_details) do |t|
+    t.cells.style(:borders => [], :padding => 2)
+    t.columns(0..1).style(:max_width => 80)
   end
-  pdf.table([[@facility.to_s], [invoice_details_table]]) do
-  	row(0).style(:style => :bold, :background_color => 'cccccc')
+  invoice_details_table = pdf.make_table([[@facility.to_s], [invoice_details_inner_table]]) do
+    row(0).style(:style => :bold, :background_color => 'cccccc')
+    column(0).style(:width => 160)
   end
   
   
-  pdf.text "NET 30", :style => :bold
-  pdf.table [["Bill To:"],
+  # BILL TO TABLE
+  bill_to_table = pdf.make_table [["Bill To:"],
                      [@account.remittance_information]] do |t|
     t.row(0).style(:style => :bold, :background_color => 'cccccc')
   end
@@ -39,15 +40,21 @@ prawn_document pdf_config do |pdf|
   # billto_details << ["<b>Email:</b> #{@facility.email}"] if @facility.email
 #   
 
-
-  if @account.remittance_information
-    pdf.move_down(10)
-    pdf.table([["Remit To:"],
-              [@facility.address]]) do |t|
-      t.row(0).style(:style => :bold, :background_color => 'cccccc')
-    end
+  # REMITTANCE INFO TABLE
+  remit_table = pdf.make_table([["Remit To:"],
+             [@facility.address]]) do |t|
+    t.row(0).style(:style => :bold, :background_color => 'cccccc')
   end
 
+  # INFO LAYOUT
+  pdf.table([["", invoice_details_table],
+            ["NET 30", ""],
+            ["bill_to_table", "remit_table"]]) do |t|
+    t.column(0).style(:width => 255)
+    t.column(1).style(:width => 255)
+    #t.cells.style(:borders => [])            
+  end
+  
 
   total_due = 0;
   rows = @statement.order_details.sort{|d,o| d.order.ordered_at<=>o.order.ordered_at}.reverse.map do |od|
