@@ -7,7 +7,7 @@ pdf_config={
 
 prawn_document pdf_config do |pdf|
 
-  pdf.font_size = 9
+  pdf.font_size = 8
  
  
   # INFO LAYOUT
@@ -21,44 +21,48 @@ prawn_document pdf_config do |pdf|
   
   
   b = pdf.grid(0,1)
-  pdf.bounding_box b.top_left, :width => b.width, :height => b.height do
+  top_bounding = pdf.bounding_box b.top_left, :width => b.width + 80, :height => 300 do
 
   # INVOICE DETAILS
-    invoice_details = [["Invoice:", "#{@account.id}-#{@statement.id}"],
+  invoice_details_width = 252
+  invoice_details = [["Invoice:", "#{@account.id}-#{@statement.id}"],
       ["Date:", @statement.created_at.strftime("%m/%d/%Y")]];
-    invoice_details << ["Purchase Order:", @account.account_number] if @account.is_a?(PurchaseOrderAccount)
-    invoice_details << ["Billing Period", "#{@statement.first_order_detail_date.strftime("%m/%d/%Y")} - #{@statement.created_at.strftime("%m/%d/%Y")}"];
+  invoice_details << ["Purchase Order:", @account.account_number] if @account.is_a?(PurchaseOrderAccount)
+  invoice_details << ["Billing Period", "#{@statement.first_order_detail_date.strftime("%m/%d/%Y")} - #{@statement.created_at.strftime("%m/%d/%Y")}"];
 
-    invoice_details_inner_table = pdf.make_table(invoice_details) do |t|
-      t.cells.style(:borders => [], :padding => 2)
-    end
-
-    pdf.table([[@facility.to_s], [invoice_details_inner_table]]) do
-      row(0).style(:style => :bold, :background_color => 'cccccc')
-    end
+  invoice_details_inner_table = pdf.make_table(invoice_details) do
+    cells.style(:borders => [], :padding => 2, :width => invoice_details_width / 2)
+  end
+    
+  pdf.table([[@facility.to_s], [invoice_details_inner_table]]) do
+    row(0).style(:style => :bold, :background_color => 'cccccc', :size => 12, :width => invoice_details_width)
+  end
 
   end
   
   # BILL TO TABLE
   b = pdf.grid(1,0)
-  pdf.bounding_box b.top_left, :width => b.width, :height => b.height do
+  pdf.bounding_box b.top_left, :width => 200, :height => b.height + 10 do
     pdf.table [["Bill To:"],
-      [@account.remittance_information]] do |t|
-      t.row(0).style(:style => :bold, :background_color => 'cccccc')
+      [@account.remittance_information]] do
+      row(0).style(:style => :bold, :background_color => 'cccccc')
+      cells.style(:width => 200)
     end
+    pdf.move_down 5
+    pdf.table [["User:", "#{@account.owner.user}\n#{@account.owner.user.email}"]] do
+      column(0).style(:style => :bold)
+      cells.style(:borders => [])
+    end
+    
   end
-#   
-  # # bill_to_details << [@facility.address] if @facility.address
-  # # bill_to_details << ["<b>Phone Number:</b> #{@facility.phone_number}"] if @facility.phone_number
-  # # bill_to_details << ["<b>Fax Number:</b> #{@facility.fax_number}"] if @facility.fax_number
-  # # billto_details << ["<b>Email:</b> #{@facility.email}"] if @facility.email
-# #   
+
   b = pdf.grid(1,1)
   pdf.bounding_box b.top_left, :width => b.width, :height => b.height do
   # REMITTANCE INFO TABLE
     remit_table = pdf.table([["Remit To:"],
-             [@facility.address]]) do |t|
-      t.row(0).style(:style => :bold, :background_color => 'cccccc')
+             [@facility.address]]) do
+      row(0).style(:style => :bold, :background_color => 'cccccc')
+      cells.style(:width => 200)
     end
   end
   
@@ -77,7 +81,7 @@ prawn_document pdf_config do |pdf|
   headers = ["Transaction Date", "Item Name", "Quantity", "Unit Cost", "Total Cost"]
   
   footer = ["", "", "", "TOTAL DUE", number_to_currency(total_due)]
-  pdf.move_down(30)
+  pdf.move_down(5)
   pdf.table([headers] + rows + [footer], :header => true, :width => 510) do
     cells.style(:borders => [])
     row(0).style(:style => :bold, :background_color => 'cccccc', :borders => [:top, :left, :bottom, :right])
@@ -87,6 +91,12 @@ prawn_document pdf_config do |pdf|
     row(rows.size + 1).style(:style => :bold)
   end
 
-  pdf.number_pages "Page <page> of <total>", [0, -15]
+  pdf.text "PLEASE MAKE ALL CHECKS PAYABLE TO: NORTHWESTERN UNIVERSITY", :style => :bold
+  pdf.text @facility.name
+  pdf.text "Phone: #{@facility.phone_number}" if @facility.phone_number
+  pdf.text "Fax: #{@facility.fax_number}" if @facility.fax_number
+  pdf.text "Email: #{@facility.email}" if @facility.email
+  
+  #pdf.number_pages "Page <page> of <total>", [0, -15]
 
 end
