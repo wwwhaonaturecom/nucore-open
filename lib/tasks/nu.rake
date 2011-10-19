@@ -11,6 +11,26 @@ namespace :nu do
   end
 
 
+  desc 'temporary task to debug password save issue'
+  task :temp_provision_user, [:uname, :pass, :email] => :environment do |t,args|
+    Pers::Base.class_eval %Q<
+      protected
+
+      def ensure_bcauditable
+        Bcaudit::AuditInfo.current_user = Pers::Person.find_by_username('csi597')
+      end
+    >
+
+    User.create!(
+      :first_name => 'temp',
+      :last_name => 'temp',
+      :username => args.uname,
+      :email => args.email,
+      :password => args.pass
+    )
+  end
+
+
   desc 'fix related to Task #36727'
   task :provision_users => :environment do |t, args|
     # bcsec's ensuring to satisfy bcaudit on save is
