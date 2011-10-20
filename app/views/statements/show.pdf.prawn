@@ -2,72 +2,79 @@ pdf_config={
   :left_margin   => 50,
   :right_margin  => 50,
   :top_margin    => 50,
-  :bottom_margin => 75,
-  :filename => "Statement-#{@statement.created_at.strftime("%m-%d-%Y")}.pdf",
-  :force_download => true
+  :bottom_margin => 75
 }
 
-prawn_document pdf_config do |pdf|
+unless (params[:show])
+  pdf_config[:filename] = "Statement-#{@statement.created_at.strftime("%m-%d-%Y")}.pdf"
+  pdf_config[:force_download] = true
+end
 
+prawn_document pdf_config do |pdf|
+  vertical_gutter = 10
   pdf.font_size = 8
- 
- 
-  # INFO LAYOUT
   
   pdf.define_grid(:columns => 2, :rows => 7)
-  b = pdf.grid(0,0)
-  pdf.bounding_box b.top_left, :width => b.width, :height => b.height do
-    pdf.image "#{Rails.root}/public/images/logo-nu-black.jpg", :width => 124, :height => 76 
-  end
+  #b = pdf.grid(0,0)
   
+  # NU LOGO
+  logo_width = 124
+  logo_height = 76
+  pdf.image "#{Rails.root}/public/images/logo-nu-black.jpg", :width => logo_width, :height => logo_height, :at => pdf.bounds.top_left
   
+  # INVOICE DETAILS BOX (TOP RIGHT)
+  invoice_details_box_width = pdf.bounds.width / 2
   
-  b = pdf.grid(0,1)
-  top_bounding = pdf.bounding_box b.top_left, :width => b.width + 80, :height => 300 do
+  invoice_bounding_box = pdf.bounding_box [pdf.bounds.width / 2, pdf.bounds.top], :width => invoice_details_box_width do
+    invoice_details = [["Invoice:", "#{@account.id}-#{@statement.id}"],
+                       ["Date:", @statement.created_at.strftime("%m/%d/%Y")]]
+    invoice_details << ["Purchase Order:", @account.account_number] if @account.is_a?(PurchaseOrderAccount)
+    # Might bring this back if we find a good method for calculating billing period
+    # invoice_details << ["Billing Period", "#{@statement.first_order_detail_date.strftime("%m/%d/%Y")} - #{@statement.created_at.strftime("%m/%d/%Y")}"];
 
-  # INVOICE DETAILS
-  invoice_details_width = 252
-  invoice_details = [["Invoice:", "#{@account.id}-#{@statement.id}"],
-      ["Date:", @statement.created_at.strftime("%m/%d/%Y")]];
-  invoice_details << ["Purchase Order:", @account.account_number] if @account.is_a?(PurchaseOrderAccount)
-  #invoice_details << ["Billing Period", "#{@statement.first_order_detail_date.strftime("%m/%d/%Y")} - #{@statement.created_at.strftime("%m/%d/%Y")}"];
-
-  invoice_details_inner_table = pdf.make_table(invoice_details) do
-    cells.style(:borders => [], :padding => 2, :width => invoice_details_width / 2)
-  end
+    invoice_details_inner_table = pdf.make_table(invoice_details) do
+      cells.style(:borders => [], :padding => 2, :width => invoice_details_box_width / 2)
+    end
     
-  pdf.table([[@facility.to_s], [invoice_details_inner_table]]) do
-    row(0).style(:style => :bold, :background_color => 'cccccc', :size => 12, :width => invoice_details_width)
-  end
-
+    pdf.table([[@facility.to_s], [invoice_details_inner_table]]) do
+      row(0).style(:font_style => :bold, :background_color => 'cccccc', :size => 12, :width => invoice_details_box_width)
+    end
   end
   
-  # BILL TO TABLE
-  b = pdf.grid(1,0)
-  pdf.bounding_box b.top_left, :width => 200, :height => b.height + 10 do
+  second_row_box_width = pdf.bounds.width / 2 - 20
+  second_row_box_top = pdf.bounds.top - invoice_bounding_box.height - vertical_gutter
+
+  # BILL TO TABLE  
+  bill_to_box = pdf.bounding_box [pdf.bounds.left, second_row_box_top], :width => second_row_box_width do
+    pdf.text "NET 30", :style => :bold
     pdf.table [["Bill To:"],
-      [@account.remittance_information]] do
-      row(0).style(:style => :bold, :background_color => 'cccccc')
-      cells.style(:width => 200)
+               [@account.remittance_information]] do
+      row(0).style(:font_style => :bold, :background_color => 'cccccc')
+      cells.style(:width => second_row_box_width)
     end
     pdf.move_down 5
     pdf.table [["User:", "#{@account.owner.user}\n#{@account.owner.user.email}"]] do
-      column(0).style(:style => :bold)
+      column(0).style(:font_style => :bold)
       cells.style(:borders => [])
     end
-    
   end
 
-  b = pdf.grid(1,1)
-  pdf.bounding_box b.top_left, :width => b.width, :height => b.height do
   # REMITTANCE INFO TABLE
+  remit_to_box = pdf.bounding_box [pdf.bounds.width / 2, second_row_box_top], :width => second_row_box_width do
+    pdf.text "\n" # extra line to balance the "NET 30" above the bill to table
     remit_table = pdf.table([["Remit To:"],
              [@facility.address]]) do
-      row(0).style(:style => :bold, :background_color => 'cccccc')
+      row(0).style(:font_style => :bold, :background_color => 'cccccc')
       cells.style(:width => 200)
     end
   end
   
+  
+  # TRANSACTION LISTING
+  bottom_of_second_row = [bill_to_box.absolute_bottom, remit_to_box.absolute_bottom].min - pdf.bounds.absolute_bottom 
+  
+  pdf.move_cursor_to(bottom_of_second_row - vertical_gutter)
+
   total_due = 0;
   rows = @statement.order_details.sort{|d,o| d.order.ordered_at<=>o.order.ordered_at}.reverse.map do |od|
     total_due += od.actual_total
@@ -81,17 +88,16 @@ prawn_document pdf_config do |pdf|
     ]
   end
   
-  headers = ["Transaction Date", "Item Name", "Quantity", "Unit Cost", "Subsidy Amount", "Total Cost"]
-  
+  headers = ["Transaction Date", "Item Name", "Quantity", "Unit Cost", "Subsidy Amount", "Total Cost"]  
   footer = ["", "", "", "", "TOTAL DUE", number_to_currency(total_due)]
-  pdf.move_down(5)
-  pdf.table([headers] + rows + [footer], :header => true, :width => 510) do
+  
+  pdf.table([headers] + rows + [footer], :header => true, :width => pdf.bounds.width) do
     cells.style(:borders => [])
-    row(0).style(:style => :bold, :background_color => 'cccccc', :borders => [:top, :left, :bottom, :right])
+    row(0).style(:font_style => :bold, :background_color => 'cccccc', :borders => [:top, :left, :bottom, :right])
     column(0).width = 80
     column(1).width = 200
     column(2..5).style(:align => :right)
-    row(rows.size + 1).style(:style => :bold)
+    row(rows.size + 1).style(:font_style => :bold)
   end
 
   pdf.text "PLEASE MAKE ALL CHECKS PAYABLE TO: NORTHWESTERN UNIVERSITY", :style => :bold
