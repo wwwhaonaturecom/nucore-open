@@ -21,13 +21,15 @@ namespace :nu do
       end
     >
 
-    User.create!(
+    user=User.new(
       :first_name => 'temp',
       :last_name => 'temp',
       :username => args.uname,
-      :email => args.email,
-      :password => args.pass
+      :email => args.email
     )
+
+    user.password=args.pass
+    user.save!
   end
 
 
