@@ -95,7 +95,7 @@ class OrderDetail < ActiveRecord::Base
       :order => 'order_details.created_at DESC',
       :conditions => [ 'orders.facility_id = ? AND order_details.statement_id IS NOT NULL', facility.id ] }
   }
-
+  
   # BEGIN acts_as_state_machine
   include AASM
 
@@ -301,22 +301,11 @@ class OrderDetail < ActiveRecord::Base
     self.estimated_cost    = nil
     self.estimated_subsidy = nil
     second_account=account unless second_account
+    
+    pgs = order.user.price_groups + second_account.price_groups
+    costs = get_costs(pgs)
+    return unless costs
 
-    # is account valid for facility
-    return unless product.facility.can_pay_with_account?(account)
-
-    policy_holder=product
-    est_args=[ quantity ]
-
-    if product.is_a?(Instrument)
-      return unless reservation
-      policy_holder=reservation
-      est_args=[ reservation.reserve_start_at, reservation.reserve_end_at ]
-    end
-
-    pp = policy_holder.cheapest_price_policy((order.user.price_groups + second_account.price_groups).flatten.uniq)
-    return unless pp
-    costs = pp.estimate_cost_and_subsidy(*est_args)
     self.estimated_cost    = costs[:cost]
     self.estimated_subsidy = costs[:subsidy]
   end
@@ -326,27 +315,33 @@ class OrderDetail < ActiveRecord::Base
     self.actual_subsidy    = nil
     self.price_policy_id   = nil
 
+    pgs=order.user.price_groups
+    pgs += account.price_groups if account
+    costs = get_costs(pgs)    
+    return unless costs
+    
+    self.price_policy_id = costs[:price_policy].id
+    self.actual_cost     = costs[:cost]
+    self.actual_subsidy  = costs[:subsidy]
+  end
+  
+  def get_costs(price_groups)
     # is account valid for facility
-    return unless product.facility.can_pay_with_account?(account)
-
-    policy_holder=product
-    calc_args=[ quantity ]
-
+    return nil unless product.facility.can_pay_with_account?(account)
+    policy_holder = product
+    calc_args = [ quantity ]
     if product.is_a?(Instrument)
       return unless reservation
       policy_holder=reservation
       calc_args=[ reservation ]
     end
-
-    pgs=order.user.price_groups
-    pgs += account.price_groups if account
-    pp = policy_holder.cheapest_price_policy(pgs.flatten.uniq)
-    return unless pp
-    costs = pp.calculate_cost_and_subsidy(*calc_args)
-    return unless costs
-    self.price_policy_id = pp.id
-    self.actual_cost     = costs[:cost]
-    self.actual_subsidy  = costs[:subsidy]
+    
+    policy = policy_holder.cheapest_price_policy(price_groups.flatten.uniq)
+    return nil unless policy
+    costs = policy.calculate_cost_and_subsidy(*calc_args)
+    return nil unless costs
+    costs[:price_policy] = policy
+    costs
   end
 
   def to_s
