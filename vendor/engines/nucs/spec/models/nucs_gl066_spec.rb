@@ -65,6 +65,18 @@ describe NucsGl066 do
   end
 
 
+  it 'should tell us when now on starts_at' do
+    gl=Factory.create(:nucs_gl066_with_dates, { :starts_at => Time.zone.now, :expires_at => Time.zone.now+3.day})
+    gl.should_not be_expired
+  end
+
+
+  it 'should tell us when now on expires_at' do
+    gl=Factory.create(:nucs_gl066_with_dates, { :starts_at => Time.zone.now-3.day, :expires_at => Time.zone.now})
+    gl.should_not be_expired
+  end
+
+
   it "should raise an ImportError on malformed source lines" do
     assert_raises NucsErrors::ImportError do
       NucsGl066.tokenize_source_line('-|156|2243550|-|-|-||')
