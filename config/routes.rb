@@ -99,9 +99,10 @@ Nucore::Application.routes.draw do |map|
 
     facility.resources :users, :except => [:edit, :update], :collection => {:username_search => :post, :new_search => :get} do |user|
       user.switch_to   '/switch_to',  :controller => 'users', :action => 'switch_to', :conditions => {:method => :get}
-      user.orders      'orders',      :controller => 'users', :action => 'orders'
-      user.accounts    'accounts',    :controller => 'users', :action => 'accounts'
-      user.instruments 'instruments', :controller => 'users', :action => 'instruments'
+      user.orders       'orders',      :controller => 'users', :action => 'orders'
+      user.reservations 'reservations',      :controller => 'users', :action => 'reservations'
+      user.accounts     'accounts',    :controller => 'users', :action => 'accounts'
+      user.instruments  'instruments', :controller => 'users', :action => 'instruments'
     end
 
     facility.resources :facility_accounts, :controller => 'facility_facility_accounts', :only => [:index, :new, :create, :edit, :update]
@@ -113,6 +114,8 @@ Nucore::Application.routes.draw do |map|
         order_detail.resources :reservations, :controller => 'facility_reservations', :only => [:edit, :update, :show]
       end
     end
+
+    facility.resources :reservations, :controller => 'facility_reservations', :only => :index, :collection => {:batch_update => :post, :show_problems => :get, :disputed => :get}
 
     facility.resources :accounts, :controller => 'facility_accounts', :only => [:index, :new, :create, :show, :edit, :update], :collection => {:credit_cards => :get, :update_credit_cards => :post, :purchase_orders => :get, :update_purchase_orders => :post, :user_search => :get, :search => :get, :search_results => [:get, :post], :new_account_user_search => :get} do |account|
       account.suspend '/suspend', :controller => 'facility_accounts', :action => 'suspend'
@@ -140,7 +143,7 @@ Nucore::Application.routes.draw do |map|
   map.cart '/orders/cart', :controller => 'orders', :action => 'cart'
   map.remove_order '/orders/:id/remove/:order_detail_id', :controller => 'orders', :action => 'remove', :conditions => {:method => :put}
   map.add_account '/order/:id/add_account', :controller => 'orders', :action => 'add_account'
-  map.resources :orders, :member => {:add => [:get, :put], :purchase => :put, :receipt => :get, :clear => :put, :choose_account => [:get,:post]} do |order|
+  map.resources :orders, :member => {:add => [:get, :put], :purchase => [ :get, :put ], :receipt => :get, :clear => :put, :choose_account => [:get,:post]} do |order|
     order.resources :order_details, :only => [:show, :update] do |order_detail|
       order_detail.order_file '/order_file', :controller => 'order_details', :action => 'order_file', :conditions => {:method => :get}
       order_detail.upload_order_file '/upload_order_file', :controller => 'order_details', :action => 'upload_order_file', :conditions => {:method => :post}
@@ -150,6 +153,9 @@ Nucore::Application.routes.draw do |map|
       end
     end
   end
+
+  # reservations
+  match 'reservations' => 'reservations#list', :as => 'reservations'
 
   # file upload routes
   map.upload_product_file '/facilities/:facility_id/:product/:product_id/files/upload',
