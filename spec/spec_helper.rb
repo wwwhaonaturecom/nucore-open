@@ -18,7 +18,6 @@ Spork.prefork do
   require 'factory_girl'
   require 'shoulda'
   require 'mocha'
-  require 'factories'
 
   # Uncomment the next line to use webrat's matchers
   #require 'webrat/integrations/rspec-rails'
