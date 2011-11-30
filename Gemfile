@@ -22,7 +22,7 @@ gem 'cancan',           '1.6.5'
 gem 'nokogiri',         '1.4.4'
 gem 'devise_ldap_authenticatable', '0.4.3'
 gem 'jquery-rails',     '1.0.12'
-gem 'foreigner',        '1.0.3'
+gem 'foreigner',        '1.1.1'
 gem 'awesome_nested_set', '2.0.1'
 gem 'exception_notification', :require => 'exception_notifier'
 gem 'fastercsv',        '1.5.4'
@@ -32,9 +32,9 @@ gem 'bcsec',             '2.1.1', :require => 'pers'
 gem 'bcdatabase',        '1.0.6'
 gem 'schema_qualified_tables', '1.0.0'
 
-group :development do                          
+group :development, :test do                          
    gem 'rspec-rails', '2.6.1'
-   gem 'spork', '0.7.5'
+   gem 'spork', '0.9.0.rc9'
    gem 'ZenTest', '4.5.0' # TODO: remove?
    gem 'autotest', '4.4.6' # TODO: remove?
    gem 'autotest-rails', '4.1.0' # TODO: remove?
@@ -45,7 +45,7 @@ group :development do
    gem 'single_test', '0.4.0'
    gem 'ci_reporter'
    gem 'timecop'
-   #gem 'sqlite3-ruby'
+
 end
 
 group :production, :staging do
