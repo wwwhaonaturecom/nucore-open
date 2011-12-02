@@ -22,8 +22,6 @@ ActiveRecord::Schema.define(:version => 20110810232349) do
     t.integer  "deleted_by",               :precision => 38, :scale => 0
   end
 
-  add_foreign_key "account_users", "accounts", :name => "fk_accounts"
-
   create_table "accounts", :force => true do |t|
     t.string   "type",                   :limit => 50,                                 :null => false
     t.string   "account_number",         :limit => 50,                                 :null => false
@@ -44,8 +42,6 @@ ActiveRecord::Schema.define(:version => 20110810232349) do
   end
 
   add_index "accounts", ["affiliate_id"], :name => "index_accounts_on_affiliate_id", :tablespace => "bc_nucore"
-
-  add_foreign_key "accounts", "facilities", :name => "fk_account_facility_id"
 
   create_table "affiliates", :force => true do |t|
     t.string   "name"
@@ -68,9 +64,6 @@ ActiveRecord::Schema.define(:version => 20110810232349) do
     t.integer "product_id",        :precision => 38, :scale => 0, :null => false
     t.integer "quantity",          :precision => 38, :scale => 0, :null => false
   end
-
-  add_foreign_key "bundle_products", "products", :name => "fk_bundle_prod_bundle"
-  add_foreign_key "bundle_products", "products", :name => "fk_bundle_prod_prod", :column => "bundle_product_id"
 
   create_table "external_service_passers", :force => true do |t|
     t.integer  "external_service_id", :precision => 38, :scale => 0
@@ -128,8 +121,6 @@ ActiveRecord::Schema.define(:version => 20110810232349) do
     t.integer  "revenue_account",               :precision => 38, :scale => 0, :null => false
   end
 
-  add_foreign_key "facility_accounts", "facilities", :name => "fk_facilities"
-
   create_table "file_uploads", :force => true do |t|
     t.integer  "order_detail_id",                  :precision => 38, :scale => 0
     t.integer  "product_id",                       :precision => 38, :scale => 0
@@ -143,16 +134,11 @@ ActiveRecord::Schema.define(:version => 20110810232349) do
     t.datetime "file_updated_at"
   end
 
-  add_foreign_key "file_uploads", "order_details", :name => "fk_files_od"
-  add_foreign_key "file_uploads", "products", :name => "fk_files_product"
-
   create_table "instrument_statuses", :force => true do |t|
     t.integer  "instrument_id", :precision => 38, :scale => 0, :null => false
     t.boolean  "is_on",         :precision => 1,  :scale => 0, :null => false
     t.datetime "created_at",                                   :null => false
   end
-
-  add_foreign_key "instrument_statuses", "products", :name => "fk_int_stats_product", :column => "instrument_id"
 
   create_table "journal_rows", :force => true do |t|
     t.integer "journal_id",                     :precision => 38, :scale => 0, :null => false
@@ -289,12 +275,6 @@ ActiveRecord::Schema.define(:version => 20110810232349) do
     t.string   "reconciled_note"
   end
 
-  add_foreign_key "order_details", "accounts", :name => "fk_od_accounts"
-  add_foreign_key "order_details", "orders", :name => "sys_c009172"
-  add_foreign_key "order_details", "price_policies", :name => "sys_c009175"
-  add_foreign_key "order_details", "products", :name => "fk_bundle_prod_id", :column => "bundle_product_id"
-  add_foreign_key "order_details", "products", :name => "sys_c009173"
-
   create_table "order_statuses", :force => true do |t|
     t.string  "name",        :limit => 50,                                :null => false
     t.integer "facility_id",               :precision => 38, :scale => 0
@@ -316,17 +296,12 @@ ActiveRecord::Schema.define(:version => 20110810232349) do
     t.string   "state",       :limit => 50
   end
 
-  add_foreign_key "orders", "accounts", :name => "sys_c008808"
-  add_foreign_key "orders", "facilities", :name => "orders_facility_id_fk"
-
   create_table "price_group_members", :force => true do |t|
     t.string  "type",           :limit => 50,                                :null => false
     t.integer "price_group_id",               :precision => 38, :scale => 0, :null => false
     t.integer "user_id",                      :precision => 38, :scale => 0
     t.integer "account_id",                   :precision => 38, :scale => 0
   end
-
-  add_foreign_key "price_group_members", "price_groups", :name => "sys_c008583"
 
   create_table "price_group_products", :force => true do |t|
     t.integer  "price_group_id",     :precision => 38, :scale => 0, :null => false
@@ -347,8 +322,6 @@ ActiveRecord::Schema.define(:version => 20110810232349) do
   end
 
   add_index "price_groups", ["facility_id", "name"], :name => "sys_c008577", :unique => true, :tablespace => "bc_nucore"
-
-  add_foreign_key "price_groups", "facilities", :name => "sys_c008578"
 
   create_table "price_policies", :force => true do |t|
     t.string   "type",                :limit => 50,                                :null => false
@@ -373,16 +346,12 @@ ActiveRecord::Schema.define(:version => 20110810232349) do
     t.datetime "expire_date",                                                      :null => false
   end
 
-  add_foreign_key "price_policies", "price_groups", :name => "sys_c008589"
-
   create_table "product_users", :force => true do |t|
     t.integer  "product_id",  :precision => 38, :scale => 0, :null => false
     t.integer  "user_id",     :precision => 38, :scale => 0, :null => false
     t.integer  "approved_by", :precision => 38, :scale => 0, :null => false
     t.datetime "approved_at",                                :null => false
   end
-
-  add_foreign_key "product_users", "products", :name => "fk_products"
 
   create_table "products", :force => true do |t|
     t.string   "type",                    :limit => 50,                                                    :null => false
@@ -412,9 +381,6 @@ ActiveRecord::Schema.define(:version => 20110810232349) do
 
   add_index "products", ["relay_ip", "relay_port"], :name => "sys_c008555", :unique => true, :tablespace => "bc_nucore"
 
-  add_foreign_key "products", "facilities", :name => "sys_c008556"
-  add_foreign_key "products", "facility_accounts", :name => "fk_facility_accounts"
-
   create_table "reservations", :force => true do |t|
     t.integer  "order_detail_id",                :precision => 38, :scale => 0
     t.integer  "instrument_id",                  :precision => 38, :scale => 0, :null => false
@@ -426,9 +392,6 @@ ActiveRecord::Schema.define(:version => 20110810232349) do
     t.integer  "canceled_by",                    :precision => 38, :scale => 0
     t.string   "canceled_reason",  :limit => 50
   end
-
-  add_foreign_key "reservations", "order_details", :name => "res_ord_det_id_fk"
-  add_foreign_key "reservations", "products", :name => "reservations_instrument_id_fk", :column => "instrument_id"
 
   create_table "schedule_rules", :force => true do |t|
     t.integer "instrument_id",    :precision => 38, :scale => 0,                  :null => false
@@ -447,8 +410,6 @@ ActiveRecord::Schema.define(:version => 20110810232349) do
     t.boolean "on_sat",           :precision => 1,  :scale => 0,                  :null => false
   end
 
-  add_foreign_key "schedule_rules", "products", :name => "sys_c008573", :column => "instrument_id"
-
   create_table "statement_rows", :force => true do |t|
     t.integer  "statement_id",    :precision => 38, :scale => 0, :null => false
     t.integer  "order_detail_id", :precision => 38, :scale => 0, :null => false
@@ -463,8 +424,6 @@ ActiveRecord::Schema.define(:version => 20110810232349) do
     t.datetime "created_at",                                 :null => false
     t.integer  "account_id",  :precision => 38, :scale => 0, :null => false
   end
-
-  add_foreign_key "statements", "facilities", :name => "fk_statement_facilities"
 
   create_table "user_roles", :force => true do |t|
     t.integer "user_id",     :precision => 38, :scale => 0, :null => false
@@ -517,9 +476,9 @@ ActiveRecord::Schema.define(:version => 20110810232349) do
   add_index "versions", ["version_number"], :name => "index_versions_on_number", :tablespace => "bc_nucore"
   add_index "versions", ["versioned_id", "versioned_type"], :name => "i_ver_ver_id_ver_typ", :tablespace => "bc_nucore"
 
-  add_foreign_key "account_users", "accounts", :name => "fk_accounts"
-
   add_foreign_key "accounts", "facilities", :name => "fk_account_facility_id"
+
+  add_foreign_key "account_users", "accounts", :name => "fk_accounts"
 
   add_foreign_key "bundle_products", "products", :name => "fk_bundle_prod_bundle"
   add_foreign_key "bundle_products", "products", :name => "fk_bundle_prod_prod", :column => "bundle_product_id"
