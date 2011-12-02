@@ -7,7 +7,7 @@ namespace :nucs do
 
     good, bad=0, 0
 
-    CSV.foreach(args.path_to_csv, :headers => true) do |row|
+    FasterCSV.foreach(args.path_to_csv, :headers => true) do |row|
       chart_string=[ 'fund', 'department', 'project', 'activity' ].collect! {|c| row[c] }
       chart_string=(chart_string.delete_if {|c| c.blank?}).join('-')
 
