@@ -70,11 +70,7 @@ function initReportsUI(selectedIndex)
             // every time a tab loads make sure the export urls are set to export current report
             var url=getUpdateTabUrl(ui);
             $('#export').attr('href', url + '&export_id=report&format=csv');
-
-            var all=$('#export-all');
-
-            if(!all.hasClass('disabled'))
-                all.attr('href', url + '&export_id=report_data&format=csv');
+            //$('#export-all').attr('href', url + '&export_id=report_data&format=csv');
         },
 
         ajaxOptions: {
