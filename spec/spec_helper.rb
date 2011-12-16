@@ -89,6 +89,9 @@ Spork.prefork do
       @epg = PriceGroup.find_or_create_by_name(:name => 'External Rate', :is_internal => false, :display_order => 3)
       @epg.save(:validate => false)
 
+      now=Time.zone.parse("#{Date.today.to_s} 09:30:00")
+      Timecop.travel(now)
+
       # bcsec's ensuring to satisfy bcaudit on save is
       # handled in nucore by Bcaudit::Middleware which is
       # loaded at bcsec_authenticatable's initialization.
