@@ -28,7 +28,7 @@ class FacilityNotificationsController < ApplicationController
     @errors = []
     reviewed_at = Time.zone.now + 7.days
     if params[:order_detail_ids].nil? or params[:order_detail_ids].empty?
-      flash[:error] = "No #{Order.model_name.human.pluralize.downcase} selected"
+      flash[:error] = I18n.t 'controllers.facility_notifications.no_selection'
       redirect_to :action => :index
       return
     end
@@ -38,7 +38,7 @@ class FacilityNotificationsController < ApplicationController
         begin
           od = OrderDetail.need_notification(current_facility).find(order_detail_id, :readonly => false)
         rescue Exception => e
-          @errors << "#{Order.model_name.human} #{order_detail_id} was either not found or has already been notified."
+          @errors << I18n.t('controllers.facility_notifications.send_notifications.order_error', :order_detail_id => order_detail_id)
         end
         if od
           od.reviewed_at = reviewed_at
@@ -48,14 +48,15 @@ class FacilityNotificationsController < ApplicationController
         end      
       end
       if @errors.any?
-        flash[:error] = "We experienced the following errors. Pease try again.<br/> #{@errors.join('<br/>')}"
+        flash[:error] = I18n.t('controllers.facility_notifications.errors_html', :errors => @errors.join('<br/>')).html_safe
         raise ActiveRecord::Rollback
       else
         @accounts_to_notify.each do |account|
           account.notify_users.each {|u| Notifier.review_orders(:user => u, :facility => current_facility, :account => account).deliver }
         end
         account_list = @accounts_to_notify.map {|a| a.account_list_item }
-        flash[:notice] = "Notifications sent successfully to:<br/> #{account_list.join('<br/>')}".html_safe
+
+        flash[:notice] = I18n.t('controllers.facility_notifications.send_notifications.success_html', :accounts => account_list.join('<br/>')).html_safe
       end
     end
     redirect_to :action => :index
@@ -70,7 +71,7 @@ class FacilityNotificationsController < ApplicationController
   
   def mark_as_reviewed
     if params[:order_detail_ids].nil? or params[:order_detail_ids].empty?
-      flash[:error] = 'No orders were selected'      
+      flash[:error] = I18n.t 'controllers.facility_notifications.no_selection'      
     else
       @errors = []
       @order_details_updated = []
@@ -85,31 +86,10 @@ class FacilityNotificationsController < ApplicationController
           @errors << order_detail_id
         end
       end
-      flash[:notice] = "The select orders have been marked as reviewed" if @order_details_updated.any?
-      flash[:error] = "An error was encountered while marking some orders as reviewed: #{@errors.join(', ')}" if @errors.any?
+      flash[:notice] = I18n.t('controllers.facility_notifications.mark_as_reviewed.success') if @order_details_updated.any?
+      flash[:error] = I18n.t('controllers.facility_notifications.mark_as_reviewed.errors', :errors =>  @errors.join(', ')) if @errors.any?
     end
     redirect_to :action => :in_review
   end
 
-
-#
-  # def in_review
-    # if request.post?
-      # if params[:order_detail_ids]
-        # begin
-          # order_details = OrderDetail.find(params[:order_detail_ids])
-          # order_details.each do |od|
-            # od.reviewed_at = Time.zone.now
-            # od.save!
-          # end
-        # rescue Exception => e
-          # flash.now[:error] = 'An error was encountered while marking some orders as reviewed'
-        # end
-        # flash.now[:notice] = 'The select orders have been marked as reviewed'
-      # else
-        # flash.now[:error] = 'No orders were selected'
-      # end
-    # end
-    # @order_details = OrderDetail.in_review(current_facility)
-  # end
 end
