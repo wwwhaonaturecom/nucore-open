@@ -28,12 +28,12 @@ class FacilityStatementsController < ApplicationController
     @order_detail_action = :send_statements
     render :layout => "two_column_head"
   end
-  
+
   # POST /facilities/:facility_id/statements/send_statements
   def send_statements
     
     if params[:order_detail_ids].nil? or params[:order_detail_ids].empty?
-      flash[:error] = "No #{Order.model_name.human.pluralize.downcase} selected"
+      flash[:error] = I18n.t 'controllers.facility_statements.send_statements.no_selection'
       redirect_to :action => :new
       return
     end
@@ -47,7 +47,7 @@ class FacilityStatementsController < ApplicationController
           to_statement[od.account] ||= []
           to_statement[od.account] << od
         rescue Exception => e
-          @errors << "#{Order.model_name.human} #{order_detail_id} was either not found or cannot be statemented at this time."
+          @errors << I18n.t('controllers.facility_statements.send_statements.order_error', :order_detail_id => order_detail_id)
         end
       end
       
@@ -63,14 +63,14 @@ class FacilityStatementsController < ApplicationController
       end
 
       if @errors.any?
-        flash[:error] = "We experienced the following errors. Pease try again.<br/> #{@errors.join('<br/>')}"
+        flash[:error] = I18n.t('controllers.facility_statements.errors_html', :errors => @errors.join('<br/>')).html_safe
         raise ActiveRecord::Rollback
       else      
         @account_statements.each do |account, statement|
           account.notify_users.each {|u| Notifier.statement(:user => u, :facility => current_facility, :account => account, :statement => statement).deliver }
         end
         account_list = @account_statements.map {|a,s| a.account_list_item }
-        flash[:notice] = "Notifications sent successfully to:<br/> #{account_list.join('<br/>')}".html_safe
+        flash[:notice] = I18n.t('controllers.facility_statements.send_statements.success_html', :accounts => account_list.join('<br/>')).html_safe
       end
     end
     redirect_to :action => "new"

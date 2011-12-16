@@ -4,10 +4,19 @@
 = content_for :h1 do
   =h current_facility
 
-%h2= Account.model_name.human.pluralize
+%h2= t('.head')
 
+= form_tag search_results_facility_accounts_path, :id => 'ajax_form' do
+  = label_tag :search_term, t('.label.search_term')
+  %br
+  = text_field_tag :search_term, nil, :size => 30
+  = submit_tag "Search", :class => 'btn'
+  = link_to 'Clear Search', facility_accounts_path
+%br
+%hr
+%br
 %ul.horiz
-  %li= link_to "Add #{Account.model_name.human}", new_account_user_search_facility_accounts_path
+  %li= link_to t('.add_account'), new_account_user_search_facility_accounts_path
 
 #result
   = render :partial => 'account_balances.html.haml'
