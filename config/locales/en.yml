@@ -2,11 +2,344 @@
 # See http://github.com/svenfuchs/rails-i18n/tree/master/rails%2Flocale for starting points.
 
 en:
-  devise:
-    sessions:
-      unauthenticated: "Your credentials are not valid. Please try again."
-      invalid: "Your credentials are not valid. Please provide a username and password."
+  app_name: NU Core
+  app_admin_name: NU Core Admin
+  institution_name: Northwestern
 
+  accounts:
+    institution: Chart String
+    credit_card: Credit Card
+    po: Purchase Order
+  
+  pages:
+    my_tab: My %{model}
+    manage: Manage %{model}
+    global_settings: Global Settings
+    login: Login
+    logout: Logout
+    cart: Cart
+    create: Create %{model}
+    
+  shared:
+    footer:
+      copyright_html: "&copy; Copyright 2010%{to_date} Northwestern University"
+      logo_alt: "Northwestern Logo"
+    product_details_fields:
+      name: "Name of the %{field} as displayed to the end user"
+      description: "Description as it will appear on the product page"
+      account: "Expense account from which fees will be withdrawn; must be open on purchaser's Chart String"
+      requires_approval: "Check to restrict access to approved users"
+      initial_order_status: "Default status for new orders"
+      is_archived: "Check to inactivate the product, disallowing purchase and viewing"
+      is_hidden: "Check to hide %{field} from end users; visible to staff when \"ordering on behalf\" of another user"
+      deposit_account:
+        label: "Recharge Chart String and Account"
+        instruct: "Revenue account to which fees will be deposited"
+        add: "Add Chart String"
+    product_manage:
+      label:
+        url: "URL Name"
+        description: "Description"
+        deposit: "Recharge Chart String"
+        initial_status: "Initial Order Status"
+        requires_approval: "Requires Approval?"
+        inactive: "Is Inactive?"
+        hidden: "Is Hidden?"
+    sidenav_admin:
+      overview: "Overview"
+      deposit_accounts: "Recharge Chart Strings"
+      facility_staff: "Facility Staff"
+      price_groups: "Price Groups"
+      statuses: "Order Statuses"
+
+  facility_accounts:
+    index:
+      head: "Recent Payment Sources"
+      add_account: "Add Payment Source"
+      label:
+        search_term: "Search by payment source number or payment source owner's name, NetID, or username"
+    new_account_user_search:
+      head: "Add Payment Source"
+      instruct: "To add a payment source, first search for the user you would like to create the payment source for."
+      label:
+        search_term: "Search by name, NetID, or username"
+    user_search:
+      label:
+        search_term: "Search by name, NetID, or username"
+    account_fields:
+      label:
+        owner_user: "Owner User"
+        payment_type: "Payment Source Type"
+        payment_number: "Payment Source Number"
+        cc_name: "Name on Card"
+        affiliate: "Affiliate Name"
+        remit: "Bill To"
+        cc_instruct: "No part of a credit card number may be entered. Enter a text description to help you and the user identify this card. For example: \"Dr. Smith's Visa Card\"."
+        po_instruct: "Where the invoice should be sent to for this payment source; this text will appear on the customer's invoice."
+    accounts_receivable:
+      head: Accounts Receivable
+      show_with_balance: Show %{model} with a balance
+      show_all: Show all %{model}
+    credit_cards:
+      head: Reconcile Credit Cards
+      none: There are no credit cards with completed orders to be reconciled at this time
+      instructions: Please review the following orders. Check those that are paid, record any notes, and click 'Reconcile Orders'.
+    purchase_orders:
+      head: Reconcile Purchase Orders
+      none: There are no purchase orders with completed orders to be reconciled at this time
+      instructions: Please review the following orders. Check those that are paid, record any notes, and click 'Reconcile Orders'.
+
+  facility_users:
+    search:
+      instruct: "Search for an existing user by name, NetID, or username.  Click on the name of the user you wish to grant access to.  If the search does not return any acceptable matches, you may create a new user."
+
+  facility_account_users:
+    user_search:
+      head: "Add Payment Source User"
+      label:
+        search_term: "Search by name, NetID, or username"
+
+  facility_facility_accounts:
+    facility_account_fields:
+      instruct: "Use hyphens to separate Chart String number groups e.g. 123-1234567-12345678"
+      active: "Is Active?"
+      label:
+        account_number: "Chart String Number"
+        deposit_account: "Revenue Account"
+
+    edit:
+      head: "Edit Recharge Chart String"
+      main: "Editing the Recharge Chart String may effect the facility's ability to collect funds. Edit the Chart String with caution!"
+
+    index:
+      head: "Recharge Chart Strings"
+      main: "Chart Strings that are approved by the Provost for collection of facility revenue."
+      notice: "No Recharge Chart Strings have been added to this facility yet."
+      th: "Chart String Number"
+      add: "Add Recharge Chart String"
+
+    new:
+      head: "Add Recharge Chart String"
+
+  product_users:
+    new:
+      label:
+        search_term: "Search by name, NetID, or username"
+
+  user_price_group_members:
+    new:
+      head: "Add Price Group Member"
+      label:
+        search_term: "Search by name, NetID, or username"
+
+  search:
+    user_search_results:
+      th:
+        name: "Name"
+        username: "Username or NetID"
+        email: "Email"
+    manage_user_table:
+      notice: "%{count} more users exist, try refining your search."
+      th:
+        name: "Name"
+        username: "Username or NetID"
+        email: "Email"
+
+  account_price_group_members:
+    new:
+      label:
+        search_term: "Search by payment source"
+
+    search_results:
+      head: "Select an Existing Payment Source"
+      main: "Can't find the payment source you're looking for?"
+      create: "Create a new payment source"
+      notice: "%{count} more payment sources exist, try refining your search."
+      error:
+        noterm: "Please enter a search term"
+        notfound: "No existing payment sources found."
+
+  account_users:
+    index:
+      head: "Payment Source Members"
+    new:
+      head: "Add Payment Source Member"
+      label:
+        account: "Payment Source Number"
+        type: "Type"
+        description: "Description"
+        expiration: "Expiration"
+    user_search:
+      head: "Add Payment Source Member"
+      instruct: "Search for a user to add to the %{account_type}, (%{account})"
+      label:
+        search: "Search by name, NetID, or username"
+
+  facilities:
+    index:
+      welcome: |
+        Welcome to NU Core, the centralized ordering system for all Shared Facilities at Northwestern University.
+        Please select the Shared Facility below to view and purchase services and products offered by the facility.
+
+    facility_fields:
+      name: "Name of the facility as displayed to the end user"
+      abbreviation: "Abbreviated name or acronym for the facility"
+      short_description: "Description as it will appear on the home page"
+      description: "Description as it will appear on the facility main page"
+      payment_options: "By default, all facilities accept NU Chart Strings; you may check additional payment options:"
+      accepts_po: "Accept Purchase Orders?"
+      accepts_cc: "Accept Credit Cards?"
+      inactive: "Uncheck this box to prevent end users from viewing or purchasing from this facility:"
+      is_active: "Is Active?"
+      contact: "The following contact information will appear on statements and should indicate where payment should be sent"
+
+  price_policies:
+    instructional_text:
+      common: "All Northwestern users must be charged the same base rate.  Rates must be reviewed by the Provost's Office.  You may define adjustments to this rate for individual internal price groups."
+      item: ""
+      service: ""
+      instrument: "The user will be charged the sum of actual, scheduled, and overage usage fees.  Actual usage is measured by power relay or manually entered by facility staff.  Scheduled usage is calculated from the user's reservation.  Overage is any usage that exceeds the user's reservation.  If an overage rate is not specified, the actual usage rate will be applied for any overage."
+
+  price_groups:
+    price_group_fields:
+      internal_instruction: "Check this box if this price group is internal, intended for use by Northwestern Customers:"
+      
+  notifier:
+    new_user:
+      intro_html: "Congratulations, %{first_name}. A NU Core account has been created for you. You may log in at <a href=\"%{login_url}\">%{login_url}</a>."
+      intro: "Congratulations, %{first_name}. A NU Core account has been created for you. You may log in at %{login_url}."
+      no_password: "You may log in with your Northwestern NetID and password."
+    order_receipt:
+      intro: "Thank you for your order on the NU Core website."
+      outro: "All prices are estimates. Actual cost is assigned when the order is complete."
+    review_orders:
+      body: "New transactions for %{facility} have been posted to \"%{account}\". Please log in to NU Core and review these charges."
+      body_html: "New transactions for %{facility} have been posted to \"%{account}\".<br/><br/>Please %{login_link} and review these charges."
+    statement:
+      body: "A new statement from %{facility} has been created for your payment source, \"%{account}\". Please log in to NU Core and review these charges."
+      body_html: "A new statement from %{facility} has been created for your payment source, \"%{account}\".<br/><br/>Please %{login_link} and review your statement."
+    user_update:
+      body: |
+        The following user %{user} has been added to your payment source %{account} by administrator %{created_by}.
+        If this is incorrect you may log in to NU Core at %{login_link} and remove this user or contact the administrator named above.
+      body_html: |
+        The following user %{user} has been added to your payment source "%{account}" by administrator %{created_by}.<br/><br/>
+        If this is incorrect you may %{login_link} and remove this user or contact the administrator named above.
+
+  file_uploads:
+    product_survey:
+      intro: "You may provide an Online Order Form and/or an Order File Template.  If provided, the user must complete one before placing an order."
+      order_form:
+        head: "Online Order Form"
+        main: "Online Order Forms are external Surveyor services. Multiple Online Order Forms may be added, but only one may be active at a time. Please contact the NU Core support specialist for more information."
+        notice: "No Online Order Forms have been added."
+      download_form:
+        head: "Downloadable Order Form"
+        main: "Downloadable Order Forms are templates to be filled in by the user and submitted when ordering.  Uploading a new template will replace any existing Downloadable Order Forms."
+        notice: "No Downloadable Order Forms have been uploaded."
+        confirm: "Are you sure you wish to remove this file?"
+
+  users:
+    index:
+      head:
+        h2: "Search Users"
+        h3: "Active Users"
+      instruct: "Active users are users which have placed an order or had an order placed on their behalf at this facility in the last year."
+      notice: "There are no active users for this facility."
+      label:
+        search_term: "Search by name, NetID, or username"
+      th:
+        name: "Name"
+        username: "Username or NetID"
+        email: "Email"
+    new:
+      head: "Add External User"
+      main: "You may use this grant NU Core access to external users.  The email address and username must match."
+    new_search:
+      js:
+        id: "NetID"
+        email: "Email Address"
+        error: "An error was encountered while looking up the NetID"
+      head: "Add User"
+      intro: "Some information about this user may already exist in university databases.  Please choose whether the user you wish to add has a NetID and enter the requested information.  If the user exists already, you will be able to add her with a single click."
+      instruct: "Enter the user's NetID"
+      submit: "Lookup NetID"
+      label:
+        id: "NetID"
+        have_id: "Does the new user have a NetID?"
+
+    username_search:
+      main_html: "You may add a new external user by clicking <a href=\"%{link}\">Add a new external user</a>."
+      notice1: "The user could no be located in the university database.  Please make sure you typed the NetID correctly."
+      notice2: "No user information was found in the university databases."
+      notice3: "The following user was found.  Click \"Add User\" to allow this user access to NU Core."
+  facility_notifications:
+    index:
+      head: Send Notifications
+    in_review:
+      head: Orders In Review
+      instructions: The orders listed below are still in review by the customer. The time the review window will close is listed. You may manually mark an order as reviewed, allowing you to create a statement for or journal the order immediately.
+      
+  facility_journals:
+    new:
+      instructions: Select the orders that you wish to journal. Only one journal may be pending at a time. Please note that selected orders may not span multiple fiscal years.
+      not_closed: You may not generate a new journal until the pending journal is closed.
+      not_closed_html: You may not generate a new journal until the <a href="%{link}">pending journal</a> is closed.
+      no_orders: There are no orders to be journaled at this time.
+  facility_statements:
+    new:
+      instructions: Please review the following Credit Card and Purchase Order payment sources. A statement will be generated for each of the payment sources and an email with a link to the statement will be sent.
+      no_orders: There are no completed orders that require statements.
+    index:
+      head: Statement History
+      no_statements: No statements have been sent yet
+  devise:
+    failure:
+      invalid: "Invalid username or password."
+
+  controllers:
+    facility_accounts:
+      create:
+        expires_at_missing: "The chart string appears to be invalid. Either the fund, department, project, or activity could not be found."
+
+    facility_accounts:
+      update: "The payment source was successfully updated."
+      suspend:
+        success: "Payment source suspended successfully"
+        failure: "An error was encountered while suspending the payment source"
+      unsuspend:
+        success: "Payment source activated successfully"
+        failure: "An error was encountered while activating the payment source"
+
+    facility_notifications:
+      no_selection: No orders selected
+      errors_html: We experienced the following errors. Pease try again.<br/>%{errors}
+      send_notifications:
+        order_error: Order %{order_detail_id} was either not found or has already been notified.
+        success_html: Notifications sent successfully to:<br/>%{accounts}
+      mark_as_reviewed:
+        success: The selected orders have been marked as reviewed
+        errors: "An error was encountered while marking some orders as reviewed: %{errors}"
+        
+    facility_statements:
+      errors_html: We experienced the following errors. Pease try again.<br/>%{errors}
+      send_statements:
+        order_error: Order %{order_detail_id} was either not found or cannot be statemented at this time.
+        no_selection: No orders selected
+        success_html: Notifications sent successfully to:<br/>%{accounts}
+
+    reservations:
+      create:
+        no_selection: "You must select a payment source before reserving"
+        success: "The reservation was successfully created."
+
+  models:
+    account_user:
+      validation:
+        userid: "is already a member of this payment source"
+    order:
+      auto_assign_account: "Could not find a valid payment source for purchasing %{product_name}"
+      
   activerecord:
     errors:
       # The values :model, :attribute and :value are always available for interpolation
@@ -33,22 +366,20 @@ en:
         even: "must be even"
         record_invalid: "Validation failed: %{errors}"
         # Append your own errors here or at the model/attributes scope.
-
       full_messages:
         format: "%{attribute} %{message}"
-
       template:
         header:
           one:    "1 error prohibited this %{model} from being saved"
           other:  "%{count} errors prohibited this %{model} from being saved"
         # The variable :count is also available
         body: "There were problems with the following fields:"
-
     # Model Names
     models:
       account:
         one: Payment Source
         other: Payment Sources
+        owner: Owner 
       nufs account:
         one: Chart String Payment Source
         other: Chart String Payment Sources
@@ -58,15 +389,44 @@ en:
       account user:
         one: Account User
         other: Account Users
+      reservation:
+        one: Reservation
+        other: Reservations
+      order: 
+        one: Order
+        other: Orders
+      facility:
+        one: Facility
+        other: Facilities
+      statement:
+        one: Statement
+        other: Statements
+      journal:
+        one: Journal
+        other: Journals
 
     # Model Attributes
     attributes:
+      user:
+        username: Username
+        password: Password
       facility:
         url_name: URL name
+      price_group:
+        is_internal: Is Internal?
       user_role:
         username: User
       order_detail:
         dispute_resolved_reason: Resolution Notes
+        description: Description
+        fulfilled_at: Fulfilled Date
+        user: Ordered For
+        created_by_user: Ordered By
+        reviewed_at: Review Closes
+        order_status: Status
+      statement:
+        created_by: Sent By
+        created_at: Sent At
       nufs_account:
         account_number: Payment Source
       purchase_order_account:
