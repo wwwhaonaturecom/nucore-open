@@ -5,7 +5,7 @@ module UserExtension
 
 
   def self.extended(base)
-    base.class.after_create :find_or_create_person
+    base.class.after_create :find_or_create_person, :update_person
     base.class.after_save :ensure_login_record_exists
     base.class.after_update :update_person
   end
@@ -29,6 +29,14 @@ module UserExtension
     @_bcsec_password=pwd
   end
 
+  def valid_password?(password)
+    user = Bcsec.authority.valid_credentials?(:user, self.username, password)
+    if user
+      return true
+    else
+      return false
+    end
+  end
 
   def find_or_create_person
     raise 'could not create pers record' if Pers::Person.find_or_create_by_username({
@@ -39,6 +47,7 @@ module UserExtension
       :entered_date => Time.zone.now,
       :plain_text_password => @_bcsec_password
     }).new_record?
+    
   end
 
 
