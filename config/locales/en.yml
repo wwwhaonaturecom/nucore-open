@@ -17,7 +17,9 @@ en:
     global_settings: Global Settings
     login: Login
     logout: Logout
+    change_password: Change Password
     cart: Cart
+    create: Create %{model}
     
   shared:
     footer:
@@ -75,6 +77,18 @@ en:
         remit: "Bill To"
         cc_instruct: "No part of a credit card number may be entered. Enter a text description to help you and the user identify this card. For example: \"Dr. Smith's Visa Card\"."
         po_instruct: "Where the invoice should be sent to for this payment source; this text will appear on the customer's invoice."
+    accounts_receivable:
+      head: Accounts Receivable
+      show_with_balance: Show %{model} with a balance
+      show_all: Show all %{model}
+    credit_cards:
+      head: Reconcile Credit Cards
+      none: There are no credit cards with completed orders to be reconciled at this time
+      instructions: Please review the following orders. Check those that are paid, record any notes, and click 'Reconcile Orders'.
+    purchase_orders:
+      head: Reconcile Purchase Orders
+      none: There are no purchase orders with completed orders to be reconciled at this time
+      instructions: Please review the following orders. Check those that are paid, record any notes, and click 'Reconcile Orders'.
 
   facility_users:
     search:
@@ -225,7 +239,13 @@ en:
         main: "Downloadable Order Forms are templates to be filled in by the user and submitted when ordering.  Uploading a new template will replace any existing Downloadable Order Forms."
         notice: "No Downloadable Order Forms have been uploaded."
         confirm: "Are you sure you wish to remove this file?"
-
+  user_password:
+    edit:
+      success: Your password has been updated
+    reset:
+      success: Instructions on how to reset your password have been sent to %{email}
+      not_found: We cannot find %{email} in our records.
+    
   users:
     index:
       head:
@@ -261,7 +281,10 @@ en:
       notice2: "No user information was found in the university databases."
       notice3: "The following user was found.  Click \"Add User\" to allow this user access to NU Core."
   facility_notifications:
+    index:
+      head: Send Notifications
     in_review:
+      head: Orders In Review
       instructions: The orders listed below are still in review by the customer. The time the review window will close is listed. You may manually mark an order as reviewed, allowing you to create a statement for or journal the order immediately.
       
   facility_journals:
@@ -275,11 +298,14 @@ en:
       instructions: Please review the following Credit Card and Purchase Order payment sources. A statement will be generated for each of the payment sources and an email with a link to the statement will be sent.
       no_orders: There are no completed orders that require statements.
     index:
+      head: Statement History
       no_statements: No statements have been sent yet
   devise:
     failure:
       invalid: "Invalid username or password."
-
+    mailer:
+      reset_password_instructions:
+        subject: 'NUCore Password Reset Instructions'
   controllers:
     facility_accounts:
       create:
@@ -348,6 +374,7 @@ en:
         odd: "must be odd"
         even: "must be even"
         record_invalid: "Validation failed: %{errors}"
+        incorrect: "is incorrect"
         # Append your own errors here or at the model/attributes scope.
       full_messages:
         format: "%{attribute} %{message}"
@@ -357,6 +384,13 @@ en:
           other:  "%{count} errors prohibited this %{model} from being saved"
         # The variable :count is also available
         body: "There were problems with the following fields:"
+      models:
+        user:
+          password_not_updatable: You cannot change this user's password
+          password_too_short: must be at least 6 characters long
+          invalid_token: The token is either invalid or has expired.
+              
+              
     # Model Names
     models:
       account:
@@ -381,12 +415,20 @@ en:
       facility:
         one: Facility
         other: Facilities
+      statement:
+        one: Statement
+        other: Statements
+      journal:
+        one: Journal
+        other: Journals
 
     # Model Attributes
     attributes:
       user:
         username: Username
         password: Password
+        password_confirmation: Confirm password
+        current_password: Current password
       facility:
         url_name: URL name
       price_group:
