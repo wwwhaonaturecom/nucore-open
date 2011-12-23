@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20111209185608) do
+ActiveRecord::Schema.define(:version => 20111219220830) do
 
   create_table "account_users", :force => true do |t|
     t.integer  "account_id",               :null => false
@@ -394,23 +394,31 @@ ActiveRecord::Schema.define(:version => 20111209185608) do
     t.boolean  "is_hidden",                                                 :null => false
     t.datetime "created_at",                                                :null => false
     t.datetime "updated_at",                                                :null => false
-    t.string   "relay_ip",                :limit => 15
-    t.integer  "relay_port"
-    t.boolean  "auto_logout"
     t.integer  "min_reserve_mins"
     t.integer  "max_reserve_mins"
     t.integer  "min_cancel_hours"
     t.integer  "facility_account_id"
-    t.string   "relay_username",          :limit => 50
-    t.string   "relay_password",          :limit => 50
     t.string   "account",                 :limit => 5
-    t.string   "relay_type",              :limit => 50
     t.boolean  "show_details",                           :default => false, :null => false
   end
 
   add_index "products", ["facility_account_id"], :name => "fk_facility_accounts"
   add_index "products", ["facility_id"], :name => "sys_c008556"
   add_index "products", ["relay_ip", "relay_port"], :name => "sys_c008555", :unique => true
+
+  create_table "relays", :force => true do |t|
+    t.integer  "instrument_id"
+    t.string   "ip",            :limit => 15
+    t.integer  "port"
+    t.string   "username",      :limit => 50
+    t.string   "password",      :limit => 50
+    t.boolean  "auto_logout"
+    t.string   "type"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  add_index "relays", ["instrument_id"], :name => "index_relays_on_instrument_id"
 
   create_table "reservations", :force => true do |t|
     t.integer  "order_detail_id"
@@ -476,19 +484,21 @@ ActiveRecord::Schema.define(:version => 20111209185608) do
   add_index "user_roles", ["user_id", "facility_id", "role"], :name => "i_use_rol_use_id_fac_id_rol"
 
   create_table "users", :force => true do |t|
-    t.string   "username",                           :null => false
+    t.string   "username",                               :null => false
     t.string   "first_name"
     t.string   "last_name"
-    t.string   "email",              :default => "", :null => false
+    t.string   "email",                  :default => "", :null => false
     t.string   "encrypted_password"
     t.string   "password_salt"
-    t.integer  "sign_in_count",      :default => 0
+    t.integer  "sign_in_count",          :default => 0
     t.datetime "current_sign_in_at"
     t.datetime "last_sign_in_at"
     t.string   "current_sign_in_ip"
     t.string   "last_sign_in_ip"
     t.datetime "created_at"
     t.datetime "updated_at"
+    t.string   "reset_password_token"
+    t.datetime "reset_password_sent_at"
   end
 
   add_index "users", ["email"], :name => "index_users_on_email", :unique => true
