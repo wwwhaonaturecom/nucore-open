@@ -1,7 +1,6 @@
 source :gemcutter
 
 gem 'aasm',             '2.2.0'
-gem 'mysql2',           '0.2.11'
 gem 'activerecord-oracle_enhanced-adapter', '1.3.0'
 gem 'capistrano',       '2.6.0'
 gem 'paperclip',        '2.3.12'
