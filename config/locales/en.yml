@@ -749,9 +749,6 @@ en:
       ]
 
   models:
-    account_user:
-      validation:
-        userid: "is already a member of this payment source"
     order:
       auto_assign_account: "Could not find a valid payment source for purchasing %{product_name}"
 
@@ -795,7 +792,10 @@ en:
           password_not_updatable: You cannot change this user's password
           password_too_short: must be at least 6 characters long
           invalid_token: The token is either invalid or has expired.
-              
+        account_user:
+          attributes:
+            user_id:
+              taken: "is already a member of this payment source"   
               
     # Model Names
     models:
