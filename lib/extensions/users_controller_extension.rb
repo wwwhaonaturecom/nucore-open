@@ -2,10 +2,10 @@ module UsersControllerExtension
 
   def new_search
     return unless params[:username]
-    user_attrs={ :username => params[:username].downcase }
+    user_attrs={ :username => params[:username] }
 
     begin
-      user = Bcsec.authority.find_user(params[:username].downcase) # search both pers and netid
+      user = Bcsec.authority.find_user(user_attrs[:username]) # search both pers and netid
       raise "couldn't find user #{user_attrs[:username]}" unless user
       user_attrs.merge!(:first_name => user.first_name, :last_name => user.last_name, :email => user.email)
       @user=User.find_or_create_by_username(user_attrs)
@@ -28,20 +28,20 @@ module UsersControllerExtension
 
 
   def username_search
-    username = params[:username_lookup].downcase
+    username = params[:username_lookup].downcase.strip
     # look up username in cc_pers
     @user = Bcsec.authority.pers.find_user(username)
 
-    if @user.nil? && (params[:has_netid] == 'yes')
+    if @user.nil? && params[:has_netid] == 'yes'
       begin
         @user=Bcsec.authority.netid.find_user(username)
-        @user.username=params[:username_lookup].downcase if @user # because Bcsec::Authorities::Netid#create_user intentionally excludes the username
+        @user.username=username if @user # because Bcsec::Authorities::Netid#create_user intentionally excludes the username
       rescue => e
         Rails.logger.error("#{e.message}\n#{e.backtrace.join("\n")}")
       end
     end
     
-    @db_user = User.find(:first, :conditions => ["LOWER(username) = ?", username])
+    @db_user = User.where("LOWER(username) = ?", username).first
     @user_already_exists = @db_user.present?
 
     render :layout => false
