@@ -11,6 +11,23 @@ namespace :nu do
   end
 
 
+  desc 'fix related to Task #42921'
+  task :strip_user_names => :environment do
+    usernames=%w(dhj204 ewr045 jfs928 jlu920 jnl186 kanwar kse320 pnl857 rgg981 rgramsey rka671 roy056 tjl939 tvo vge206)
+    users=User.arel_table
+
+    usernames.each do |uname|
+      usr=User.where(users[:username].matches("%#{uname}%")).first
+
+      if usr
+        usr.update_attribute :username, uname
+      else
+        puts "User with name #{uname} not found!"
+      end
+    end
+  end
+
+
   desc 'fix related to Task #36727'
   task :provision_users => :environment do |t, args|
     # bcsec's ensuring to satisfy bcaudit on save is
