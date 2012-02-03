@@ -4,6 +4,7 @@ $(document).ready(function() {
     editable: false,
     defaultView: 'agendaWeek',
     allDaySlot: false,
+    allowCalEventOverlap: false,
     events: events_path,
     eventAfterRender: function(event, element) {
       var tooltip = [
@@ -107,10 +108,36 @@ $(document).ready(function() {
       		.change(function() {
       			var d = new Date(Date.parse($(this).val()));
       			$('#calendar').fullCalendar('gotoDate', d);
-    	
-    
+      			updateDate();
       		});
     });
+    $("#reservation_reserve_start_hour, #reservation_reserve_start_min, #reservation_reserve_start_meridian, #reservation_duration_value").change(updateDate);
+    updateDate();
+        
+  }
+  
+  function updateDate() {
+	  var t = $("#reservation_reserve_start_date").val() + " " + $("#reservation_reserve_start_hour").val() + ":" + $("#reservation_reserve_start_min").val() + " " + $("#reservation_reserve_start_meridian").val();
+	  var currentTime = new Date(t);
+	  var endTime = new Date(currentTime.getTime() + $("#reservation_duration_value").val() * 60*1000).toString();
+	 if (window.currentEvent) {
+		 console.debug('rerendering');
+		 window.currentEvent.start = currentTime.toString();
+		 window.currentEvent.end = endTime;
+	 } else {
+		 window.currentEvent = {
+				 title: 'this reservation',
+				 start: currentTime.toString(),
+				 end: endTime,
+				 color: '#FF0000',
+				 allDay: false,
+				 editable: true
+		 }
+		 
+	 }
+	 $("#calendar").fullCalendar('renderEvent', window.currentEvent, true);
+	 console.debug('currentEvent', window.currentEvent);
+	 
   }
 
   //$("div.fc-button-prev").hide();
