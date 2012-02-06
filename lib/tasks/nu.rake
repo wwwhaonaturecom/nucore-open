@@ -13,14 +13,18 @@ namespace :nu do
 
   desc 'fix related to Task #42921'
   task :strip_user_names => :environment do
+    appease_bcaudit
+
     usernames=%w(dhj204 ewr045 jfs928 jlu920 jnl186 kanwar kse320 pnl857 rgg981 rgramsey rka671 roy056 tjl939 tvo vge206)
-    users=User.arel_table
 
     usernames.each do |uname|
-      usr=User.where(users[:username].matches("%#{uname}%")).first
+      puts "Looking for #{uname}.."
+      usr=User.where(:username => "\t#{uname}").first
 
       if usr
-        usr.update_attribute :username, uname
+        puts "Found [#{usr.username}]"
+        usr.username=usr.username.strip
+        puts "Could not save [#{usr.username}]: #{usr.errors.full_messages.join("\n")}" unless usr.save
       else
         puts "User with name #{uname} not found!"
       end
@@ -28,8 +32,7 @@ namespace :nu do
   end
 
 
-  desc 'fix related to Task #36727'
-  task :provision_users => :environment do |t, args|
+  def appease_bcaudit(username='csi597')
     # bcsec's ensuring to satisfy bcaudit on save is
     # handled in nucore by Bcaudit::Middleware which is
     # loaded at bcsec_authenticatable's initialization.
@@ -43,9 +46,15 @@ namespace :nu do
       protected
 
       def ensure_bcauditable
-        Bcaudit::AuditInfo.current_user = Pers::Person.find_by_username('csi597')
+        Bcaudit::AuditInfo.current_user = Pers::Person.find_by_username('#{username}')
       end
     >
+  end
+
+
+  desc 'fix related to Task #36727'
+  task :provision_users => :environment do |t, args|
+    appease_bcaudit
 
     User.all.each do |user|
       if Pers::Person.find_by_username(user.username).nil?
