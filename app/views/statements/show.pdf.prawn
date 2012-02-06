@@ -30,6 +30,7 @@ prawn_document pdf_config do |pdf|
   invoice_bounding_box = pdf.bounding_box [pdf.bounds.width / 2, pdf.bounds.top], :width => invoice_details_box_width do
     invoice_details = [["Invoice:", "#{@account.id}-#{@statement.id}"],
                        ["Date:", @statement.created_at.strftime("%m/%d/%Y")]]
+    
     invoice_details << ["Purchase Order:", @account.account_number] if @account.is_a?(PurchaseOrderAccount)
     # Might bring this back if we find a good method for calculating billing period
     # invoice_details << ["Billing Period", "#{@statement.first_order_detail_date.strftime("%m/%d/%Y")} - #{@statement.created_at.strftime("%m/%d/%Y")}"];
@@ -44,7 +45,8 @@ prawn_document pdf_config do |pdf|
   end
   
   second_row_box_width = pdf.bounds.width / 2 - 20
-  second_row_box_top = pdf.bounds.top - invoice_bounding_box.height - vertical_gutter
+  # start below the taller of the top box and the image
+  second_row_box_top = pdf.bounds.top - [invoice_bounding_box.height, logo_height].max - vertical_gutter
 
   # BILL TO TABLE  
   bill_to_box = pdf.bounding_box [pdf.bounds.left, second_row_box_top], :width => second_row_box_width do
