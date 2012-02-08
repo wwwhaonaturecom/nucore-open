@@ -76,6 +76,7 @@ function initReportsUI(selectedIndex)
         },
 
         ajaxOptions: {
+            dataType: "js",
             error: function(xhr, status, error) {
                 $('#error-msg').html('Sorry, but the tab could not load. Please try again soon.').show();
             }
