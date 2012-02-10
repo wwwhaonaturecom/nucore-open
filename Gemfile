@@ -29,6 +29,7 @@ gem 'awesome_nested_set', '2.0.1'
 gem 'exception_notification', :require => 'exception_notifier'
 gem 'fastercsv',        '1.5.4'
 gem 'daemons',          '1.1.6'
+gem 'rails_config',     '0.2.5'
 
 source 'http://download.bioinformatics.northwestern.edu/gems/'
 gem 'bcsec',             '2.1.1', :require => 'pers'
