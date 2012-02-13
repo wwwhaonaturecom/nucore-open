@@ -10,7 +10,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20111220164710) do
+ActiveRecord::Schema.define(:version => 20120203185844) do
 
   create_table "account_users", :force => true do |t|
     t.integer  "account_id",               :precision => 38, :scale => 0, :null => false
@@ -419,7 +419,7 @@ ActiveRecord::Schema.define(:version => 20111220164710) do
     t.datetime "updated_at"
   end
 
-  add_index "relays", ["instrument_id"], :name => "index_relays_on_instrument_id"
+  add_index "relays", ["instrument_id"], :name => "index_relays_on_instrument_id", :tablespace => "bc_nucore"
 
   create_table "reservations", :force => true do |t|
     t.integer  "order_detail_id",                :precision => 38, :scale => 0
@@ -496,9 +496,11 @@ ActiveRecord::Schema.define(:version => 20111220164710) do
     t.datetime "updated_at"
     t.string   "reset_password_token"
     t.datetime "reset_password_sent_at"
+    t.integer  "uid",                    :precision => 38, :scale => 0
   end
 
   add_index "users", ["email"], :name => "index_users_on_email", :unique => true, :tablespace => "bc_nucore"
+  add_index "users", ["uid"], :name => "index_users_on_uid"
   add_index "users", ["username"], :name => "index_users_on_username", :unique => true, :tablespace => "bc_nucore"
 
   create_table "versions", :force => true do |t|
