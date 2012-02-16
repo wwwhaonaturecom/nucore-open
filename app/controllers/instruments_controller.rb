@@ -1,8 +1,22 @@
-class InstrumentsController < ProductsCommonController
+class InstrumentsController < ApplicationController
   customer_tab  :show
   admin_tab     :agenda, :create, :edit, :index, :manage, :new, :schedule, :update
-  
+  before_filter :authenticate_user!, :except => :show
+  before_filter :check_acting_as, :except => [:show]
+  before_filter :init_current_facility
+  before_filter :init_instrument, :except => [:index, :new, :create]
   before_filter :prepare_relay_params, :only => [ :create, :update ]
+  
+  include TranslationHelper
+  
+  load_and_authorize_resource :except => :show
+
+  layout 'two_column'
+
+  def initialize
+    @active_tab = 'admin_products'
+    super
+  end
 
   # GET /instruments
   def index
@@ -23,7 +37,7 @@ class InstrumentsController < ProductsCommonController
 
   # GET /instruments/1
   def show
-    raise ActiveRecord::RecordNotFound if !product_is_accessible?
+    raise ActiveRecord::RecordNotFound if @instrument.is_archived? || (@instrument.is_hidden? && !acting_as?)
     add_to_cart = true
     login_required = false
     
@@ -58,7 +72,7 @@ class InstrumentsController < ProductsCommonController
       flash[:notice] = 'You are not authorized to order instruments from this facility on behalf of a user.'
     end
     @add_to_cart = add_to_cart
-    
+
     if login_required
       session[:requested_params]=request.fullpath
       return redirect_to new_user_session_path
@@ -67,6 +81,32 @@ class InstrumentsController < ProductsCommonController
     end
 
     redirect_to add_order_path(acting_user.cart(session_user, false), :product_id => @instrument.id, :quantity => 1)
+  end
+
+  # GET /instruments/1/manage
+  def manage
+  end
+
+  # GET /instruments/new
+  def new
+    @instrument = current_facility.instruments.new(:account => NUCore::COMMON_ACCOUNT)
+  end
+
+  # GET /items/1/edit
+  def edit
+  end
+
+  # POST /instruments
+  def create
+    @instrument = current_facility.instruments.new(params[:instrument])
+    @instrument.initial_order_status_id = OrderStatus.default_order_status.id
+    
+    if @instrument.save
+      flash[:notice] = 'Instrument was successfully created.'
+      redirect_to(manage_facility_instrument_url(current_facility, @instrument))
+    else
+      render :action => "new"
+    end
   end
 
   # PUT /instruments/1
@@ -82,6 +122,15 @@ class InstrumentsController < ProductsCommonController
     end
 
     render :action => "edit"
+  end
+
+  # DELETE /instruments/1
+  def destroy
+    @instrument.destroy
+
+    respond_to do |format|
+      format.html { redirect_to(manage_facility_instrument_url(current_facility, @instrument)) }
+    end
   end
 
   # GET /instruments/1/schedule
@@ -125,6 +174,11 @@ class InstrumentsController < ProductsCommonController
     end
     render :action => :instrument_status, :layout => false
   end
+
+  def init_instrument
+    @instrument = current_facility.instruments.find_by_url_name!(params[:instrument_id] || params[:id])
+  end
+
 
   private
 
