@@ -3,34 +3,65 @@ require "pp"
 class Reservation < ActiveRecord::Base
   include DateHelper
 
+  ## relationships
   belongs_to :instrument
   belongs_to :order_detail
+  
 
   validates_uniqueness_of :order_detail_id, :allow_nil => true
   validates_presence_of :instrument_id, :reserve_start_at, :reserve_end_at
-  validate :does_not_conflict_with_other_reservation, :satisfies_minimum_length, :satisfies_maximum_length, :instrument_is_available_to_reserve, :in_the_future, :if => :reserve_start_at && :reserve_end_at && :reservation_changed?
-
+  validate :does_not_conflict_with_other_reservation, :satisfies_minimum_length, :satisfies_maximum_length, :instrument_is_available_to_reserve, :if => :reserve_start_at && :reserve_end_at && :reservation_changed?
+  
   validates_each [ :actual_start_at, :actual_end_at ] do |record,attr,value|
     if value
       record.errors.add(attr.to_s,'cannot be in the future') if Time.zone.now < value
     end
   end
-
+  
   validate :starts_before_ends
-  #validate :in_window, :if => :has_order_detail?
   #validate minimum_cost met
 
+  # validates for non_admins
+  #validate :in_window, :if => :has_order_detail?  
+  
   # virtual attributes
   attr_accessor     :duration_mins, :duration_value, :duration_unit,
                     :reserve_start_date, :reserve_start_hour, :reserve_start_min, :reserve_start_meridian,
                     :actual_start_date, :actual_start_hour, :actual_start_min, :actual_start_meridian,
                     :actual_end_date, :actual_end_hour, :actual_end_min, :actual_end_meridian
+  attr_writer       :note
   before_validation :set_reserve_start_at, :set_reserve_end_at, :set_actual_start_at, :set_actual_end_at
 
   scope :active, :conditions => ["reservations.canceled_at IS NULL AND (orders.state = 'purchased' OR orders.state IS NULL)"], :joins => ['LEFT JOIN order_details ON order_details.id = reservations.order_detail_id', 'LEFT JOIN orders ON orders.id = order_details.order_id']
   scope :limit,    lambda { |n| {:limit => n}}
 
+  ## delegations
+  delegate :note,     :to => :order_detail, :allow_nil => true
 
+  ## AR Hooks
+  after_save do
+    order_detail.note = @note
+    order_detail.save
+  end
+
+  def save_extended_validations(options ={})
+    perform_validations(options)
+    in_window
+    in_the_future
+    return false if self.errors.any?
+    self.save
+  end
+  def save_extended_validations!
+    raise ActiveRecord::RecordInvalid.new(self) unless save_extended_validations()  
+  end
+  def save_as_user!(user)
+    if (user.operator_of?(instrument.facility))
+      self.save!
+    else
+      self.save_extended_validations!  
+    end
+  end
+  
   def self.upcoming(t=Time.zone.now)
     # If this is a named scope differences emerge between Oracle & MySQL on #reserve_end_at querying.
     # Eliminate by letting Rails filter by #reserve_end_at
@@ -39,7 +70,7 @@ class Reservation < ActiveRecord::Base
     reservations
   end
 
-
+  # should perhaps be delegations above
   def order
     order_detail.order if order_detail
   end
@@ -176,6 +207,7 @@ class Reservation < ActiveRecord::Base
   def in_window?
     groups   = (order_detail.order.user.price_groups + order_detail.order.account.price_groups).flatten.uniq
     max_days = longest_reservation_window(groups)
+    logger.debug("reserve_start: #{reserve_start_at}")
     diff     = reserve_start_at.to_date - Date.today
     diff <= max_days
   end
@@ -620,8 +652,6 @@ class Reservation < ActiveRecord::Base
     satisfies_minimum_length? &&
     satisfies_maximum_length? &&
     instrument_is_available_to_reserve? &&
-    in_the_future? &&
-    in_window? &&
     does_not_conflict_with_other_reservation?
   end
 

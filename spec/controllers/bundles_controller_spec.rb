@@ -9,6 +9,11 @@ describe BundlesController do
     @authable=Factory.create(:facility)
     @facility_account=Factory.create(:facility_account, :facility => @authable)
     @bundle=Factory.create(:bundle, :facility_account => @facility_account, :facility => @authable)
+    
+    # Create at least one item in the bundle, otherwise bundle.can_purchase? will return false
+    item = Factory.create(:item, :facility_account => @facility_account, :facility => @authable)
+    bundle_product = BundleProduct.new(:bundle => @bundle, :product => item, :quantity => 1)
+    bundle_product.save!
   end
 
 
@@ -26,7 +31,6 @@ describe BundlesController do
       should assign_to(:archived_product_count).with_kind_of(Fixnum)
       should assign_to(:not_archived_product_count).with_kind_of(Fixnum)
       should assign_to(:product_name).with_kind_of(String)
-      should assign_to(:bundles).with_kind_of(Array)
       assigns(:bundles).size.should == 1
       assigns(:bundles).should == @authable.bundles.not_archived
     end
@@ -37,7 +41,6 @@ describe BundlesController do
       maybe_grant_always_sign_in(:director)
       @params.merge!(:archived => 'true')
       do_request
-      should assign_to(:bundles).with_kind_of(Array)
       assigns(:bundles).size.should == 1
       assigns(:bundles).should == @authable.bundles.archived
     end
@@ -54,10 +57,13 @@ describe BundlesController do
     end
 
     it 'should flash and falsify @add_to_cart if bundle cannot be purchased' do
-      Bundle.any_instance.stubs(:can_purchase?).returns(false)
+      sign_in @guest
+      Bundle.any_instance.stubs(:available_for_purchase?).returns(false)
       do_request
       assigns[:add_to_cart].should be_false
+      assigns[:error].should == 'not_available'
       flash[:notice].should_not be_nil
+      
     end
     
     it 'should falsify @add_to_cart if #acting_user is nil' do
@@ -68,34 +74,31 @@ describe BundlesController do
     end
     
     it 'should flash and falsify @add_to_cart if user is not approved' do
-      BundlesController.any_instance.stubs(:acting_user).returns(User.new(:id =>17))
-      Bundle.any_instance.stubs(:requires_approval?).returns(true)
-      ProductUser.stubs(:find_by_user_id).returns(nil)
+      switch_to @guest
+      @bundle.update_attributes(:requires_approval => true)
       do_request
+      assigns[:login_required].should be_false
       assigns[:add_to_cart].should be_false
+      assigns[:error].should == 'requires_approval'
       flash[:notice].should_not be_nil
     end
-    
+        
     it 'should flash and falsify @add_to_cart if there is no price group for user to purchase through' do
-      BundlesController.any_instance.stubs(:acting_user).returns(User.new(:id =>18))
-      BundlesController.any_instance.stubs(:bundle_has_price_policies_for_user?).returns(false)
+      sign_in @guest
+      BundlesController.any_instance.stubs(:price_policy_available_for_product?).returns(false)
       do_request
       assigns[:add_to_cart].should be_false
+      assigns[:error].should == 'not_in_price_group'
       flash[:notice].should_not be_nil
     end
     
     it 'should flash and falsify @add_to_cart if user is not authorized to purchase on behalf of another user' do
-      # stubs to pass through earlier filters
-      BundlesController.any_instance.stubs(:acting_user).returns(User.new(:id =>18))
-      BundlesController.any_instance.stubs(:acting_as?).returns(true)
-      BundlesController.any_instance.stubs(:bundle_has_price_policies_for_user?).returns(true)
-      
-      # stubs to make this return false
-      BundlesController.any_instance.stubs(:session_user).returns(User.new(:id=>19))
+      sign_in @guest
+      switch_to @staff
       
       do_request
       assigns[:add_to_cart].should be_false
-      flash[:notice].should == 'You are not authorized to order bundles from this facility on behalf of a user.'
+      assigns[:error].should == 'not_authorized_acting_as'
     end
 
     it 'should not require login' do
@@ -105,6 +108,33 @@ describe BundlesController do
       should assign_to(:login_required)
       should_not set_the_flash
       should render_template('show')
+    end
+    
+    context "restricted bundle" do
+      before :each do
+        @bundle.update_attributes(:requires_approval => true)
+      end
+      it "should show a notice if you're not approved" do
+        sign_in @guest
+        do_request
+        assigns[:add_to_cart].should be_false
+        flash[:notice].should_not be_nil
+      end
+      
+      it "should not show a notice and show an add to cart" do
+        @product_user = ProductUser.create(:product => @bundle, :user => @guest, :approved_by => @admin.id, :approved_at => Time.zone.now)
+        sign_in @guest
+        do_request
+        flash.should be_empty
+        assigns[:add_to_cart].should be_true
+      end
+      
+      it "should allow an admin to allow it to add to cart" do
+        sign_in @admin
+        do_request
+        flash.should_not be_empty
+        assigns[:add_to_cart].should be_true
+      end
     end
 
   end
@@ -196,3 +226,4 @@ describe BundlesController do
     assigns(:bundle).should == @bundle
   end
 end
+

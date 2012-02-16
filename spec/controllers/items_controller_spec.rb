@@ -71,6 +71,59 @@ describe ItemsController do
     it_should_allow(:guest) { @block.call }
 
     it_should_allow_all(facility_operators) { @block.call }
+    
+    context "restricted item" do
+      before :each do
+        @item.update_attributes(:requires_approval => true)
+      end
+      it "should show a notice if you're not approved" do
+        sign_in @guest
+        do_request
+        assigns[:add_to_cart].should be_false
+        flash[:notice].should_not be_nil
+      end
+      
+      it "should not show a notice and show an add to cart" do
+        @product_user = ProductUser.create(:product => @item, :user => @guest, :approved_by => @admin.id, :approved_at => Time.zone.now)
+        sign_in @guest
+        do_request
+        flash.should be_empty
+        assigns[:add_to_cart].should be_true
+      end
+      
+      it "should allow an admin to allow it to add to cart" do
+        sign_in @admin
+        do_request
+        flash.should_not be_empty
+        assigns[:add_to_cart].should be_true
+      end
+    end
+    
+     context "hidden item" do
+      before :each do
+        @item.update_attributes(:is_hidden => true)
+      end
+      it "should throw a 404 if you're not an admin" do
+        sign_in @guest
+        do_request
+        response.should_not be_success
+        response.response_code.should == 404
+      end
+      it "should show the page if you're an admin" do
+        sign_in @admin
+        do_request
+        response.should be_success
+        assigns[:item].should == @item
+      end
+      it "should show the page if you're acting as a user" do
+        ItemsController.any_instance.stubs(:acting_user).returns(@guest)
+        ItemsController.any_instance.stubs(:acting_as?).returns(true)
+        sign_in @admin
+        do_request
+        response.should be_success
+        assigns[:item].should == @item
+      end
+    end
 
   end
 

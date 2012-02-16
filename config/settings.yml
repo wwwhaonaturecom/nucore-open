@@ -1,0 +1,9 @@
+aes_crypt_key:
+email:
+  from: 'nucore-noreply@northwestern.edu'
+  fake:
+    enabled: false
+    to: 'john@tablexi.com'
+  exceptions:
+    sender: 'nucore-noreply@northwestern.edu'
+    recipients: 'support-nucore@tablexi.com'

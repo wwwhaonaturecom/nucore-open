@@ -77,6 +77,65 @@ describe InstrumentsController do
         assert_redirected_to add_order_path(Order.all.last, :product_id => @instrument.id, :quantity => 1)
       end
     end
+    
+    context "restricted instrument" do
+      before :each do
+        @instrument.schedule_rules.create(Factory.attributes_for(:schedule_rule))
+        @instrument.update_attributes(:requires_approval => true)
+      end
+      it "should show a notice if you're not approved" do
+        sign_in @guest
+        do_request
+        assigns[:add_to_cart].should be_false
+        flash[:notice].should_not be_nil
+      end
+      
+      it "should not show a notice and show an add to cart" do
+        @product_user = ProductUser.create(:product => @instrument, :user => @guest, :approved_by => @admin.id, :approved_at => Time.zone.now)
+        sign_in @guest
+        do_request
+        flash.should be_empty
+        assigns[:add_to_cart].should be_true
+      end
+      
+      it "should allow an admin to allow it to add to cart" do
+        sign_in @admin
+        do_request
+        flash.should_not be_empty
+        assigns[:add_to_cart].should be_true
+      end
+    end
+    
+     context "hidden instrument" do
+      before :each do
+        @instrument.update_attributes(:is_hidden => true)
+      end
+      it "should throw a 404 if you're not an admin" do
+        sign_in @guest
+        do_request
+        response.should_not be_success
+        response.response_code.should == 404
+      end
+      it "should show the page if you're an admin" do
+        # instruments have some complicated can_purchase rules requiring schedule rules
+        # and price policies.
+        Instrument.any_instance.stubs(:can_purchase?).returns(true)
+        sign_in @admin
+        do_request
+        assigns[:instrument].should == @instrument
+        assigns[:add_to_cart].should == true
+        response.should be_redirect
+      end
+      it "should show the page if you're acting as a user" do
+        Instrument.any_instance.stubs(:can_purchase?).returns(true)
+        sign_in @admin
+        switch_to @guest
+        do_request
+        assigns[:instrument].should == @instrument
+        assigns[:add_to_cart].should == true
+        response.should be_redirect
+      end
+    end
   end
 
 
@@ -292,8 +351,8 @@ describe InstrumentsController do
 
     it_should_allow_operators_only :redirect do
       should assign_to(:instrument).with_kind_of Instrument
-      assert_redirected_to manage_facility_instrument_url(@authable, assigns(:instrument))
-
+      #assert_redirected_to manage_facility_instrument_url(@authable, assigns(:instrument))
+      assert_redirected_to facility_instruments_url
       dead=false
 
       begin
