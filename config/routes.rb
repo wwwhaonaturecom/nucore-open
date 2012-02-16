@@ -81,8 +81,7 @@ Nucore::Application.routes.draw do |map|
         :account => [:get, :post],
         :account_owner => [:get, :post],
         :purchaser => [:get, :post],
-        :price_group => [:get, :post],
-        :assigned_to => [:get, :post]
+        :price_group => [:get, :post]
     }
 
     facility.resources :instrument_reports, :collection => {
