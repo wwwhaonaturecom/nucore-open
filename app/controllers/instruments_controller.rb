@@ -1,48 +1,27 @@
-class InstrumentsController < ApplicationController
+class InstrumentsController < ProductsCommonController
   customer_tab  :show
   admin_tab     :agenda, :create, :edit, :index, :manage, :new, :schedule, :update
-  before_filter :authenticate_user!, :except => :show
-  before_filter :check_acting_as, :except => [:show]
-  before_filter :init_current_facility
-  before_filter :init_instrument, :except => [:index, :new, :create]
+  
   before_filter :prepare_relay_params, :only => [ :create, :update ]
-
-  load_and_authorize_resource :except => :show
-
-  layout 'two_column'
-
-  def initialize
-    @active_tab = 'admin_products'
-    super
-  end
 
   # GET /instruments
   def index
-    @archived_product_count     = current_facility.instruments.archived.length
-    @not_archived_product_count = current_facility.instruments.not_archived.length
-    @product_name               = 'Instruments'
-    if params[:archived].nil? || params[:archived] != 'true'
-      @instruments = current_facility.instruments.not_archived
-    else
-      @instruments = current_facility.instruments.archived
-    end
-
+    super
     # find current and next upcoming reservations for each instrument
     @reservations = {}
     @instruments.each { |i| @reservations[i.id] = i.reservations.upcoming[0..2]}
-    @instruments.sort!
   end
 
   # GET /instruments/1
   def show
-    raise ActiveRecord::RecordNotFound if @instrument.is_archived? || (@instrument.is_hidden? && !acting_as?)
+    raise ActiveRecord::RecordNotFound if !product_is_accessible?
     add_to_cart = true
     login_required = false
     
     # do the product have active price policies && schedule rules
     unless @instrument.can_purchase?
       add_to_cart = false
-      flash[:notice] = "The #{@instrument.to_s} instrument is currently unavailable for reservation online."
+      flash[:notice] = t_model_error(Instrument, 'not_available', :instrument => @instrument)
     end
 
     # is user logged in?
@@ -51,10 +30,11 @@ class InstrumentsController < ApplicationController
       add_to_cart = false
     end
 
-    # is the user approved?
+    # is the user approved? or is the logged in user an operator of the facility (logged in user can override restrictions)
+    
     if add_to_cart && !@instrument.is_approved_for?(acting_user)
-      add_to_cart = false
-      flash[:notice] = "The #{@instrument.to_s} instrument requires approval to reserve; please contact the facility for further information:<br/><br/> #{@instrument.facility}<br/><a href=\"mailto:#{@instrument.facility.email}\">#{@instrument.facility.email}</a>".html_safe
+      add_to_cart = false unless session_user and session_user.can_override_restrictions?(@instrument)
+      flash[:notice] = t_model_error(Instrument, 'requires_approval_html', :instrument => @instrument, :facility => @instrument.facility, :email => @instrument.facility.email).html_safe
     end
 
     # does the product have any price policies for any of the groups the user is a member of?
@@ -68,7 +48,8 @@ class InstrumentsController < ApplicationController
       add_to_cart = false
       flash[:notice] = 'You are not authorized to order instruments from this facility on behalf of a user.'
     end
-
+    @add_to_cart = add_to_cart
+    
     if login_required
       session[:requested_params]=request.fullpath
       return redirect_to new_user_session_path
@@ -77,32 +58,6 @@ class InstrumentsController < ApplicationController
     end
 
     redirect_to add_order_path(acting_user.cart(session_user, false), :product_id => @instrument.id, :quantity => 1)
-  end
-
-  # GET /instruments/1/manage
-  def manage
-  end
-
-  # GET /instruments/new
-  def new
-    @instrument = current_facility.instruments.new(:account => NUCore::COMMON_ACCOUNT)
-  end
-
-  # GET /items/1/edit
-  def edit
-  end
-
-  # POST /instruments
-  def create
-    @instrument = current_facility.instruments.new(params[:instrument])
-    @instrument.initial_order_status_id = OrderStatus.default_order_status.id
-    
-    if @instrument.save
-      flash[:notice] = 'Instrument was successfully created.'
-      redirect_to(manage_facility_instrument_url(current_facility, @instrument))
-    else
-      render :action => "new"
-    end
   end
 
   # PUT /instruments/1
@@ -118,15 +73,6 @@ class InstrumentsController < ApplicationController
     end
 
     render :action => "edit"
-  end
-
-  # DELETE /instruments/1
-  def destroy
-    @instrument.destroy
-
-    respond_to do |format|
-      format.html { redirect_to(manage_facility_instrument_url(current_facility, @instrument)) }
-    end
   end
 
   # GET /instruments/1/schedule
@@ -170,11 +116,6 @@ class InstrumentsController < ApplicationController
     end
     render :action => :instrument_status, :layout => false
   end
-
-  def init_instrument
-    @instrument = current_facility.instruments.find_by_url_name!(params[:instrument_id] || params[:id])
-  end
-
 
   private
 
