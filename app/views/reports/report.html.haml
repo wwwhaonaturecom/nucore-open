@@ -26,9 +26,7 @@
     %li
       = link_to 'Export', '#', :id => 'export'
     %li
-      - attrs={ :id => 'export-all' }
-      - attrs.merge!(:class => 'disabled') unless controller_name == 'general_reports'
-      = link_to 'Export All', '#', attrs
+      = link_to 'Export All', '#', :id => 'export-all', :class => 'disabled'
 
   %div#tabs
     = render :partial => 'report_tabs'
