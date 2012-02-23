@@ -1,0 +1,7 @@
+en:
+  activerecord:
+    errors:
+      # The values :model, :attribute and :value are always available for interpolation
+      # The value :count is available when applicable. Can be used for pluralization.
+      messages:
+        bad_payment_source_format: "must be in format %{pattern_format}; project, activity, program, and chart field 1 are optional"
