@@ -22,6 +22,11 @@ class ReservationsController < ApplicationController
     @reservations = @instrument.reservations.active
     @rules        = @instrument.schedule_rules
     
+    # restrict to available if it requires if it requires approval,
+    # but params[:all] will override that
+    @rules = @rules.available_to_user(acting_user) if @instrument.requires_approval
+    
+    
     if @end_at - @start_at <= 1.week
       # build unavailable schedule
       @unavailable = ScheduleRule.unavailable(@rules)
@@ -119,6 +124,7 @@ class ReservationsController < ApplicationController
 
         return
       rescue Exception => e
+        logger.error(e.message)
         raise ActiveRecord::Rollback
       end
     end
