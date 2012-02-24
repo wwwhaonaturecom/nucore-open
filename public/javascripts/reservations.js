@@ -36,6 +36,8 @@ $(document).ready(function() {
         }
       }
     },
+    eventDrop: updatePicker,
+    eventResize: updatePicker,
     minTime: minTime,
     maxTime: maxTime,
     height: (maxTime - minTime)*42 + 75,
@@ -121,7 +123,6 @@ $(document).ready(function() {
 	  var currentTime = new Date(t);
 	  var endTime = new Date(currentTime.getTime() + $("#reservation_duration_value").val() * 60*1000).toString();
 	 if (window.currentEvent) {
-		 console.debug('rerendering');
 		 window.currentEvent.start = currentTime.toString();
 		 window.currentEvent.end = endTime;
 	 } else {
@@ -136,8 +137,19 @@ $(document).ready(function() {
 		 
 	 }
 	 $("#calendar").fullCalendar('renderEvent', window.currentEvent, true);
-	 console.debug('currentEvent', window.currentEvent);
 	 
+  }
+
+  function updatePicker(event) {
+    var hour = event.start.getHours() % 12;
+    var ampm = event.start.getHours() < 12 ? 'AM' : 'PM';
+    if (hour == 0) hour = 12;
+    $("#reservation_reserve_start_hour").val(hour);
+    $("#reservation_reserve_start_min").val(event.start.getMinutes());
+    $("#reservation_reserve_start_meridian").val(ampm);
+    $("#reservation_duration_value").val((event.end - event.start) / 60000);
+    $("#reservation_reserve_start_date").val(event.start.toString("MM/dd/yyyy"));
+    
   }
 
   //$("div.fc-button-prev").hide();
