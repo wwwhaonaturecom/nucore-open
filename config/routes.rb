@@ -48,6 +48,7 @@ Nucore::Application.routes.draw do |map|
       instrument.status   'status',   :controller => 'instruments', :action => 'instrument_status'
       instrument.switch   'switch',   :controller => 'instruments', :action => 'switch'
       instrument.resources :schedule_rules, :except => [:show]
+      instrument.resources :product_access_groups
       instrument.resources :price_policies, :controller => 'instrument_price_policies', :except => [:show]
       instrument.resources :reservations, :only => [:new, :create, :destroy], :controller => 'facility_reservations' do |reservation|
         reservation.edit_admin '/edit_admin', :controller => 'facility_reservations', :action => 'edit_admin', :conditions => {:method => :get}
@@ -56,6 +57,7 @@ Nucore::Application.routes.draw do |map|
       instrument.resources :reservations, :only => [:index]
       instrument.resources :users, :controller => 'product_users', :except => [:show, :edit, :create]
       instrument.connect '/users/user_search_results', :controller =>'product_users', :action => 'user_search_results'
+      instrument.update_restrictions '/update_restrictions', :controller => 'product_users', :action => 'update_restrictions'
     end
 
     facility.resources :services, :member => {:manage => :get} do |service|
@@ -81,7 +83,8 @@ Nucore::Application.routes.draw do |map|
         :account => [:get, :post],
         :account_owner => [:get, :post],
         :purchaser => [:get, :post],
-        :price_group => [:get, :post]
+        :price_group => [:get, :post],
+        :assigned_to => [:get, :post]
     }
 
     facility.resources :instrument_reports, :collection => {

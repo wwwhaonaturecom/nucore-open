@@ -22,6 +22,11 @@ class ReservationsController < ApplicationController
     @reservations = @instrument.reservations.active
     @rules        = @instrument.schedule_rules
     
+    # restrict to available if it requires if it requires approval,
+    # but params[:all] will override that
+    @rules = @rules.available_to_user(acting_user) if @instrument.requires_approval
+    
+    
     if @end_at - @start_at <= 1.week
       # build unavailable schedule
       @unavailable = ScheduleRule.unavailable(@rules)
@@ -80,7 +85,8 @@ class ReservationsController < ApplicationController
   # POST /orders/1/order_details/1/reservations
   def create
     raise ActiveRecord::RecordNotFound unless @reservation.nil?
-    @reservation  = @instrument.reservations.new(params[:reservation].update(:order_detail => @order_detail))
+    @reservation  = @instrument.reservations.new(params[:reservation])
+    @reservation.order_detail = @order_detail
     
     if !@order_detail.bundled? && params[:order_account].blank?
       flash[:error]=I18n.t 'controllers.reservations.create.no_selection'
@@ -117,10 +123,11 @@ class ReservationsController < ApplicationController
         end
 
         return
-      rescue Exception => e
+      rescue ActiveRecord::RecordInvalid => e
         raise ActiveRecord::Rollback
       end
     end
+    set_windows
     render :action => "new"
   end
 
@@ -177,10 +184,11 @@ class ReservationsController < ApplicationController
         end
         flash[:notice] = 'The reservation was successfully updated.'
         redirect_to (@order.purchased? ? reservations_path : cart_path) and return
-      rescue Exception => e
+      rescue ActiveRecord::RecordInvalid => e
         raise ActiveRecord::Rollback
       end
     end
+    set_windows
     render :action => "edit"
   end
 

@@ -102,6 +102,7 @@ en:
         cc_name: "Name on Card"
         affiliate: "Affiliate Name"
         remit: "Bill To"
+        all_instruct: "Enter a text description to help you and the user identify this payment source."
         cc_instruct: "No part of a credit card number may be entered. Enter a text description to help you and the user identify this card. For example: \"Dr. Smith's Visa Card\"."
         po_instruct: "Where the invoice should be sent to for this payment source; this text will appear on the customer's invoice."
     account_balances:
@@ -445,6 +446,8 @@ en:
     new:
       label:
         search_term: "Search by name, NetID, or username"
+    update_restrictions:
+      notice: "The users' scheduling groups have been updated."
 
   user_price_group_members:
     new:
@@ -828,8 +831,14 @@ en:
         service:
           not_available: This service is currently unavailable for purchase online.
           requires_approval: This service requires approval to purchase; please contact the facility.
-          not_in_price_group: You are not in a price group that may reserve this service; please contact the facility.
-          not_authorized_acting_as: You are not authorized to order services from this facility on behalf of a user. 
+          not_in_price_group: You are not in a price group that may purchase this service; please contact the facility.
+          not_authorized_acting_as: You are not authorized to order services from this facility on behalf of a user.
+        bundle:
+          not_available: This bundle is currently unavailable for purchase online.
+          requires_approval: This bundle requires approval to purchase; please contact the facility.
+          not_in_price_group: You are not in a price group that may purchase this bundle; please contact the facility.
+          not_authorized_acting_as: You are not authorized to order bundles from this facility on behalf of a user.
+          
         account_user:
           attributes:
             user_id:
@@ -862,6 +871,7 @@ en:
       facility:
         one: Facility
         other: Facilities
+      product_access_group: Scheduling Group
     # Model Attributes
     attributes:
       user:

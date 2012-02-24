@@ -3,8 +3,10 @@ require "pp"
 class Reservation < ActiveRecord::Base
   include DateHelper
 
+  ## relationships
   belongs_to :instrument
   belongs_to :order_detail
+  
 
   validates_uniqueness_of :order_detail_id, :allow_nil => true
   validates_presence_of :instrument_id, :reserve_start_at, :reserve_end_at
@@ -27,10 +29,22 @@ class Reservation < ActiveRecord::Base
                     :reserve_start_date, :reserve_start_hour, :reserve_start_min, :reserve_start_meridian,
                     :actual_start_date, :actual_start_hour, :actual_start_min, :actual_start_meridian,
                     :actual_end_date, :actual_end_hour, :actual_end_min, :actual_end_meridian
+  attr_writer       :note
   before_validation :set_reserve_start_at, :set_reserve_end_at, :set_actual_start_at, :set_actual_end_at
 
   scope :active, :conditions => ["reservations.canceled_at IS NULL AND (orders.state = 'purchased' OR orders.state IS NULL)"], :joins => ['LEFT JOIN order_details ON order_details.id = reservations.order_detail_id', 'LEFT JOIN orders ON orders.id = order_details.order_id']
   scope :limit,    lambda { |n| {:limit => n}}
+
+  ## delegations
+  delegate :note,     :to => :order_detail, :allow_nil => true
+
+  ## AR Hooks
+  after_save do
+    if order_detail
+      order_detail.note = @note
+      order_detail.save
+    end
+  end
 
   def save_extended_validations(options ={})
     perform_validations(options)
@@ -44,8 +58,10 @@ class Reservation < ActiveRecord::Base
   end
   def save_as_user!(user)
     if (user.operator_of?(instrument.facility))
+      @reserved_by_admin = true
       self.save!
     else
+      @reserved_by_admin = false
       self.save_extended_validations!  
     end
   end
@@ -58,6 +74,7 @@ class Reservation < ActiveRecord::Base
     reservations
   end
 
+  # should perhaps be delegations above
   def order
     order_detail.order if order_detail
   end
@@ -194,7 +211,6 @@ class Reservation < ActiveRecord::Base
   def in_window?
     groups   = (order_detail.order.user.price_groups + order_detail.order.account.price_groups).flatten.uniq
     max_days = longest_reservation_window(groups)
-    logger.debug("reserve_start: #{reserve_start_at}")
     diff     = reserve_start_at.to_date - Date.today
     diff <= max_days
   end
@@ -216,9 +232,16 @@ class Reservation < ActiveRecord::Base
   end
 
   def instrument_is_available_to_reserve? (start_at = self.reserve_start_at, end_at = self.reserve_end_at)
+    
+    # check for order_detail and order because some old specs don't set an order detail
+    # if we're saving as an administrator, we want access to all schedule rules
+    if (order_detail and order_detail.order and !@reserved_by_admin)
+      rules = instrument.available_schedule_rules(order_detail.order.user)
+    else
+      rules = instrument.schedule_rules
+    end
+    
     mins  = (end_at - start_at)/60
-    rules = instrument.schedule_rules.each
-
     (0..mins).each { |n|
       dt    = start_at.advance(:minutes => n)
       found = false
@@ -239,7 +262,7 @@ class Reservation < ActiveRecord::Base
     # initialize result with defaults
     calendar_object = {
       "start"  => reserve_start_at.strftime("%a, %d %b %Y %H:%M:%S"),
-      "end"    => reserve_end_at.strftime("%a, %d %b %Y %H:%M:%S"),
+      "end"    => (actual_end_at || reserve_end_at).strftime("%a, %d %b %Y %H:%M:%S"),
       "allDay" => false,
       "title"  => "Reservation",
     }
