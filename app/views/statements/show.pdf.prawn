@@ -86,7 +86,7 @@ prawn_document pdf_config do |pdf|
       od.order.ordered_at.strftime("%m/%d/%Y"),
       "#{od.product}",
       "#{od.quantity}",
-      number_to_currency(od.price_policy.unit_cost),
+      number_to_currency(od.actual_total)
       number_to_currency(od.actual_subsidy),
       number_to_currency(od.actual_total)
     ]
