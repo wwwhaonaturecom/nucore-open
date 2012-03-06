@@ -11,6 +11,34 @@ namespace :nu do
   end
 
 
+  desc 'fix related to Bug #44115'
+  task :correct_auto_cancelled_orders => :environment do |t, args|
+    order_detail_ids=[ 6919, 6920, 6912, 6913, 6914, 6915, 6924, 6929, 6930, 6911, 6916, 6923, 6928, 6925, 6922, 6917 ]
+    complete=OrderStatus.complete.first
+
+    order_detail_ids.each do |odid|
+      begin
+        od=OrderDetail.find odid
+        reservation=od.reservation
+        od.change_status! complete unless od.order_status == complete || od.order_status.parent_id == complete.id
+
+        reservation.update_attributes!(
+          :canceled_by => nil,
+          :canceled_at => nil,
+          :canceled_reason => nil,
+          :actual_start_at => reservation.reserve_start_at,
+          :actual_end_at => reservation.reserve_end_at
+        )
+
+        od.assign_price_policy
+        od.save!
+      rescue => e
+        puts "Could not fix order detail with id #{odid}!: #{e.message}\n#{e.backtrace.join("\n")}"
+      end
+    end
+  end
+
+
   desc 'fix related to Task #42921'
   task :strip_user_names => :environment do
     appease_bcaudit
