@@ -446,8 +446,6 @@ en:
     new:
       label:
         search_term: "Search by name, NetID, or username"
-    update_restrictions:
-      notice: "The users' scheduling groups have been updated."
 
   user_price_group_members:
     new:
@@ -871,7 +869,6 @@ en:
       facility:
         one: Facility
         other: Facilities
-      product_access_group: Scheduling Group
     # Model Attributes
     attributes:
       user:
