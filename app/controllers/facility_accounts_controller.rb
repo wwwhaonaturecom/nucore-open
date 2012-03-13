@@ -13,7 +13,7 @@ class FacilityAccountsController < ApplicationController
     super
   end
 
-  # GET /admin_accounts
+  # GET /facilties/:facility_id/accounts
   def index
     # list accounts that have ordered in the facility
     @accounts = current_facility.order_details.accounts.paginate(:page => params[:page])    
