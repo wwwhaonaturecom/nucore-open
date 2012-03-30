@@ -1,5 +1,4 @@
 #table_billing
-  - require 'ruby-debug'; debugger
   - if @order_detail_action
     -#= form_tag url_for(params.merge({:action => @order_detail_action})), :method => :post do
     = form_tag url_for(:controller => params[:controller], :action => @order_detail_action), :method => :post do
