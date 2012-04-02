@@ -12,8 +12,9 @@ class OrdersController < ApplicationController
   end
 
   def init_order
-    #@order = acting_user.orders.find(params[:id])
     @order = Order.find(params[:id])
+    @order_details = @order.order_details.select{|od| od.can_be_viewed_by?(acting_user) }
+    raise ActiveRecord::RecordNotFound if @order_details.empty?
   end
 
   def protect_purchased_orders
@@ -239,7 +240,6 @@ class OrdersController < ApplicationController
   # GET /orders/1/receipt
   def receipt
     raise ActiveRecord::RecordNotFound unless @order.purchased?
-    @order_details = @order.order_details.select{|od| od.can_be_viewed_by?(acting_user) }
     @accounts = @order_details.collect(&:account)
   end
 
