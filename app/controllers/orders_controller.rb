@@ -12,7 +12,8 @@ class OrdersController < ApplicationController
   end
 
   def init_order
-    @order = acting_user.orders.find(params[:id])
+    #@order = acting_user.orders.find(params[:id])
+    @order = Orders.find(params[:id])
   end
 
   def protect_purchased_orders
