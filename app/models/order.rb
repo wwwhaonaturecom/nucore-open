@@ -9,6 +9,8 @@ class Order < ActiveRecord::Base
 
   scope :for_user, lambda { |user| { :conditions => ['user_id = ? AND ordered_at IS NOT NULL AND state = ?', user.id, 'purchased'] } }
  
+  attr_accessor :being_purchased_by_admin
+
   # BEGIN acts_as_state_machhine
   include AASM
 
@@ -39,7 +41,7 @@ class Order < ActiveRecord::Base
   end
 
   def cart_valid?
-    has_details? && has_valid_payment? && order_details.all? {|od| od.valid_for_purchase?}
+    has_details? && has_valid_payment? && (@being_purchased_by_admin || order_details.all? {|od| od.valid_for_purchase?})
   end
 
   def has_valid_payment?
@@ -111,13 +113,13 @@ class Order < ActiveRecord::Base
       when Item
         order_detail = self.order_details.first(:conditions => ['product_id = ? AND group_id IS NULL', product.id])
         if order_detail.nil?
-          order_detail = order_details.create(:product_id => product.id, :quantity => 1)
+          order_detail = order_details.create(:product_id => product.id, :quantity => quantity)
         else
           order_detail.quantity += quantity.to_i
         end
         order_detail.update_account(account)
       else
-        order_detail = order_details.create(:product_id => product.id, :quantity => 1)
+        order_detail = order_details.create(:product_id => product.id, :quantity => quantity)
         order_detail.update_account(account)
     end
     self.facility = product.facility
@@ -140,8 +142,9 @@ class Order < ActiveRecord::Base
       end
       
       # otherwise update the field(s)
+      order_detail.update_attributes!(updates)
       order_detail.assign_estimated_price if order_detail.cost_estimated?
-      order_detail.update_attributes(updates)
+      order_detail.save
     end
   end
   
