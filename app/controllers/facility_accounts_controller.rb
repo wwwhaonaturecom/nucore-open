@@ -157,7 +157,7 @@ class FacilityAccountsController < ApplicationController
       
       # retrieve accounts matched on account_number for this facility
       @accounts += Account.where(
-        "account_number LIKE ? AND (
+        "LOWER(account_number) LIKE ? AND (
           (type <> 'NufsAccount' AND facility_id = ?)
           OR (type = 'NufsAccount' AND facility_id IS NULL)
         )", term, current_facility.id
