@@ -3,7 +3,7 @@ class OrdersController < ApplicationController
 
   before_filter :authenticate_user!
   before_filter :check_acting_as,          :except => [:cart, :add, :choose_account, :show, :remove, :purchase, :receipt, :update]
-  before_filter :init_order,               :except => [:cart, :index]
+  before_filter :init_order,               :except => [:cart, :index, :receipt]
   before_filter :protect_purchased_orders, :except => [:cart, :receipt, :confirmed, :index]
 
   def initialize
@@ -12,7 +12,7 @@ class OrdersController < ApplicationController
   end
 
   def init_order
-    @order = acting_user.orders.find(params[:id])
+    @order = Order.find(params[:id])
   end
 
   def protect_purchased_orders
@@ -34,13 +34,14 @@ class OrdersController < ApplicationController
 
   # PUT /orders/:id/update
   def update
-    order_detail_quantities = {}
+    order_detail_updates = {}
     params.each do |key, value|
-      if /^quantity(\d+)$/ =~ key
-        order_detail_quantities[$1.to_i] = value.to_i
+      if /^(quantity|note)(\d+)$/ =~ key and value.present?
+        order_detail_updates[$2.to_i] ||= Hash.new
+        order_detail_updates[$2.to_i][$1.to_sym] = value
       end
     end
-    @order.update_quantities(order_detail_quantities)
+    @order.update_details(order_detail_updates)
 
     redirect_to order_path(@order) and return
   end
@@ -53,7 +54,8 @@ class OrdersController < ApplicationController
 
   # PUT /orders/2/add/
   def add
-    @quantity   = params[:quantity].to_i || session[:add_to_cart][:quantity]
+    @quantity   = params[:quantity] || session[:add_to_cart][:quantity]
+    @quantity=@quantity.to_i if @quantity.is_a?(String)
     @product_id = params[:product_id]    || session[:add_to_cart][:product_id]
     session[:add_to_cart] = nil
     @product    = Product.find(@product_id)
@@ -109,22 +111,20 @@ class OrdersController < ApplicationController
       OrderDetail.transaction do
         if order_details.all?{|od| od.destroy}
           flash[:notice] = "The bundle has been removed."
-          redirect_to order_url(@order)
         else
           flash[:error] = "An error was encountered while removing the bundle."
-          redirect_to order_url(@order)
         end
       end
     # remove single products
     else
       if order_detail.destroy
         flash[:notice] = "The product has been removed."
-        redirect_to order_url(@order)
       else
         flash[:error] = "An error was encountered while removing the product."
-        redirect_to order_url(@order)
       end
     end
+
+    redirect_to params[:redirect_to].presence || order_url(@order)
 
     # clear out account on the order if its now empty
     if  @order.order_details.empty?
@@ -207,7 +207,8 @@ class OrdersController < ApplicationController
 
   # PUT /orders/1/purchase
   def purchase
-    #revalidate the cart, just to be sure
+    #revalidate the cart, but only if the user is not an admin
+    @order.being_purchased_by_admin = session_user.operator_of? @facility
     if @order.validate_order! && @order.purchase!
       Notifier.order_receipt(:user => @order.user, :order => @order).deliver
 
@@ -235,7 +236,13 @@ class OrdersController < ApplicationController
 
   # GET /orders/1/receipt
   def receipt
+    @order = Order.find(params[:id])
     raise ActiveRecord::RecordNotFound unless @order.purchased?
+
+    @order_details = @order.order_details.select{|od| od.can_be_viewed_by?(acting_user) }
+    raise ActiveRecord::RecordNotFound if @order_details.empty?
+
+    @accounts = @order_details.collect(&:account)
   end
 
   # GET /orders

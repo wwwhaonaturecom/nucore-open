@@ -14,7 +14,8 @@
     var minDaysFromNow  = #{@max_days_ago};
     var minTime         = #{@instrument.first_available_hour};
     var maxTime         = #{@instrument.last_available_hour+1};
-    var withDetails     = #{@instrument.show_details? || false}
+    var withDetails     = #{@instrument.show_details? || false};
+    var isBundle        = #{@order_detail.bundled?};
 
 = content_for :breadcrumb do
   %ul.horiz
@@ -51,12 +52,20 @@
         - options.collect!{|acct| [acct.to_s ,acct.id] }
         - options.unshift(Array.new(2)) if options.size > 1
         = select_tag 'order_account', options_for_select(options, @order.account)
+      - if acting_as?
+        %li.left
+          = f.label       :note
+          = f.text_field  :note
       %li.clear
   %ul.form.box
     = render :partial => 'reservation_fields', :locals => {:f => f}
   %ul.horiz
     %li= f.submit 'Create', :class => 'btn'
-    %li= link_to 'Cancel', facility_path(@instrument.facility)
+    - url_after_action = facility_url(@instrument.facility)
+    - if @order_detail.bundled?
+      %li= link_to 'Cancel', url_after_action
+    - else 
+      %li= link_to 'Cancel', remove_order_path(@order, @order_detail, :redirect_to => url_after_action), :method => :put
 
 #overlay
   #spinner
