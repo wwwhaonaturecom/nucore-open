@@ -247,6 +247,18 @@ describe OrdersController do
         @order.reload.account.should == nil
       end
     end
+
+    it "should redirect to the value of the redirect_to param if available" do
+      maybe_grant_always_sign_in :staff
+      overridden_redirect = facility_url(@item.facility)
+
+      @params.merge!(:redirect_to => overridden_redirect)
+      do_request
+
+      response.should redirect_to overridden_redirect
+      should set_the_flash.to /removed/
+    end
+
   end
 
 
@@ -266,6 +278,22 @@ describe OrdersController do
     it "should not allow updates of quantities for instruments"
   end
 
+  context "update order_detail notes" do
+    before(:each) do
+      @method=:put
+      @action=:update
+      @params.merge!(
+        "quantity#{@order_detail.id}" => "6",
+        "note#{@order_detail.id}" => "new note"
+      )
+    end
+
+    it_should_require_login
+
+    it_should_allow :staff, "to update the note field of order_details" do
+      @order_detail.reload.note.should == 'new note'
+    end
+  end
 
   context "cart meta data" do
     before(:each) do

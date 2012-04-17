@@ -12,23 +12,22 @@ class GeneralReportsController < ReportsController
 
 
   def account_owner
-    render_report(2, 'Name') do |od|
-      owner=od.account.owner.user
-      "#{owner.full_name} (#{owner.username})"
-    end
+    render_report(2, 'Name') {|od| format_username od.account.owner.user }
   end
 
 
   def purchaser
-    render_report(3, 'Name') do |od|
-      usr=od.order.user
-      "#{usr.full_name} (#{usr.username})"
-    end
+    render_report(3, 'Name') {|od| format_username od.order.user}
   end
 
 
   def price_group
     render_report(4, 'Name') {|od| od.price_policy ? od.price_policy.price_group.name : 'Unassigned' }
+  end
+
+
+  def assigned_to
+    render_report(5, 'Name') {|od| od.assigned_user.presence ? format_username(od.assigned_user) : 'Unassigned' }
   end
 
 
@@ -98,7 +97,13 @@ class GeneralReportsController < ReportsController
     end
 
     rows.sort! {|a,b| a.first <=> b.first}
-    page_report(rows)
+    
+    # only page results if we're not exporting
+    if params[:export_id].present?
+      @rows = rows
+    else
+      page_report(rows)
+    end
   end
   
   

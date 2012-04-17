@@ -40,10 +40,27 @@ class Reservation < ActiveRecord::Base
 
   ## AR Hooks
   after_save do
-    if order_detail
+    if order_detail && @note
       order_detail.note = @note
       order_detail.save
     end
+  end
+
+  before_save :on => :create do
+    # if reservation is in the past, set the actuals = to the reservation time
+    # move to complete
+    return unless acting_user = self.try(:order).try(:created_by_user)
+
+    if acting_user and acting_user.operator_of?(instrument.facility) and self.reserve_end_at <= Time.zone.now
+      self.actual_start_at ||= self.reserve_start_at
+      self.actual_end_at   ||= self.reserve_end_at
+    end
+
+    return true
+  end
+
+  after_save :on => :create do
+    self.order_detail.reload.change_status!(OrderStatus.find_by_name!('Complete')) if self.has_actuals?
   end
 
   def save_extended_validations(options ={})
@@ -53,13 +70,17 @@ class Reservation < ActiveRecord::Base
     return false if self.errors.any?
     self.save
   end
+
   def save_extended_validations!
     raise ActiveRecord::RecordInvalid.new(self) unless save_extended_validations()  
   end
+
   def save_as_user!(user)
     if (user.operator_of?(instrument.facility))
+      @reserved_by_admin = true
       self.save!
     else
+      @reserved_by_admin = false
       self.save_extended_validations!  
     end
   end
@@ -209,7 +230,6 @@ class Reservation < ActiveRecord::Base
   def in_window?
     groups   = (order_detail.order.user.price_groups + order_detail.order.account.price_groups).flatten.uniq
     max_days = longest_reservation_window(groups)
-    logger.debug("reserve_start: #{reserve_start_at}")
     diff     = reserve_start_at.to_date - Date.today
     diff <= max_days
   end
@@ -231,9 +251,16 @@ class Reservation < ActiveRecord::Base
   end
 
   def instrument_is_available_to_reserve? (start_at = self.reserve_start_at, end_at = self.reserve_end_at)
+    
+    # check for order_detail and order because some old specs don't set an order detail
+    # if we're saving as an administrator, we want access to all schedule rules
+    if (order_detail and order_detail.order and !@reserved_by_admin)
+      rules = instrument.available_schedule_rules(order_detail.order.user)
+    else
+      rules = instrument.schedule_rules
+    end
+    
     mins  = (end_at - start_at)/60
-    rules = instrument.schedule_rules.each
-
     (0..mins).each { |n|
       dt    = start_at.advance(:minutes => n)
       found = false
@@ -557,7 +584,7 @@ class Reservation < ActiveRecord::Base
   # returns true if this reservation can be moved to
   # an earlier time slot, false otherwise
   def can_move?
-    !(cancelled? || earliest_possible.nil?)
+    !(cancelled? || order_detail.complete? || earliest_possible.nil?)
   end
 
   def can_switch_instrument_on?(check_off = true)
@@ -658,7 +685,7 @@ class Reservation < ActiveRecord::Base
   end
 
   def has_actuals?
-    actual_start_at && actual_end_at
+    !!(actual_start_at && actual_end_at)
   end
 
   def requires_but_missing_actuals?

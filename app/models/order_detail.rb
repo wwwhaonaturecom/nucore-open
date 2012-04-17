@@ -99,6 +99,10 @@ class OrderDetail < ActiveRecord::Base
     # state == 'complete' and !reviewed_at.nil? and reviewed_at > Time.zone.now and (dispute_at.nil? or !dispute_resolved_at.nil?)
   end
 
+  def can_be_viewed_by?(user)
+    self.order.user_id == user.id || self.account.owner_user.id == user.id || self.account.business_admins.any?{|au| au.user_id == user.id} 
+  end
+
   scope :need_statement, lambda { |facility| {
     :joins => [:product, :account],
     :conditions => ['products.facility_id = ?
@@ -285,8 +289,6 @@ class OrderDetail < ActiveRecord::Base
     return "The #{account.type_string} is not open for the required account" if account.is_a?(NufsAccount) && !account.account_open?(product.account)
 
     # is the user approved for the product
-    logger.debug("created_by_user: #{order.created_by_user}")
-    logger.debug("can override? #{order.created_by_user.can_override_restrictions?(product)}")
     return "You are not approved to purchase this #{product.class.name.downcase}" unless product.can_be_used_by?(order.user) or order.created_by_user.can_override_restrictions?(product)
 
     # are reservation requirements met
@@ -497,7 +499,7 @@ class OrderDetail < ActiveRecord::Base
   #   B) Has a reservation with missing usage information
   # the method will return true, otherwise false
   def problem_order?
-    complete? && (price_policy.nil? || reservation.try(:requires_but_missing_actuals?))
+    !!(complete? && (price_policy.nil? || reservation.try(:requires_but_missing_actuals?)))
   end
 
 
