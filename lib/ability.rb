@@ -31,8 +31,12 @@ class Ability
         can :manage, [
           AccountPriceGroupMember, Service, BundleProduct,
           Bundle, OrderDetail, Order, Reservation, Instrument,
-          Item, ProductUser, Product, UserPriceGroupMember
+          Item, ProductUser, Product, ProductAccessory, UserPriceGroupMember
         ]
+
+        can [:uploader_create, :destroy], FileUpload do |fileupload|
+          fileupload.file_type == 'sample_result'
+        end
 
         can :manage, User if controller.is_a?(UsersController)
 
@@ -50,7 +54,7 @@ class Ability
           AccountUser, Account, FacilityAccount, Journal,
           Statement, FileUpload, InstrumentPricePolicy,
           ItemPricePolicy, OrderStatus, PriceGroup, ReportsController,
-          ScheduleRule, ServicePricePolicy, PriceGroupProduct
+          ScheduleRule, ServicePricePolicy, PriceGroupProduct, ProductAccessGroup
         ]
 
         can :manage, User if controller.is_a?(FacilityUsersController)
