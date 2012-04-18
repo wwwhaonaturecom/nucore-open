@@ -7,6 +7,8 @@ class Instrument < Product
   has_many :instrument_statuses, :foreign_key => 'instrument_id'
   has_many :product_access_groups, :foreign_key => 'product_id'
 
+  attr_writer :control_mechanism
+
   accepts_nested_attributes_for :relay
 
   validates_presence_of :initial_order_status_id, :facility_account_id
@@ -14,6 +16,44 @@ class Instrument < Product
   validates_numericality_of :min_reserve_mins, :max_reserve_mins, :auto_cancel_mins, :only_integer => true, :greater_than_or_equal_to => 0, :allow_nil => true
 
   after_create :set_default_pricing
+
+  before_validation do
+    if @control_mechanism and control_mechanism != @control_mechanism
+
+      if @control_mechanism == 'manual'
+        self.relay.destroy if self.relay
+        self.relay = nil unless Relay.exists?(self.relay)
+
+        return
+      end
+
+      if @control_mechanism == 'timer'
+        self.relay ||= RelayDummy.new
+        self.relay.type = 'RelayDummy'
+      end
+
+
+      self.relay = self.relay.becomes(self.relay.type.constantize)
+      return 
+    end
+  end
+
+  # determines right control mechanism from
+  # actual relay attached to instrument
+  def control_mechanism
+    case self.relay
+
+    when RelayDummy
+      return 'timer'
+    
+    when RelaySynaccessRevA
+      return 'relay'
+    when RelaySynaccessRevB
+      return 'relay'
+    else
+      return 'manual'
+    end
+  end
 
   def current_instrument_status
     instrument_statuses.order('created_at DESC').first
@@ -35,6 +75,7 @@ class Instrument < Product
     }
     max
   end
+
 
   # calculate the last possible reservation date based on all current price policies associated with this instrument
   def last_reserve_date
