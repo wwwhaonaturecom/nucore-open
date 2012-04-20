@@ -141,7 +141,8 @@ class Instrument < Product
     # and populate self.errors ourselves
     def check_relay_with_right_type
       # only run this if passed in control_mechanism and relay
-      if @control_mechanism and self.relay
+      # (if type didn't change, we'll already be running with the proper validations)
+      if @control_mechanism and self.relay and self.relay.type_changed?
         return if @control_mechanism == 'manual'
 
         # transform to right type
