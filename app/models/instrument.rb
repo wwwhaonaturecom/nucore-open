@@ -11,48 +11,18 @@ class Instrument < Product
 
   accepts_nested_attributes_for :relay
 
+  before_validation :init_or_destroy_relay
+
   validates_presence_of :initial_order_status_id, :facility_account_id
   validates_numericality_of :account, :only_integer => true, :greater_than_or_equal_to => 0, :less_than_or_equal_to => 99999
   validates_numericality_of :min_reserve_mins, :max_reserve_mins, :auto_cancel_mins, :only_integer => true, :greater_than_or_equal_to => 0, :allow_nil => true
-
+  validate :check_relay_with_right_type
+  
   after_create :set_default_pricing
 
-  before_validation do
-    if @control_mechanism and control_mechanism != @control_mechanism
-
-      if @control_mechanism == 'manual'
-        self.relay.destroy if self.relay
-        self.relay = nil unless Relay.exists?(self.relay)
-
-        return
-      end
-
-      if @control_mechanism == 'timer'
-        self.relay ||= RelayDummy.new
-        self.relay.type = 'RelayDummy'
-      end
-
-
-      self.relay = self.relay.becomes(self.relay.type.constantize)
-      return 
-    end
-  end
-
-  # determines right control mechanism from
-  # actual relay attached to instrument
+  # control mechanism for instrument
   def control_mechanism
-    case self.relay
-
-    when RelayDummy
-      return 'timer'
-    
-    when RelaySynaccessRevA
-      return 'relay'
-    when RelaySynaccessRevB
-      return 'relay'
-    else
-      return 'manual'
-    end
+    return @control_mechanism || self.relay.try(:control_mechanism) || 'manual'
   end
 
   def current_instrument_status
@@ -158,4 +128,48 @@ class Instrument < Product
       self.schedule_rules
     end
   end
+
+  private ###################################
+
+    # this is necessary because when rails builds the attached relay
+    # and merges the attributes the relay's class is either:
+    #
+    # 1) whatever it was before the user changed it (value of type field from db)
+    # 2) Relay (the super class needed for STI) (if there was no relay attached to this instrument)
+    #
+    # in order to validate the relay properly we need to cast it ourselves
+    # and populate self.errors ourselves
+    def check_relay_with_right_type
+      # only run this if passed in control_mechanism and relay
+      if @control_mechanism and self.relay
+        return if @control_mechanism == 'manual'
+
+        # transform to right type
+        a_relay = self.relay.becomes(self.relay.type.constantize)
+
+        # trigger validation of relay
+        a_relay.valid?
+        
+        # stuff relay's error messages into self.errors
+        a_relay.errors.full_messages.each do |error_msg|
+          self.errors[:relay] << error_msg
+        end
+
+        return a_relay.valid?
+      end
+    end
+
+    def init_or_destroy_relay
+      if @control_mechanism
+        # destroy if manual
+        self.relay.destroy if @control_mechanism == 'manual' and self.relay
+
+        # relay_attributes aren't passed in when control_mechanism isn't relay
+        # may need to init the relay
+        if @control_mechanism == 'timer'
+          self.relay      ||= RelayDummy.new 
+          self.relay.type =   'RelayDummy'
+        end
+      end
+    end
 end
