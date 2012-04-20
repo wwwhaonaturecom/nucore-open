@@ -63,7 +63,6 @@ describe Instrument do
           end
           
           it "should have control mechanism of relay" do
-            require 'ruby-debug'; debugger
             @instrument.reload.control_mechanism.should == 'relay'
           end
         end
