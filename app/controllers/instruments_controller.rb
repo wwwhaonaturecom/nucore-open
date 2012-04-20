@@ -63,11 +63,9 @@ class InstrumentsController < ProductsCommonController
   def update
     @header_prefix = "Edit"
 
-    Instrument.transaction do                
-      if @instrument.update_attributes(params[:instrument])
-        flash[:notice] = 'Instrument was successfully updated.'
-        return redirect_to(manage_facility_instrument_url(current_facility, @instrument))
-      end
+    if @instrument.update_attributes(params[:instrument])
+      flash[:notice] = 'Instrument was successfully updated.'
+      return redirect_to(manage_facility_instrument_url(current_facility, @instrument))
     end
 
     render :action => "edit"
