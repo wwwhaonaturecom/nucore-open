@@ -137,7 +137,7 @@ class Instrument < Product
     # 1) whatever it was before the user changed it (value of type field from db)
     # 2) Relay (the super class needed for STI) (if there was no relay attached to this instrument)
     #
-    # in order to validate the relay properly we need to cast it ourselves
+    # in order to validate the relay properly we need to cast it
     # and populate self.errors ourselves
     def check_relay_with_right_type
       # only run this if passed in control_mechanism and relay
