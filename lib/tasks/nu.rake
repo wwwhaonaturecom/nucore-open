@@ -1,5 +1,21 @@
 namespace :nu do
 
+  desc 'order updates for task #46319'
+  task :update_order_details_46319 => :environment do |t, args|
+    od_to_price={
+      7624 => 90.0,
+      7901 => 25.50,
+      8939 => 7.40,
+      7757 => 69.60
+    }
+
+    od_to_price.each do |od_id, actual|
+      od=OrderDetail.find od_id
+      od.update_attributes :actual_cost => actual, :actual_subsidy => 0
+    end
+  end
+
+
   desc 'update related to Task #32369'
   task :add_activity_01 => :environment do |t, args|
     NufsAccount.all.each do |nufs|
