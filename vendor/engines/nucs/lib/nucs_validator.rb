@@ -4,6 +4,7 @@ class NucsValidator
   NUCS_BLANK='-'
 
   attr_reader :chart_string, :fund, :department, :project, :activity, :program, :chart_field1, :account
+  alias_attribute :dept, :department
 
 
   def self.pattern_format
