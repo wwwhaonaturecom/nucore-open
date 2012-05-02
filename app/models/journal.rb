@@ -25,16 +25,16 @@ class Journal < ActiveRecord::Base
 
   def create_journal_rows!(order_details)
     recharge_by_product = {}
-
+    row_errors = []
     # create rows for each transaction
     order_details.each do |od|
-      raise Exception if od.journal_id
+      row_errors << "##{od} is already journaled in journal ##{od.journal_id}" if od.journal_id
       account = od.account
 
       begin
         NucsValidator.new(account.account_number, od.product.account).account_is_open!
       rescue NucsErrors::NucsError => e
-        raise "Account #{account} on order detail ##{od} is invalid. It #{e.message}."
+        row_errors << "Account #{account} on order detail ##{od} is invalid. It #{e.message}."
       end
 
       JournalRow.create!(
@@ -68,7 +68,9 @@ class Journal < ActiveRecord::Base
         :description     => product.to_s
       )
     end
+    return row_errors
   end
+
 
   def create_spreadsheet
     rows = journal_rows
