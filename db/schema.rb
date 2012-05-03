@@ -10,7 +10,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20120222161624) do
+ActiveRecord::Schema.define(:version => 20120503203910) do
 
   create_table "account_users", :force => true do |t|
     t.integer  "account_id",               :precision => 38, :scale => 0, :null => false
@@ -281,7 +281,7 @@ ActiveRecord::Schema.define(:version => 20120222161624) do
     t.integer  "response_set_id",                        :precision => 38, :scale => 0
     t.integer  "group_id",                               :precision => 38, :scale => 0
     t.integer  "bundle_product_id",                      :precision => 38, :scale => 0
-    t.string   "note",                    :limit => 25
+    t.string   "note",                    :limit => 100
     t.datetime "fulfilled_at"
     t.datetime "reviewed_at"
     t.integer  "statement_id",                           :precision => 38, :scale => 0
