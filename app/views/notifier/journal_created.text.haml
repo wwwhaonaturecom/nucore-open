@@ -1,0 +1,6 @@
+== #{pluralize(@journals.count, 'journal')} included:
+\
+- @journals.each do |journal|
+  = render :partial => 'facility_journals/rake_show.text', :locals => {:journal => journal}
+  \
+

@@ -52,7 +52,9 @@ class FacilityNotificationsController < ApplicationController
         @accounts_to_notify.each do |account, facility|
           account.notify_users.each {|u| Notifier.review_orders(:user => u, :facility => facility, :account => account).deliver }
         end
-        account_list = @accounts_to_notify.map {|a, f| a.account_list_item }
+
+        account_list = @accounts_to_notify.map {|a, _| a.account_list_item }
+
         flash[:notice] = I18n.t('controllers.facility_notifications.send_notifications.success_html', :accounts => account_list.join('<br/>')).html_safe
       end
     end

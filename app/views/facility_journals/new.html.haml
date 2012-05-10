@@ -7,6 +7,7 @@
         'minDate':'#{@soonest_journal_date.strftime("%m/%d/%Y")}',
         'maxDate':'#{Time.zone.now.to_datetime.strftime("%m/%d/%Y")}'
       });
+        
     });
 
 = render :partial => "shared/transactions/headers"

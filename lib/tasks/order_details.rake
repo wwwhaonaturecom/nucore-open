@@ -50,4 +50,39 @@ namespace :order_details  do
       end
     end
   end
+  
+  desc "remove list of BIF order details"
+  task :clean_bif_orders => :environment do
+    class OrderDetailCleaner
+      def self.remove_order(order_detail)
+        order = order_detail.order
+        journal = order_detail.journal
+        puts "need to check journal" if journal
+        
+        statement = order_detail.statement
+        puts "need to check statement" if statement
+        
+        puts "destroying detail #{order_detail.id}"
+        order_detail.destroy
+        
+        if order.order_details.empty?
+          puts "destroying order #{order.id}"
+          order.destroy
+        end    
+        
+      end
+      
+      def self.remove_orders(file)
+        OrderDetail.transaction do
+          File.open(file, "r").each_line do |line|
+            next unless /([0-9]+)-([0-9]+)/ =~ line
+            
+            remove_order(OrderDetail.find($2))        
+          end
+        end
+        puts "Done"
+      end
+    end
+    OrderDetailCleaner.remove_orders("lib/tasks/orders_to_remove.txt")
+  end
 end

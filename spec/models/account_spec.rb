@@ -19,7 +19,10 @@ describe Account do
   end
 
   it { should belong_to(:affiliate)}
-
+  it { should have_many(:orders) }
+  it { should have_one(:owner) }
+  it { should have_many(:account_users)}
+  
   it 'should be expired' do
     owner   = Factory.create(:user)
     hash     = Hash[:user => owner, :created_by => owner, :user_role => 'Owner']

@@ -7,7 +7,6 @@ class FacilityOrdersController < ApplicationController
   load_and_authorize_resource :class => Order
 
   helper_method :sort_column, :sort_direction
-  
   include FacilityOrderStatusHelper
   helper_method :new_or_in_process_orders, :problem_orders, :disputed_orders
   
@@ -50,7 +49,5 @@ class FacilityOrdersController < ApplicationController
     @order_details = disputed_orders.paginate(:page => params[:page])
     
   end
-  
-  
   
 end

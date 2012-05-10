@@ -10,7 +10,7 @@ class SearchController < ApplicationController
     @price_group = PriceGroup.find(params[:price_group_id]) if params[:price_group_id]
     @account     = Account.find(params[:account_id]) if params[:account_id]
     @product     = Product.find(params[:product_id]) if params[:product_id]
-    
+
     term = generate_multipart_like_search_term(params[:search_term])
     if params[:search_term].length > 0
       conditions = ["(LOWER(first_name) LIKE ? OR LOWER(last_name) LIKE ? OR LOWER(username) LIKE ? OR LOWER(CONCAT(first_name, last_name)) LIKE ?)", term, term, term, term]
