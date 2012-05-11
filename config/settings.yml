@@ -1,4 +1,15 @@
-aes_crypt_key:
+price_group:
+  name:
+    base: 'Base Rate'
+    external: 'External Rate'
+    cancer_center: 'Cancer Center Rate'
+
+validator:
+  class_name: NucsValidator
+  test:
+    factory: 'vendor/engines/nucs/spec/factories' # relative to Rails.root
+    helper: 'vendor/engines/nucs/spec/nucs_validator_helper' # relative to Rails.root
+
 email:
   from: 'nucore-noreply@northwestern.edu'
   fake:

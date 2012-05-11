@@ -33,9 +33,9 @@ class Journal < ActiveRecord::Base
       account = od.account
 
       begin
-        NucsValidator.new(account.account_number, od.product.account).account_is_open!
-      rescue NucsErrors::NucsError => e
-        row_errors << "Account #{account} on order detail ##{od} is invalid. It #{e.message}."
+        ValidatorFactory.instance(account.account_number, od.product.account).account_is_open!
+      rescue ValidatorError => e
+        raise "Account #{account} on order detail ##{od} is invalid. It #{e.message}."
       end
 
       JournalRow.create!(
@@ -43,11 +43,6 @@ class Journal < ActiveRecord::Base
         :order_detail_id => od.id,
         :amount          => od.total,
         :description     => "##{od}: #{od.order.user}: #{od.fulfilled_at.strftime("%m/%d/%Y")}: #{od.product} x#{od.quantity}",
-        :fund            => account.fund,
-        :dept            => account.dept,
-        :project         => account.project,
-        :activity        => account.activity,
-        :program         => account.program,
         :account         => od.product.account
       )
       recharge_by_product[od.product_id] = recharge_by_product[od.product_id].to_f + od.total
@@ -59,11 +54,6 @@ class Journal < ActiveRecord::Base
       fa      = product.facility_account
       JournalRow.create!(
         :journal_id      => id,
-        :fund            => fa.fund,
-        :dept            => fa.dept,
-        :project         => fa.project,
-        :activity        => fa.activity,
-        :program         => fa.program,
         :account         => fa.revenue_account,
         :amount          => total * -1,
         :description     => product.to_s
