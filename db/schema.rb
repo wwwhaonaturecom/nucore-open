@@ -179,11 +179,7 @@ ActiveRecord::Schema.define(:version => 20120510172358) do
   end
 
   create_table "journals", :force => true do |t|
-<<<<<<< HEAD
     t.integer  "facility_id"
-=======
-    t.integer  "facility_id",                      :precision => 38, :scale => 0, :null => false
->>>>>>> develop
     t.string   "reference",         :limit => 50
     t.string   "description",       :limit => 200
     t.boolean  "is_successful",                    :precision => 1,  :scale => 0
@@ -292,10 +288,10 @@ ActiveRecord::Schema.define(:version => 20120510172358) do
     t.datetime "updated_at"
     t.integer  "order_status_id",                        :precision => 38, :scale => 0, :null => false
     t.string   "state",                   :limit => 50
-    t.integer  "response_set_id",                        :precision => 38, :scale => 0
-    t.integer  "group_id",                               :precision => 38, :scale => 0
-    t.integer  "bundle_product_id",                      :precision => 38, :scale => 0
-    t.string   "note",                    :limit => 25
+    t.integer  "response_set_id"
+    t.integer  "group_id"
+    t.integer  "bundle_product_id"
+    t.string   "note",                    :limit => 100
     t.datetime "fulfilled_at"
     t.datetime "reviewed_at"
     t.integer  "statement_id",                           :precision => 38, :scale => 0
