@@ -41,6 +41,7 @@ describe Journal do
         
         facilities_list.each do |f|
           od = place_and_complete_item_order(@admin, f, @account, true)
+          define_open_account(@item.account, @account.account_number)
 
           @ods << od
         end

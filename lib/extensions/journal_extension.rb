@@ -2,16 +2,33 @@ module JournalExtension
 
   def create_journal_rows!(order_details)
     recharge_by_product = {}
+    facility_ids_already_in_journal = Set.new
+    order_detail_ids = []
+    pending_facility_ids = Journal.facility_ids_with_pending_journals
+    row_errors = []
 
     # create rows for each transaction
     order_details.each do |od|
-      raise Exception if od.journal_id
+      od_facility_id = od.order.facility_id
+      row_errors << "##{od} is already journaled in journal ##{od.journal_id}" if od.journal_id
       account = od.account
+
+      # unless we've already encountered this facility_id during
+      # this call to create_journal_rows,
+      unless facility_ids_already_in_journal.member? od_facility_id
+        
+        # check against facility_ids which actually have pending journals
+        # in the DB
+        if pending_facility_ids.member? od_facility_id
+          raise ArgumentError.new("#{od.to_s}: Facility #{Facility.find(od_facility_id)} already has a pending journal")
+        end
+        facility_ids_already_in_journal.add(od_facility_id)
+      end 
 
       begin
         ValidatorFactory.instance(account.account_number, od.product.account).account_is_open!
       rescue ValidatorError => e
-        raise "Account #{account} on order detail ##{od} is invalid. It #{e.message}."
+        row_errors << "Account #{account} on order detail ##{od} is invalid. It #{e.message}."
       end
 
       JournalRow.create!(
@@ -26,6 +43,7 @@ module JournalExtension
         :program         => account.program,
         :account         => od.product.account
       )
+      order_detail_ids << od.id
       recharge_by_product[od.product_id] = recharge_by_product[od.product_id].to_f + od.total
     end
 
@@ -45,6 +63,10 @@ module JournalExtension
         :description     => product.to_s
       )
     end
+
+    OrderDetail.update_all(['journal_id = ?', self.id], ['id IN (?)', order_detail_ids]) unless row_errors.present?
+
+    return row_errors
   end
 
 
