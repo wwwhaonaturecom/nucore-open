@@ -3,6 +3,8 @@
 - elsif @user.nil?
   %p.notice= t('.notice2')
   %p= t('.main_html', :link => new_facility_user_path(current_facility))
+- elsif @user_already_exists
+  %p.notice The user #{@user.username} already exists in NUCore
 - else
   %p.notice= t('.notice3')
   %table

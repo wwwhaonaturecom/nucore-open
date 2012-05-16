@@ -1,0 +1,32 @@
+BcsecAuthenticatable
+====================
+
+This is a Devise (https://github.com/plataformatec/devise) strategy for Northwestern's bcsec authentication system.
+
+
+Installation
+============
+
+To use bcsec as nucore's authentication strategy please do the following:
+
+1. In this plugin's config/environments directory copy the *.template files to the same dir.
+   Leave the filename the same, but drop the ".template". Update the authority information in the new files.
+
+2. In the User class, replace the existing call to #devise with "devise :bcsec_authenticatable"
+
+3. Update app/views/sessions/new.html.haml to use a form like this:
+
+- form_for resource_name, resource, :url => session_path(resource_name) do |f|
+    %ul.form
+      %li
+        %label== Username
+        = text_field_tag :username, params[:username], :size => 30
+      %li
+        %label== Password
+        = password_field_tag :password, nil, :size => 15
+    %ul.horiz
+      %li= submit_tag 'Login', :class => 'btn'
+
+
+In other words, have the form submit parameters 'username' and 'password', not 'user[username]' and 'user[password]'
+like Devise's database_authenticatable expects.

@@ -207,6 +207,11 @@ Nucore::Application.routes.draw do |map|
   map.complete_survey '/facilities/:facility_id/services/:service_id/surveys/:external_service_id/complete',
                                 :controller => 'surveyors', :action => 'complete', :conditions => {:method => [:get, :post]}
 
+  # legacy routes
+  devise_scope :user do
+    get 'login' => 'devise/sessions#new'
+  end
+
   # The priority is based upon order of creation:
   # first created -> highest priority.
 

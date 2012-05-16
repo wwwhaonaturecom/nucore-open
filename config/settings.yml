@@ -5,16 +5,16 @@ price_group:
     cancer_center: 'Cancer Center Rate'
 
 validator:
-  class_name: ValidatorDefault
+  class_name: NucsValidator
   test:
-    factory: # relative to Rails.root
-    helper: 'spec/validator_helper' # relative to Rails.root
+    factory: 'vendor/engines/nucs/spec/factories' # relative to Rails.root
+    helper: 'vendor/engines/nucs/spec/nucs_validator_helper' # relative to Rails.root
 
 email:
-  from: 'noreply@example.com'
+  from: 'nucore-noreply@northwestern.edu'
   fake:
     enabled: false
-    to:
+    to: 'john@tablexi.com'
   exceptions:
-    sender: 'noreply@example.com'
-    recipients: [ 'warn@example.com', 'error@example.com' ]
+    sender: 'nucore-noreply@northwestern.edu'
+    recipients: 'support-nucore@tablexi.com'

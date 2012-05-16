@@ -18,7 +18,6 @@ Spork.prefork do
   require 'factory_girl'
   require 'shoulda'
   require 'mocha'
-  require 'factories'
 
   # Uncomment the next line to use webrat's matchers
   #require 'webrat/integrations/rspec-rails'
@@ -92,6 +91,24 @@ Spork.prefork do
 
       now=Time.zone.parse("#{Date.today.to_s} 09:30:00")
       Timecop.travel(now)
+
+      # bcsec's ensuring to satisfy bcaudit on save is
+      # handled in nucore by Bcaudit::Middleware which is
+      # loaded at bcsec_authenticatable's initialization.
+      # Since it's rack middleware, and therefore depends
+      # on being a request-response cycle, it doesn't work
+      # for tests. Ideally there would be a bcsec-provided
+      # mock to handle this, but there isn't, so overwrite
+      # the method that ensures bcaudit satisfaction so that
+      # tests can proceed. Doing so allows the NU user
+      # provisioning that takes place in user_extension to
+      # work, making it testable
+      Pers::Base.class_eval %Q<
+        protected
+
+        def ensure_bcauditable
+        end
+      >
     end
   end
 end
