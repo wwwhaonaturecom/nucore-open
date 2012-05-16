@@ -95,7 +95,7 @@ class Journal < ActiveRecord::Base
         # check against facility_ids which actually have pending journals
         # in the DB
         if pending_facility_ids.member? od_facility_id
-          raise ArgumentError.new("#{od.to_s}: Facility #{Facility.find(od_facility_id)} already has a pending journal")
+          raise "#{od.to_s}: Facility #{Facility.find(od_facility_id)} already has a pending journal"
         end
         facility_ids_already_in_journal.add(od_facility_id)
       end 
