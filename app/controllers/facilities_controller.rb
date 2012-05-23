@@ -3,10 +3,9 @@ class FacilitiesController < ApplicationController
   admin_tab     :edit, :manage, :schedule, :update, :agenda, :transactions
   before_filter :authenticate_user!, :except => [:index, :show]  # public pages do not require authentication
   before_filter :check_acting_as, :except => [:index, :show]
-  before_filter :check_billing_access, :only => :transactions
 
   load_and_authorize_resource :find_by => :url_name
-  skip_load_and_authorize_resource :only => [:index, :show, :transactions]
+  skip_load_and_authorize_resource :only => [:index, :show]
 
   # needed for transactions_with_search
   include TransactionSearch
@@ -22,11 +21,9 @@ class FacilitiesController < ApplicationController
 
   # GET /facilities/abc123
   def show
-    return redirect_to :new_user_session unless acting_user
     raise ActiveRecord::RecordNotFound unless current_facility.is_active?
-    
-    @order_form = current_facility.accepts_multi_add? ? Order.new : nil
-    
+    @order_form = nil
+    @order_form = Order.new if acting_user && current_facility.accepts_multi_add?
     @active_tab = 'home'
     render :layout => 'application'
   end
