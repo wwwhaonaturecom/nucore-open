@@ -291,7 +291,7 @@ ActiveRecord::Schema.define(:version => 20120510172358) do
     t.integer  "response_set_id",                        :precision => 38, :scale => 0
     t.integer  "group_id",                               :precision => 38, :scale => 0
     t.integer  "bundle_product_id",                      :precision => 38, :scale => 0
-    t.string   "note",                    :limit => 25
+    t.string   "note",                    :limit => 100
     t.datetime "fulfilled_at"
     t.datetime "reviewed_at"
     t.integer  "statement_id",                           :precision => 38, :scale => 0
