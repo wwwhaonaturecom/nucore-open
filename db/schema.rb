@@ -10,7 +10,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20120510172358) do
+ActiveRecord::Schema.define(:version => 20120512014131) do
 
   create_table "account_users", :force => true do |t|
     t.integer  "account_id",               :precision => 38, :scale => 0, :null => false
@@ -108,21 +108,22 @@ ActiveRecord::Schema.define(:version => 20120510172358) do
   end
 
   create_table "facilities", :force => true do |t|
-    t.string   "name",              :limit => 200,                                                 :null => false
-    t.string   "abbreviation",      :limit => 50,                                                  :null => false
-    t.string   "url_name",          :limit => 50,                                                  :null => false
-    t.boolean  "is_active",                        :precision => 1, :scale => 0,                   :null => false
-    t.datetime "created_at",                                                                       :null => false
-    t.datetime "updated_at",                                                                       :null => false
+    t.string   "name",              :limit => 200,                                                  :null => false
+    t.string   "abbreviation",      :limit => 50,                                                   :null => false
+    t.string   "url_name",          :limit => 50,                                                   :null => false
+    t.boolean  "is_active",                        :precision => 1, :scale => 0,                    :null => false
+    t.datetime "created_at",                                                                        :null => false
+    t.datetime "updated_at",                                                                        :null => false
     t.text     "description"
     t.boolean  "accepts_cc",                       :precision => 1, :scale => 0, :default => true
     t.boolean  "accepts_po",                       :precision => 1, :scale => 0, :default => true
-    t.text     "short_description",                                                                :null => false
+    t.text     "short_description",                                                                 :null => false
     t.text     "address"
     t.string   "phone_number"
     t.string   "fax_number"
     t.string   "email"
-    t.string   "journal_mask",      :limit => 50,                                                  :null => false
+    t.string   "journal_mask",      :limit => 50,                                                   :null => false
+    t.boolean  "accepts_multi_add",                :precision => 1, :scale => 0, :default => false, :null => false
   end
 
   add_index "facilities", ["abbreviation"], :name => "sys_c008532", :unique => true, :tablespace => "bc_nucore"
@@ -179,7 +180,7 @@ ActiveRecord::Schema.define(:version => 20120510172358) do
   end
 
   create_table "journals", :force => true do |t|
-    t.integer  "facility_id",                      :precision => 38, :scale => 0, :null => false
+    t.integer  "facility_id",                      :precision => 38, :scale => 0
     t.string   "reference",         :limit => 50
     t.string   "description",       :limit => 200
     t.boolean  "is_successful",                    :precision => 1,  :scale => 0

@@ -40,9 +40,11 @@ describe FacilityJournalsController do
       @pending_journal=Factory.create(:journal, :facility => @authable, :created_by => @admin.id, :journal_date => Time.zone.now, :is_successful => nil)
     end
 
+    it_should_deny_all [:staff, :senior_staff]
+
     it_should_allow_managers_only do
       response.should be_success
-      assigns(:pending_journal).should == @pending_journal
+      assigns(:pending_journals).should == [@pending_journal]
     end
   end
 
@@ -56,6 +58,7 @@ describe FacilityJournalsController do
     end
 
     it_should_allow_managers_only
+    it_should_deny_all [:staff, :senior_staff]
 
   end
 
@@ -72,31 +75,11 @@ describe FacilityJournalsController do
       }
     end
 
+    it_should_deny_all [:staff, :senior_staff]
+
     it_should_allow_managers_only :redirect, 'and respond gracefully when no order details given' do |user|
       journal_date=parse_usa_date(@journal_date)
       flash[:error].should_not be_nil
-    end
-
-
-    context 'with order detail' do
-
-      before :each do
-        acct=create_nufs_account_with_owner :director
-        place_and_complete_item_order(@director, @authable, acct)
-        define_open_account(@item.account, acct.account_number)
-        @params.merge!(:order_detail_ids => [ @order_detail.id ])
-      end
-
-      it_should_allow :director do
-        assigns(:journal).errors.should be_empty
-        assigns(:journal).should_not be_new_record
-        assigns(:journal).created_by.should == @director.id
-        assigns(:journal).journal_date.should == parse_usa_date(@journal_date)
-        assigns(:journal).journal_rows.should_not be_empty
-        should set_the_flash
-        assert_redirected_to facility_journals_path
-      end
-
     end
     
     context "searching" do
@@ -118,6 +101,7 @@ describe FacilityJournalsController do
     end
 
     it_should_allow_managers_only
+    it_should_deny_all [:staff, :senior_staff]
 
   end
   
@@ -129,6 +113,8 @@ describe FacilityJournalsController do
       create_order_details
     end
     
+    it_should_deny_all [:staff, :senior_staff]
+    
     it_should_allow_managers_only do
       response.should be_success
     end
@@ -139,16 +125,21 @@ describe FacilityJournalsController do
       response.should be_success
       assigns(:order_details).should be_include(@order_detail1)
       assigns(:order_details).should be_include(@order_detail3)
-      assigns(:pending_journal).should be_nil
+      assigns(:pending_journals).should be_empty
       assigns(:order_detail_action).should == :create
     end
     
     it "should not have different values if there is a pending journal" do
+      
+      # create and populate a journal
       @pending_journal = Factory.create(:journal, :facility_id => @authable.id, :created_by => @admin.id, :journal_date => Time.zone.now, :is_successful => nil)
+      @order_detail4 = place_and_complete_item_order(@user, @authable, @account)
+      @pending_journal.create_journal_rows!([@order_detail4])
+
       sign_in @admin
       do_request
       assigns(:order_details).should contain_all [@order_detail1, @order_detail3]
-      assigns(:pending_journal).should == @pending_journal
+      assigns(:pending_journals).should == [@pending_journal]
       assigns(:order_detail_action).should be_nil
     end
     
