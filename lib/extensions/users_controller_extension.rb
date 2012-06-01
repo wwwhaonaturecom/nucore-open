@@ -9,11 +9,12 @@ module UsersControllerExtension
       raise "couldn't find user #{user_attrs[:username]}" unless user
       user_attrs.merge!(:first_name => user.first_name, :last_name => user.last_name, :email => user.email)
       @user=User.find_or_create_by_username(user_attrs)
+      raise @user.errors.full_messages.join(", ") if @user.new_record? # failed to create due to validation error
       @user.ensure_login_record_exists
       Notifier.new_user(:user => @user, :password => nil).deliver
     rescue => e
       Rails.logger.error("#{e.message}\n#{e.backtrace.join("\n")}")
-      flash[:error] = 'An error was encountered while attempting to add the user.'
+      flash[:error] = "An error was encountered while attempting to add the user: #{e.message}."
       redirect_to new_search_facility_users_url(current_facility) and return
     end
 
