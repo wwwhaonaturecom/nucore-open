@@ -1,4 +1,4 @@
-unless Rails.env.production?
+if Rails.env.development? || Rails.env.test?
   require 'fileutils'
   base=File.dirname(__FILE__)
 
