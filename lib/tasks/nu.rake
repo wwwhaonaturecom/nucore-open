@@ -141,6 +141,13 @@ namespace :nu do
     end
   end
 
+
+  desc 'fix for task #47959'
+  task :update_relays_47959 => :environment do
+    relays=Relay.where("type LIKE 'RelaySynaccessRev%' AND ip IS NULL AND port IS NULL").all
+    relays.each {|relay| relay.destroy }
+  end
+
   
   namespace :journal do
 
