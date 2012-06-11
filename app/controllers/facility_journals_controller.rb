@@ -122,7 +122,7 @@ class FacilityJournalsController < ApplicationController
     if @journal.errors.any?
       flash[:error] = @journal.errors.values.join("<br/>").html_safe
       remove_ugly_params
-      redirect_to params.merge({:action => :new}) and return
+      redirect_to new_facility_journal_path and return
     end
     @layout = "two_column_head"
   end
