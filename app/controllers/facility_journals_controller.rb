@@ -82,6 +82,13 @@ class FacilityJournalsController < ApplicationController
     @journal.created_by = session_user.id
     @journal.journal_date = parse_usa_date(params[:journal_date])
 
+    # The referer can have a crazy long query string depending on how many checkboxes
+    # are selected. This can cause Apache to give a "malformed header from script. Bad header"
+    # error which causes the page to completely bomb out. Solution: remove the query string.
+    # See Task #48311
+    referer=response.headers['Referer']
+    response.headers['Referer']=referer[0..referrer.index('?')] if referer.present?
+
     @update_order_details = OrderDetail.find(params[:order_detail_ids] || [])
     if @update_order_details.empty?
       @journal.errors.add(:base, I18n.t('controllers.facility_journals.create.errors.no_orders'))
