@@ -75,7 +75,7 @@ class NucsValidator
   def components_exist?
     begin
       validate_ge001_components!
-    rescue NucsError
+    rescue ValidatorError
       return false
     end
 
