@@ -1,3 +1,5 @@
+require File.expand_path('../../../../lib/validator/validator_error', File.dirname(__FILE__))
+
 module NucsErrors
   #
   # Raised when there is an import parsing error
