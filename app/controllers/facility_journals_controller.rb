@@ -83,9 +83,9 @@ class FacilityJournalsController < ApplicationController
     @journal.journal_date = parse_usa_date(params[:journal_date])
 
     # The referer can have a crazy long query string depending on how many checkboxes
-    # are selected. This can cause Apache to give a "malformed header from script. Bad header"
-    # error which causes the page to completely bomb out. Solution: remove the query string.
-    # See Task #48311
+    # are selected. We've seen Apache not like stuff like that and give a "malformed
+    # header from script. Bad header" error which causes the page to completely bomb out.
+    # (See Task #48311). This is just preventative.
     referer=response.headers['Referer']
     response.headers['Referer']=referer[0..referrer.index('?')] if referer.present?
 
