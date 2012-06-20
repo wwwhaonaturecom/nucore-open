@@ -6,6 +6,11 @@ GIT
       activerecord (>= 3.0.0)
       activesupport (>= 3.0.0)
 
+PATH
+  remote: vendor/engines/nucs
+  specs:
+    nucs (1.0.0)
+
 GEM
   remote: http://rubygems.org/
   remote: http://download.bioinformatics.northwestern.edu/gems/
@@ -236,6 +241,7 @@ DEPENDENCIES
   jquery-rails (= 1.0.12)
   mocha (= 0.9.7)
   nokogiri (= 1.4.4)
+  nucs (~> 1.0.0)!
   paperclip (= 2.3.12)
   pdf-reader (= 0.10.1)
   prawn (= 0.12.0)
