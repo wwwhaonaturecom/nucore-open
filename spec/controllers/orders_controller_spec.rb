@@ -297,9 +297,7 @@ describe OrdersController do
       end
       it "should show a warning if the user doesn't have access to the product to be added"
     end
-
   end
-
 
   context "remove from cart" do
     before(:each) do
