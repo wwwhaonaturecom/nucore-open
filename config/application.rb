@@ -39,6 +39,8 @@ module Nucore
     # Configure sensitive parameters which will be filtered from the log file.
     config.filter_parameters += [:password]
 
+    config.active_record.schema_format = :sql
+
     # Configure our frameworks of choice
     config.generators do |g|
      g.template_engine :haml
