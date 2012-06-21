@@ -55,7 +55,7 @@ module TransactionSearch
                                                    select("distinct(accounts.id), accounts.description, accounts.account_number, accounts.type").
                                                    reorder("accounts.account_number, accounts.description").to_sql)
     @products = Product.find_by_sql(@order_details.joins(:product).
-                                                   select("distinct(products.id), products.name, products.facility_id, products.type").
+                                                   select("distinct(products.id), products.name, products.facility_id, products.type, products.requires_approval").
                                                    reorder("products.name").to_sql)
     @account_owners = User.find_by_sql(@order_details.joins(:order => {:account => {:owner => :user} }).
                                                       select("distinct(users.id), users.first_name, users.last_name").
@@ -91,19 +91,6 @@ module TransactionSearch
     @date_field_to_use ||= :fulfilled_at
     @order_details = @order_details.action_in_date_range(@date_field_to_use, start_date, end_date)
   end  
-
-  def remove_ugly_params_and_redirect
-    if (params[:commit] && request.get?)
-      remove_ugly_params
-      redirect_to params
-      return false
-    end
-  end
-  def remove_ugly_params
-    params.delete(:commit)
-    params.delete(:utf8)
-    params.delete(:authenticity_token)
-  end
     
   def add_optimizations
     # cut down on some n+1s
