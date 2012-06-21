@@ -274,7 +274,6 @@ Spork.each_run do
     assert @instrument.valid?
     @instrument.schedule_rules.create(Factory.attributes_for(:schedule_rule))
 
-
     res_attrs={
       :reserve_start_at => reserve_start,
       :order_detail => order_detail,
