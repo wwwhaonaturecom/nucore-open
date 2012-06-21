@@ -172,6 +172,7 @@ GEM
       thor (~> 0.14.4)
     rake (0.8.7)
     rbx-require-relative (0.0.5)
+    rcov (1.0.0)
     rdoc (3.11)
       json (~> 1.4)
     rspec (2.6.0)
@@ -249,6 +250,7 @@ DEPENDENCIES
   rails (= 3.0.10)
   rails_config (= 0.2.5)
   rake (= 0.8.7)
+  rcov
   rspec-rails (= 2.6.1)
   ruby-debug (= 0.10.3)
   ruby-oci8 (= 2.0.4)

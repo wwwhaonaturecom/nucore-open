@@ -67,6 +67,7 @@ group :development, :test do
    gem 'single_test', '0.4.0'
    gem 'ci_reporter'
    gem 'timecop'
+   gem 'rcov'
 end
 
 group :production, :staging do
