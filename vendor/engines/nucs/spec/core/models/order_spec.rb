@@ -31,7 +31,7 @@ describe Order do
         place_and_complete_item_order(@user, @facility)
       end
 
-      it 'should assign payment source if user has a valid account and has never placed an order' do
+      pending 'should assign payment source if user has a valid account and has never placed an order' do
         @nufs=Factory.create(:nufs_account, :account_users_attributes => [{:user => @user, :created_by => @user, :user_role => 'Owner'}])
         define_open_account(@item.account, @nufs.account_number)
         @user.reload
@@ -41,7 +41,7 @@ describe Order do
         @order.account.should == @nufs
       end
       
-      it 'should assign payment source if user has an old account that has orders, but a new one that does not' do
+      pending 'should assign payment source if user has an old account that has orders, but a new one that does not' do
         @nufs_inactive=Factory.create(:nufs_account, :account_users_attributes => [{:user => @user, :created_by => @user, :user_role => 'Owner'}], :suspended_at => 1.day.ago)
         place_and_complete_item_order(@user, @facility, @nufs_inactive)
         @order2 = @order
@@ -59,7 +59,7 @@ describe Order do
         @order3.account.should == @nufs
       end
 
-      it 'should raise if an account cannot be found' do
+      pending 'should raise if an account cannot be found' do
         assert_raise RuntimeError do
           @order.auto_assign_account!(@item)
         end
