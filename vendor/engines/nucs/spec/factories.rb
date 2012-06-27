@@ -9,7 +9,7 @@ unless Rails.root.to_s.include?('/vendor/engines/nucs')
       s
     end
     o.description 'nufs account description'
-    o.expires_at Time.zone.now + 1.month
+    o.expires_at { Time.zone.now + 1.month }
     o.created_by 0
   end
 end
