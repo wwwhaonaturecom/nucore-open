@@ -12,6 +12,11 @@ PATH
     c2po (1.0.0)
 
 PATH
+  remote: vendor/engines/nu
+  specs:
+    nu (1.0.0)
+
+PATH
   remote: vendor/engines/nucs
   specs:
     nucs (1.0.0)
@@ -240,6 +245,7 @@ DEPENDENCIES
   jquery-rails (= 1.0.12)
   mocha (= 0.9.7)
   nokogiri (= 1.4.4)
+  nu (~> 1.0.0)!
   nucs (~> 1.0.0)!
   paperclip (= 2.3.12)
   pdf-reader (= 0.10.1)

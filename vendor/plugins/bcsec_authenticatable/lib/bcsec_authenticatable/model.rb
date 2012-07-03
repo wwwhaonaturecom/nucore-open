@@ -1,11 +1,7 @@
 module Devise
   module Models
     module BcsecAuthenticatable
-
-      def self.included(base)
-        base.class_eval { attr_accessor :password }
-      end
-
+      # If you put stuff here it will be mixed into the +User+ model
     end
   end
 end
