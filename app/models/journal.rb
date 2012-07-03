@@ -97,12 +97,12 @@ class Journal < ActiveRecord::Base
 
 
   # Digs up journals pertaining to the passed in facilities
-  # 
+  #
   # == Parameters
   #
   # facilities::
   #   enumerable of facilities (usually ones which the user has access to)
-  # 
+  #
   # include_multi::
   #   include multi-facility journals in the results?
   def self.for_facilities(facilities, include_multi = false)
@@ -110,7 +110,7 @@ class Journal < ActiveRecord::Base
 
     if include_multi
       Journal.includes(:journal_rows => {:order_detail => :order}).where('orders.facility_id IN (?)', allowed_ids).select('journals.*')
-    else 
+    else
       Journal.where(:facility_id => allowed_ids)
     end
   end
