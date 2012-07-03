@@ -9,7 +9,7 @@ financial:
   fiscal_year_begins: 09-01
   journal_format:
     xls: true
-    csv: true
+    csv: false
     xml: true
 
 validator:
