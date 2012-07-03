@@ -60,6 +60,8 @@ GEM
       mime-types (~> 1.16)
       treetop (~> 1.4.8)
     mime-types (1.18)
+    mocha (0.9.7)
+      rake
     polyglot (0.3.3)
     rack (1.2.5)
     rack-mount (0.6.14)
@@ -127,6 +129,7 @@ DEPENDENCIES
   foreigner (= 1.1.1)
   haml (= 3.1.2)
   jquery-rails (= 1.0.12)
+  mocha (= 0.9.7)
   rails (= 3.0.10)
   rails_config (= 0.2.5)
   rake (= 0.8.7)
