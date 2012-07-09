@@ -5,7 +5,8 @@ require 'bcdatabase/active_record/schema_qualified_tables'
 
 # Configure Bcaudit; Must do otherwise a "No audit info available.
 # Please configure Bcaudit before saving." error will pop up on credential checking
-Rails.application.config.middleware.use(Bcaudit::Middleware)
+Rails.application.config.middleware.use(Bcaudit::Middleware::RequestLogger)
+#Rails.application.config.middleware.use(Bcaudit::Middleware)
 
 config.after_initialize do
   Bcsec.configure do
