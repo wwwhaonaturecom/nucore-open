@@ -19,6 +19,7 @@ gem 'devise_ldap_authenticatable', '0.4.3'
 
 ## deployment
 gem 'capistrano',       '2.6.0'
+gem 'capistrano-ext',   '1.2.1'
 
 ## models
 gem 'aasm',             '2.2.0'
