@@ -45,7 +45,8 @@ class FacilityJournalsController < ApplicationController
 
         # failed
         if params[:journal_status] == 'failed'
-          @pending_journal.is_successful = false
+          # Oracle is sometimes not leaving false as null
+          @pending_journal.is_successful = NUCore::Database.boolean(false)
           @pending_journal.update_attributes!(params[:journal])
           OrderDetail.update_all('journal_id = NULL', "journal_id = #{@pending_journal.id}") # null out journal_id for all order_details
 
@@ -69,6 +70,7 @@ class FacilityJournalsController < ApplicationController
         flash[:notice] = I18n.t 'controllers.facility_journals.update.notice'
         redirect_to facility_journals_url(current_facility) and return
       rescue Exception => e
+        logger.error("ERROR: #{e.message}")
         @pending_journal.errors.add(:base, I18n.t('controllers.facility_journals.update.error.rescue'))
         raise ActiveRecord::Rollback
       end
@@ -150,7 +152,6 @@ class FacilityJournalsController < ApplicationController
 
   # GET /facilities/journals/:id
   def show
-
     respond_to do |format|
       format.xml do
         @journal_rows = @journal.journal_rows
@@ -163,6 +164,7 @@ class FacilityJournalsController < ApplicationController
   end
 
   def reconcile
+    puts 'reconcile'
     if params[:order_detail_ids].blank?
       flash[:error] = 'No orders were selected to reconcile'
       redirect_to facility_journal_url(current_facility, @journal) and return
