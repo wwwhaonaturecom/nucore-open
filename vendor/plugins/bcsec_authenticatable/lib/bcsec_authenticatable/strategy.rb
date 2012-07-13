@@ -8,13 +8,18 @@ module Devise
         return succeed_authentication(params[:username]) if  Bcsec.authority.auth_disabled?
         return fail(:unauthenticated) unless params[:username] && params[:password] && request.post?
         return fail(:invalid) if params[:username].blank? || params[:password].blank?
-        
-        user = Bcsec.authority.valid_credentials?(:user, params[:username], params[:password])
 
-        unless user
-          fail(:invalid)
-        else
+        begin
+          user = Bcsec.authority.valid_credentials?(:user, params[:username], params[:password])
+        rescue Errno::ETIMEDOUT => e
+          user=nil
+          Rails.logger.error "TIMEOUT received when authenticating user: #{e.message}"
+        end
+
+        if user
           succeed_authentication(user.username)
+        else
+          fail(:invalid)
         end
       end
 
