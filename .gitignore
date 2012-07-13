@@ -27,3 +27,5 @@ vendor/bundle
 config/settings.local.yml
 config/settings/*.local.yml
 config/environments/*.local.yml
+
+db/development_structure.sql
