@@ -35,7 +35,7 @@ describe User do
   end
 
   it "should belong to price groups of accounts" do
-    cc       = Factory.create(:credit_card_account, :account_users_attributes => [{:user => @user, :created_by => @user, :user_role => 'Owner'}])
+    cc       = Factory.create(:nufs_account, :account_users_attributes => [{:user => @user, :created_by => @user, :user_role => 'Owner'}])
     facility = Factory.create(:facility)
     pg       = facility.price_groups.create(Factory.attributes_for(:price_group))
     AccountPriceGroupMember.create(:account => cc, :price_group => pg)
@@ -44,7 +44,7 @@ describe User do
 
   it "should belong to price groups of account owner" do
     owner    = Factory.create(:user)
-    cc       = Factory.create(:credit_card_account, :account_users_attributes => [{:user => owner, :created_by => owner, :user_role => 'Owner'}])
+    cc       = Factory.create(:nufs_account, :account_users_attributes => [{:user => owner, :created_by => owner, :user_role => 'Owner'}])
     facility = Factory.create(:facility)
     pg       = facility.price_groups.create(Factory.attributes_for(:price_group))
     UserPriceGroupMember.create(:user => owner, :price_group => pg)
@@ -131,6 +131,31 @@ describe User do
       order.should_not == @order
       order.user.should == @user
       order.created_by.should == @user.id
+    end
+  end
+
+  context 'accounts_for_product' do
+    before :each do
+      @facility=Factory.create(:facility)
+      @facility_account=@facility.facility_accounts.create(Factory.attributes_for(:facility_account))
+      @item=@facility.items.create(Factory.attributes_for(:item, :facility_account_id => @facility_account.id))
+      @price_group=Factory.create(:price_group, :facility => @facility)
+      Factory.create(:user_price_group_member, :user => @user, :price_group => @price_group)
+      @item_pp=@item.item_price_policies.create(Factory.attributes_for(:item_price_policy, :price_group_id => @price_group.id))
+      @item_pp.reload.restrict_purchase=false
+      @account=Factory.create(:nufs_account, :account_users_attributes => [ Factory.attributes_for(:account_user, :user => @user) ])
+    end
+
+    it 'should not have an account because there is no price group' do
+      UserPriceGroupMember.where(:price_group_id => @price_group.id, :user_id => @user.id).first.destroy
+      @user.accounts_for_product(@item).should be_empty
+    end
+
+    it 'should have an account' do
+      define_open_account @item.account, @account.account_number
+      accts=@user.accounts_for_product(@item)
+      accts.size.should == 1
+      accts.first.should == @account
     end
   end
 

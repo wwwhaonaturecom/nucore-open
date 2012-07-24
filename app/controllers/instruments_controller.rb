@@ -2,6 +2,7 @@ class InstrumentsController < ProductsCommonController
   customer_tab  :show
   admin_tab     :create, :edit, :index, :manage, :new, :schedule, :update
   
+  skip_before_filter :init_product, :only => [:instrument_statuses]
   
   # GET /instruments
   def index
@@ -30,10 +31,15 @@ class InstrumentsController < ProductsCommonController
     end
 
     # is the user approved? or is the logged in user an operator of the facility (logged in user can override restrictions)
-    
     if add_to_cart && !@instrument.is_approved_for?(acting_user)
       add_to_cart = false unless session_user and session_user.can_override_restrictions?(@instrument)
       flash[:notice] = t_model_error(Instrument, 'requires_approval_html', :instrument => @instrument, :facility => @instrument.facility, :email => @instrument.facility.email).html_safe
+    end
+
+    # does the user have a valid payment source for purchasing this reservation?
+    if add_to_cart && acting_user.accounts_for_product(@instrument).blank?
+      add_to_cart=false
+      flash[:notice]=t_model_error @instrument.class, 'no_accounts'
     end
 
     # does the product have any price policies for any of the groups the user is a member of?
@@ -80,12 +86,40 @@ class InstrumentsController < ProductsCommonController
   def instrument_status
     begin
       @relay  = @instrument.relay
-      status = Rails.env.test? ? true : @relay.get_status_port(@relay.port)
+      status = Rails.env.test? ? true : @relay.get_status
       @status = @instrument.instrument_statuses.create!(:is_on => status)
-    rescue
+    rescue Exception => e
+      logger.error e
       raise ActiveRecord::RecordNotFound
     end
-    render :layout => false
+    respond_to do |format|
+      format.html  { render :layout => false }
+      format.json  { render :json => @status }
+    end
+  end
+
+  def instrument_statuses
+    @instrument_statuses = []
+    current_facility.instruments.order(:id).includes(:relay).each do |instrument|
+      # skip instruments with no relay
+      next unless instrument.relay
+      
+      begin
+        status = instrument.relay.get_status
+        instrument_status = instrument.current_instrument_status
+        # if the status hasn't changed, don't create a new status
+        if instrument_status && status == instrument_status.is_on?
+          @instrument_statuses << instrument_status
+        else
+          # || false will ensure that the value of is_on is not nil (causes a DB error)
+          @instrument_statuses << instrument.instrument_statuses.create!(:is_on => status || NUCore::Database.boolean(false))
+        end
+      rescue Exception => e
+        logger.error e.message
+        @instrument_statuses << InstrumentStatus.new(:instrument => instrument, :error_message => e.message)
+      end
+    end
+    render :json => @instrument_statuses
   end
 
   # GET /facilities/:facility_id/instruments/:instrument_id/switch
@@ -98,14 +132,19 @@ class InstrumentsController < ProductsCommonController
 
       unless Rails.env.test?
         port=@instrument.relay.port
-        params[:switch] == 'on' ? relay.activate_port(port) : relay.deactivate_port(port)
-        status = relay.get_status_port(port)
+        params[:switch] == 'on' ? relay.activate : relay.deactivate
+        status = relay.get_status
       end
 
       @status = @instrument.instrument_statuses.create!(:is_on => status)
-    rescue
-      raise ActiveRecord::RecordNotFound
+    rescue Exception => e
+      logger.error "ERROR: #{e.message}"
+      @status = InstrumentStatus.new(:instrument => @instrument, :error_message => e.message)
+      #raise ActiveRecord::RecordNotFound
     end
-    render :action => :instrument_status, :layout => false
+    respond_to do |format|
+      format.html { render :action => :instrument_status, :layout => false }
+      format.json { render :json => @status }
+    end
   end
 end

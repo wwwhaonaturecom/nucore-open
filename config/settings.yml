@@ -4,6 +4,14 @@ price_group:
     external: 'External Rate'
     cancer_center: 'Cancer Center Rate'
 
+financial:
+  # in the format MM-DD
+  fiscal_year_begins: 09-01
+  journal_format:
+    xls: true
+    csv: false
+    xml: true
+
 validator:
   class_name: NucsValidator
   test:
@@ -18,3 +26,19 @@ email:
   exceptions:
     sender: 'nucore-noreply@northwestern.edu'
     recipients: 'support-nucore@tablexi.com'
+
+billing:
+  review_period: <%= 7.days %>
+
+external_services:
+  survey: Surveyor
+
+#
+# For these settings use SettingsHelper#feature_on?
+feature:
+  create_users_on: true
+  password_update_on: true
+  recharge_accounts_on: true
+  expense_accounts_on: true
+  edit_accounts_on: true
+  suspend_accounts_on: true

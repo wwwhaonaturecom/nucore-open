@@ -47,28 +47,9 @@ Factory.define_default :nufs_account, :class => NufsAccount do |o|
   end
 
   o.description 'nufs account description'
-  o.expires_at Time.zone.now + 1.month
+  o.expires_at { Time.zone.now + 1.month }
   o.created_by 0
 end 
-
-Factory.define_default :credit_card_account, :class => CreditCardAccount do |o|
-  o.sequence(:account_number) { |n| "5276-4400-6542-1319" }
-  o.description 'credit card account description'
-  o.name_on_card 'Person'
-  o.expiration_month((Time.zone.now + 1.month).month)
-  o.expiration_year((Time.zone.now + 1.month).year)
-  o.expires_at Time.zone.now + 1.month
-  o.created_by 0
-  o.sequence(:affiliate) { |n| Affiliate.find_or_create_by_name("cc_affiliate#{n}") }
-end
-
-Factory.define_default :purchase_order_account, :class => PurchaseOrderAccount do |o|
-  o.sequence(:account_number) { |n| "#{n}" }
-  o.description 'purchase order account description'
-  o.expires_at Time.zone.now + 1.month
-  o.sequence(:affiliate) { |n| Affiliate.find_or_create_by_name("po_affiliate#{n}") }
-  o.created_by 0
-end
 
 Factory.define_default :account_user, :class => AccountUser do |o|
   o.user_role 'Owner'
@@ -108,6 +89,27 @@ Factory.define_default :relay, :class => Relay do |o|
   o.sequence(:password) {|n| "password#{n}" }
 end
 
+Factory.define_default :relay_syna, :class => RelaySynaccessRevA do |o|
+  o.ip '192.168.1.1'
+  o.sequence(:port) {|p| p }
+  o.sequence(:username) {|n| "username#{n}" }
+  o.sequence(:password) {|n| "password#{n}" }
+end
+
+Factory.define_default :relay_synb, :class => RelaySynaccessRevB do |o|
+  o.ip '192.168.1.2'
+  o.sequence(:port) {|p| p }
+  o.sequence(:username) {|n| "username#{n}" }
+  o.sequence(:password) {|n| "password#{n}" }
+end
+
+Factory.define_default :relay_dummy, :class => RelayDummy do |o|
+end
+
+Factory.define_default :instrument_status do |o|
+  o.is_on true
+end
+
 Factory.define_default :product_access_group do |o|
   o.sequence(:name) { |n| "Level #{n}" }
 end
@@ -121,8 +123,8 @@ Factory.define_default :instrument_price_policy, :class => InstrumentPricePolicy
   o.minimum_cost 1
   o.usage_mins 1
   o.overage_mins 1
-  o.start_date Time.zone.now.beginning_of_day
-  o.expire_date PricePolicy.generate_expire_date(Time.zone.now.beginning_of_day)
+  o.start_date { Time.zone.now.beginning_of_day }
+  o.expire_date { PricePolicy.generate_expire_date(Time.zone.now.beginning_of_day) }
 end
 
 Factory.define_default :item, :class => Item do |o|
@@ -139,8 +141,8 @@ end
 Factory.define_default :item_price_policy, :class => ItemPricePolicy do |o|
   o.unit_cost 1
   o.unit_subsidy 0
-  o.start_date Date.today
-  o.expire_date PricePolicy.generate_expire_date(Date.today)
+  o.start_date { Date.today }
+  o.expire_date { PricePolicy.generate_expire_date(Date.today) }
 end
 
 Factory.define_default :service, :class => Service do |o|
@@ -168,8 +170,8 @@ end
 Factory.define_default :service_price_policy, :class => ServicePricePolicy do |o|
   o.unit_cost 1
   o.unit_subsidy 0
-  o.start_date Date.today
-  o.expire_date PricePolicy.generate_expire_date(Date.today)
+  o.start_date { Date.today }
+  o.expire_date { PricePolicy.generate_expire_date(Date.today) }
 end
 
 Factory.define_default :schedule_rule, :class => ScheduleRule do |o|
@@ -191,7 +193,7 @@ end
 Factory.define_default :payment_account_transaction do |pat|
   pat.description 'fake trans'
   pat.transaction_amount -12.34
-  pat.finalized_at Time.zone.now
+  pat.finalized_at { Time.zone.now }
   pat.reference 'abc123xyz'
   pat.is_in_dispute false
 end
@@ -204,9 +206,8 @@ Factory.define_default :statement_row do |s|
 end
 
 Factory.define_default :reservation do |r|
-  time=Time.zone.parse("#{Date.today.to_s} 10:00:00") + 1.day
-  r.reserve_start_at time
-  r.reserve_end_at time + 1.hour
+  r.reserve_start_at { Time.zone.parse("#{Date.today.to_s} 10:00:00") + 1.day }
+  r.reserve_end_at { Time.zone.parse("#{Date.today.to_s} 10:00:00") + 1.day + 1.hour }
 end
 
 Factory.define_default :journal do |j|

@@ -1,4 +1,15 @@
 class User < ActiveRecord::Base
+
+  module Overridable
+    def price_groups
+      groups = price_group_members.collect{ |pgm| pgm.price_group }
+      # check internal/external membership
+      groups << (self.username.match(/@/) ? PriceGroup.external.first : PriceGroup.base.first)
+      groups.flatten.uniq
+    end
+  end
+
+  include Overridable
   include Role
 
   devise :bcsec_authenticatable, :ldap_authenticatable, :database_authenticatable, :encryptable, :trackable, :recoverable
@@ -126,17 +137,21 @@ class User < ActiveRecord::Base
     @order = Order.create(:user => self, :created_by => created_by_user ? created_by_user.id : id) unless @order
     @order
   end
-
-  def price_groups
-    groups = price_group_members.collect{ |pgm| pgm.price_group }
-    # check internal/external membership
-    groups << (self.username.match(/@/) ? PriceGroup.external.first : PriceGroup.base.first)
-    groups.flatten.uniq
-  end
   
   def account_price_groups
     groups = self.accounts.active.collect{ |a| a.price_groups }.flatten.uniq
   end
+
+
+  #
+  # Given a +Product+ returns all valid accounts this user has for
+  # purchasing that product
+  def accounts_for_product(product)
+    acts=accounts.active.for_facility(product.facility)
+    acts.reject!{|acct| !acct.validate_against_product(product, self).nil?}
+    acts
+  end
+
 
   def full_name
     unless first_name.nil? and last_name.nil?

@@ -535,6 +535,30 @@ describe OrderDetail do
     end
   end
 
+  context 'review period' do
+    after :each do
+      Settings.reload!
+    end
+    context '7 day' do
+      before :each do
+        Settings.billing.review_period = 7.days
+      end
+      it 'should not have a reviewed time' do
+        @order_detail.to_complete
+        @order_detail.reviewed_at.should be_nil
+      end
+    end
+    context 'zero day' do
+      before :each do
+        Settings.billing.review_period = 0.days
+      end
+      it 'should set reviewed_at to now' do
+        @order_detail.to_complete
+        @order_detail.reviewed_at.should < Time.zone.now
+      end
+    end
+  end
+
   
 
   context 'named scopes' do
@@ -643,6 +667,20 @@ describe OrderDetail do
 
   end
 
+  context 'ordered_on_behalf_of?' do
+    it 'should return true if the associated order was ordered by someone else' do
+      @user2 = Factory.create(:user)
+      @order_detail.order.update_attributes(:created_by_user => @user2)
+      @order_detail.reload.should be_ordered_on_behalf_of
+    end
+    it 'should return false if the associated order was not ordered on behalf of' do
+      user = @order_detail.order.user
+      @order_detail.order.update_attributes(:created_by_user => user)
+      @order_detail.reload
+      @order_detail.reload.should_not be_ordered_on_behalf_of
+    end
+  end
+  
   context 'ordered_or_reserved_in_range' do
     before :each do
       @user = Factory.create(:user)
