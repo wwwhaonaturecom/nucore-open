@@ -58,7 +58,7 @@ gem 'bcdatabase',        '1.0.6'
 gem 'schema_qualified_tables', '1.0.0'
 
 group :development, :test do                          
-  gem 'rspec-rails', '2.6.1'
+  gem 'rspec-rails', '2.9'
   gem 'spork', '0.9.0.rc9'
   gem 'mocha', '0.9.7'
   gem 'factory_girl_rails', '1.0.1'
