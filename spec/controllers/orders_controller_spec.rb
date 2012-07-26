@@ -1,9 +1,15 @@
 require 'spec_helper'; require 'controller_spec_helper'
 
 describe OrdersController do
+  include DateHelper
+
   render_views
 
   before(:all) { create_users }
+
+  class DummyNotifier
+    def deliver; end
+  end
 
 
   it "should route" do
@@ -26,10 +32,10 @@ describe OrdersController do
     @account          = Factory.create(:nufs_account, :account_users_attributes => [Hash[:user => @staff, :created_by => @staff, :user_role => AccountUser::ACCOUNT_OWNER]])
     @order            = @staff.orders.create(Factory.attributes_for(:order, :created_by => @staff.id, :account => @account))
     @item             = @authable.items.create(Factory.attributes_for(:item, :facility_account_id => @facility_account.id))
+    define_open_account(@item.account, @account.account_number)
 
     Factory.create(:user_price_group_member, :user => @staff, :price_group => @price_group)
-    @item_pp=@item.item_price_policies.create(Factory.attributes_for(:item_price_policy, :price_group_id => @price_group.id))
-    @item_pp.reload.restrict_purchase=false
+    @item_pp=@item.item_price_policies.create(Factory.attributes_for(:item_price_policy, :price_group_id => @price_group.id, :start_date => 1.month.ago))
 
     @params={ :id => @order.id, :order_id => @order.id }
   end
@@ -93,10 +99,11 @@ describe OrdersController do
     context 'success' do
       before :each do
         @instrument = @authable.instruments.create(Factory.attributes_for(:instrument, :facility_account_id => @facility_account.id))
+        @instrument_pp = @instrument.instrument_price_policies.create!(Factory.attributes_for(:instrument_price_policy, :price_group => @nupg))
         define_open_account(@instrument.account, @account.account_number)
         @reservation = place_reservation_for_instrument(@staff, @instrument, @account, Time.zone.now)
         @order = @reservation.order_detail.order
-        @params.merge!({:id => @order.id, :order_id => @order.id})        
+        @params.merge!({:id => @order.id, :order_id => @order.id})
       end
 
       it 'should redirect to my reservations on a successful purchase of a single reservation' do
@@ -121,10 +128,196 @@ describe OrdersController do
         do_request
         response.should redirect_to receipt_order_url(@order)
       end
+      it 'should send a notification' do
+        Notifier.expects(:order_receipt).once.returns(DummyNotifier.new)
+        sign_in @admin
+        do_request
+      end
+      it "should not send an email by default if you're acting as" do
+        Notifier.expects(:order_receipt).never
+        sign_in @admin
+        switch_to @staff
+        do_request
+      end
+      it "should send an email if you're acting as and set the parameter" do
+        Notifier.expects(:order_receipt).once.returns(DummyNotifier.new)
+        sign_in @admin
+        switch_to @staff
+        @params.merge!(:send_notification => '1')
+        do_request
+      end
+
     end
 
-    it 'should test more than auth'
+    context 'backdating' do
+      before :each do
+        @order_detail = place_product_order(@staff, @authable, @item, @account)
+        @order.update_attribute(:ordered_at, nil)
+        @params.merge!({:id => @order.id})
+      end
+      it 'should be set up correctly' do
+        @order.state.should == 'new'
+        @order_detail.state.should == 'new'
+      end
+      it 'should validate the order properly' do
+        @order.should be_has_details
+        @order.should be_has_valid_payment
+        @order.should be_cart_valid
+      end
+      it 'should validate and place order' do
+        @order.validate_order!
+        @order.should be_place_order
+      end
+      it 'should redirect to order receipt on a successful purchase' do
+        sign_in @staff
+        do_request
+        flash[:error].should be_nil
+        response.should redirect_to receipt_order_path(@order)
+      end
+      it 'should set the ordered at to the past' do
+        maybe_grant_always_sign_in :director
+        switch_to @staff
+        @params.merge!({:order_date => format_usa_date(1.day.ago), :order_time => {:hour => '10', :minute => '12', :ampm => 'AM'}})
+        do_request
+        assigns[:order].reload.ordered_at.should match_date 1.day.ago.change(:hour => 10, :min => 12)
+      end
+      it 'should set the ordered at to now if not acting_as' do
+        maybe_grant_always_sign_in :director
+        @params.merge!({:order_date => format_usa_date(1.day.ago)})
+        do_request
+        assigns[:order].reload.ordered_at.should match_date Time.zone.now
+      end
 
+      context 'setting status of order details' do
+        before :each do
+          maybe_grant_always_sign_in :director
+          switch_to @staff
+        end
+        it 'should leave as new by default' do
+          do_request
+          assigns[:order].reload.order_details.all? { |od| od.state.should == 'new' }
+        end
+        it 'should leave as new if new is set as the param' do
+          @params.merge!({:order_status_id => OrderStatus.new_os.first.id})
+          do_request
+          assigns[:order].reload.order_details.all? { |od| od.state.should == 'new' }
+        end
+        it 'should be able to set to cancelled' do
+          @params.merge!({:order_status_id => OrderStatus.cancelled.first.id})
+          do_request
+          assigns[:order].reload.order_details.all? { |od| od.state.should == 'cancelled' }
+        end
+        
+        context 'completed' do
+          before :each do
+            @params.merge!({:order_status_id => OrderStatus.complete.first.id})
+          end
+          it 'should be able to set to completed' do
+            do_request
+            assigns[:order].reload.order_details.all? { |od| od.state.should == 'complete' }
+          end
+          it 'should set reviewed_at if there is zero review period' do
+            Settings.billing.review_period = 0.days
+            do_request
+            assigns[:order].reload.order_details.all? { |od| od.reviewed_at.should_not be_nil }
+            Settings.reload!
+          end
+          it 'should leave reviewed_at as nil if there is a review period' do
+            Settings.billing.review_period = 7.days
+            do_request
+            assigns[:order].reload.order_details.all? { |od| od.reviewed_at.should be_nil }
+            Settings.reload!
+          end
+          it 'should set the fulfilled date to the order time' do
+            @item_pp = @item.item_price_policies.create!(Factory.attributes_for(:item_price_policy, :price_group_id => @price_group.id, :start_date => 1.day.ago, :expire_date => 1.day.from_now))
+            @params.merge!({:order_date => format_usa_date(1.day.ago), :order_time => {:hour => '10', :minute => '13', :ampm => 'AM'}})
+            do_request
+            assigns[:order].reload.order_details.all? { |od| od.fulfilled_at.should match_date 1.day.ago.change(:hour => 10, :min => 13) }
+          end
+          context 'price policies' do
+            before :each do
+              @item.item_price_policies.clear
+              @item_pp = @item.item_price_policies.create!(Factory.attributes_for(:item_price_policy, :price_group_id => @price_group.id, :start_date => 1.day.ago, :expire_date => 1.day.from_now))
+              @item_past_pp=@item.item_price_policies.create!(Factory.attributes_for(:item_price_policy, :price_group_id => @price_group.id, :start_date => 7.days.ago, :expire_date => 1.day.ago))
+              @params.merge!(:order_time => {:hour => '10', :minute => '00', :ampm => 'AM'})
+            end
+            it 'should use the current price policy for dates in that policy' do
+              @params.merge!({:order_date => format_usa_date(Time.zone.now)})
+              do_request
+              assigns[:order].reload.order_details.all? { |od| od.price_policy.should == @item_pp }
+            end
+            it 'should use an old price policy for the past' do
+              @params.merge!({:order_date => format_usa_date(5.days.ago)})
+              do_request
+              assigns[:order].reload.order_details.all? { |od| od.price_policy.should == @item_past_pp }
+            end
+            it 'should have a problem if there is no policy set for the date in the past' do
+              @params.merge!({:order_date => format_usa_date(9.days.ago)})
+              do_request
+              assigns[:order].reload.order_details.all? do |od|
+                od.price_policy.should be_nil
+                od.actual_cost.should be_nil
+                od.actual_subsidy.should be_nil
+                od.state.should == 'new'
+              end
+              flash[:error].should_not be_nil
+              response.should redirect_to order_url(@order)
+            end
+          end
+          
+        end
+      end
+
+      context 'backdating a reservation' do
+        before :each do
+          @instrument = @authable.instruments.create(Factory.attributes_for(:instrument, :facility_account_id => @facility_account.id))
+          @instrument_pp = @instrument.instrument_price_policies.create!(Factory.attributes_for(:instrument_price_policy, :price_group => @price_group, :start_date => 7.day.ago, :expire_date => 1.day.from_now))
+          define_open_account(@instrument.account, @account.account_number)
+          @reservation = place_reservation_for_instrument(@staff, @instrument, @account, 3.days.ago)
+          @params.merge!(:id => @reservation.order_detail.order.id)
+          maybe_grant_always_sign_in :director
+          switch_to @staff
+          @params.merge!({:order_date => format_usa_date(2.days.ago), :order_time => {:hour => '2', :minute => '27', :ampm => 'PM'}})
+          @submitted_date = 2.days.ago.change(:hour => 14, :min => 27)
+        end
+        it 'should be new by default' do
+          do_request
+          assigns[:order].order_details.all? { |od| od.state.should == 'new' }
+        end
+        context 'cancelled' do
+          before :each do
+            @params.merge!({:order_status_id => OrderStatus.cancelled.first.id})
+            do_request
+          end
+          it 'should be able to be set to cancelled' do
+            assigns[:order].order_details.all? { |od| od.state.should == 'cancelled' }
+          end
+          it 'should set the cancelled time on the reservation' do
+            assigns[:order].order_details.all? { |od| od.reservation.canceled_at.should_not be_nil }
+            @reservation.reload.canceled_at.should_not be_nil
+            # Should this match the date put in the form, or the date when the action took place
+            # @reservation.canceled_at.should match_date @submitted_date
+          end
+        end
+        context 'completed' do
+          before :each do
+            @params.merge!({:order_status_id => OrderStatus.complete.first.id})
+            do_request
+          end
+          it 'should be able to be set to completed' do
+            assigns[:order].order_details.all? { |od| od.state.should == 'complete' }
+          end
+          it 'should set the fulfilment date to the order time' do
+            assigns[:order].order_details.all? { |od| od.fulfilled_at.should match_date @submitted_date }
+          end
+          it 'should set the actual times to the reservation times for completed' do
+            do_request
+            @reservation.reload.actual_start_at.should match_date @reservation.reserve_start_at
+            @reservation.actual_end_at.should match_date(@reservation.reserve_start_at + 60.minutes)
+          end
+        end
+      end
+    end
   end
 
 
@@ -294,8 +487,6 @@ describe OrdersController do
       end
       context "in the right facility" do
         before :each do
-          
-          
           @params.merge!(:order => {:order_details => [{:quantity => 1, :product_id => @item.id}]})
         end
         facility_operators.each do |role|
@@ -325,19 +516,14 @@ describe OrdersController do
         end
 
         it "should not allow ordering" do
-          
           do_request
           @order.reload.order_details.should be_empty
           should set_the_flash.to(/You are not authorized to place an order on behalf of another user for the facility/)
         end
       end
-
-
+      it "should show a warning if the user doesn't have access to the product to be added"
     end
-
-    it "should show a warning if the user doesn't have access to the product to be added"
   end
-
 
   context "remove from cart" do
     before(:each) do
@@ -446,6 +632,10 @@ describe OrdersController do
   context "cart meta data" do
     before(:each) do
       @instrument       = @authable.instruments.create(Factory.attributes_for(:instrument, :facility_account_id => @facility_account.id))
+      @instrument.schedule_rules.create(Factory.attributes_for(:schedule_rule, :start_hour => 0, :end_hour => 24))
+      @instrument_pp = @instrument.instrument_price_policies.create(Factory.attributes_for(:instrument_price_policy, :price_group_id => @price_group.id))
+      @instrument_pp.restrict_purchase = false
+      define_open_account(@instrument.account, @account.account_number)
       @service          = @authable.services.create(Factory.attributes_for(:service, :facility_account_id => @facility_account.id))
       @method=:get
       @action=:show
@@ -454,7 +644,6 @@ describe OrdersController do
     it_should_require_login
 
     context 'staff' do
-
       before :each do
         @order.add(@instrument)
         @order_detail = @order.order_details.first
@@ -465,8 +654,47 @@ describe OrdersController do
       end
     end
 
+    context "restricted instrument" do
+      before :each do
+        @instrument.update_attributes(:requires_approval => true)
+        @order.update_attributes(:created_by_user => @director, :account => @account)
+        @order.add(@instrument)
+        @order.order_details.size.should == 1
+        @params.merge!(:id => @order.id)
+      end
+      it 'should not allow purchasing a restricted item' do
+        maybe_grant_always_sign_in :guest
+        place_reservation(@authable, @order.order_details.first, Time.zone.now)
+        #place reservation makes the @order purchased
+        @order.reload.update_attributes!(:state => 'new')
+        do_request
+        assigns[:order].should == @order
+        assigns[:order].should_not be_validated
+      end
+      it "should allow purchasing a restricted item the user isn't authorized for" do
+        place_reservation(@authable, @order.order_details.first, Time.zone.now)
+        #place reservation makes the @order purchased
+        @order.reload.update_attributes!(:state => 'new')
+        maybe_grant_always_sign_in :director
+        switch_to @guest
+        do_request
+        response.code.should == '200'
+        assigns[:order].should == @order
+        assigns[:order].should be_validated
+      end
+      it "should not be validated if there is no reservation" do
+        maybe_grant_always_sign_in :director
+        do_request
+        response.should be_success
+        assigns[:order].should_not be_validated
+        assigns[:order].should == @order
+        assigns[:order].order_details.first.validate_for_purchase.should == "Please make a reservation"
+      end
+    end
+
     it "should show links for uploading files for services where required by service"
     it "should show links for submitting survey for services where required by service"
+
   end
 
 
@@ -516,6 +744,16 @@ describe OrdersController do
       response.should redirect_to "/orders/#{@order.id}/receipt"
 
       # TODO: add, etc.
+    end
+
+    it 'should set the potential order_statuses from this facility and only this facility' do
+      maybe_grant_always_sign_in :staff
+      @facility2 = Factory.create(:facility)
+      @order_status = Factory.create(:order_status, :facility => @authable, :parent => OrderStatus.new_os.first)
+      @order_status_other = Factory.create(:order_status, :facility => @facility2, :parent => OrderStatus.new_os.first)
+      do_request
+      assigns[:order_statuses].should be_include @order_status
+      assigns[:order_statuses].should_not be_include @order_status_other
     end
 
     it "should validate and transition to validated"

@@ -251,7 +251,7 @@ Spork.each_run do
     }
 
     res_attrs.merge!(extra_reservation_attrs) if extra_reservation_attrs
-    @instrument.reservations.create(res_attrs)
+    instrument.reservations.create(res_attrs)
   end
 
   #
@@ -269,20 +269,18 @@ Spork.each_run do
   # [_extra_reservation_attrs_]
   #   Custom attributes for the +Reservation+, if any
   def place_reservation(facility, order_detail, reserve_start, extra_reservation_attrs=nil)
-    facility_account=facility.facility_accounts.create(Factory.attributes_for(:facility_account))
-
     # create instrument, min reserve time is 60 minutes, max is 60 minutes
-    @instrument=facility.instruments.create(
+    @instrument ||= facility.instruments.create!(
         Factory.attributes_for(
           :instrument,
-          :facility_account => facility_account,
+          :facility_account => facility.facility_accounts.create(Factory.attributes_for(:facility_account)),
           :min_reserve_mins => 60,
           :max_reserve_mins => 60
         )
     )
 
     assert @instrument.valid?
-    @instrument.schedule_rules.create(Factory.attributes_for(:schedule_rule))
+    @instrument.schedule_rules.create!(Factory.attributes_for(:schedule_rule, :start_hour => 0, :end_hour => 24)) if @instrument.schedule_rules.empty?
 
     res_attrs={
       :reserve_start_at => reserve_start,
@@ -293,7 +291,12 @@ Spork.each_run do
     order_detail.order.update_attributes!(:state => 'purchased')
     
     res_attrs.merge!(extra_reservation_attrs) if extra_reservation_attrs
-    @reservation=@instrument.reservations.create(res_attrs)
+    @reservation=@instrument.reservations.build(res_attrs)
+    # force validation to run to set reserve_end_at, but ignore the errors
+    # we don't need to be worried about all the validations when running this method
+    @reservation.valid?
+    @reservation.save(:validate => false)
+    @reservation
   end
 
 
