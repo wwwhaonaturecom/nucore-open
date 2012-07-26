@@ -4,6 +4,9 @@ class OrderDetail < ActiveRecord::Base
   
   versioned
 
+  # Used when ordering to override certain restrictions
+  attr_accessor :being_purchased_by_admin
+
   belongs_to :product
   belongs_to :price_policy
   belongs_to :statement
@@ -384,6 +387,7 @@ class OrderDetail < ActiveRecord::Base
   def validate_reservation
     return nil unless product.is_a?(Instrument)
     return "Please make a reservation" if reservation.nil?
+    reservation.reserved_by_admin = @being_purchased_by_admin
     return "There is a problem with your reservation" unless reservation.valid? && reservation.valid_before_purchase?
   end
   
