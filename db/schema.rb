@@ -10,7 +10,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20120801223135) do
+ActiveRecord::Schema.define(:version => 20120807174404) do
 
   create_table "account_users", :force => true do |t|
     t.integer  "account_id",               :precision => 38, :scale => 0, :null => false
@@ -287,7 +287,11 @@ ActiveRecord::Schema.define(:version => 20120801223135) do
     t.string   "dispute_resolved_reason", :limit => 200
     t.datetime "created_at"
     t.datetime "updated_at"
+<<<<<<< HEAD
     t.integer  "order_status_id",                        :precision => 38, :scale => 0, :null => false
+=======
+    t.integer  "order_status_id"
+>>>>>>> upstream/reservation_notifications
     t.string   "state",                   :limit => 50
     t.integer  "response_set_id",                        :precision => 38, :scale => 0
     t.integer  "group_id",                               :precision => 38, :scale => 0
@@ -429,8 +433,14 @@ ActiveRecord::Schema.define(:version => 20120801223135) do
     t.integer  "min_cancel_hours",                       :precision => 38, :scale => 0
     t.integer  "facility_account_id",                    :precision => 38, :scale => 0
     t.string   "account",                 :limit => 5
+<<<<<<< HEAD
     t.boolean  "show_details",                           :precision => 1,  :scale => 0, :default => false, :null => false
     t.integer  "auto_cancel_mins",                       :precision => 38, :scale => 0
+=======
+    t.boolean  "show_details",                           :default => false, :null => false
+    t.integer  "auto_cancel_mins"
+    t.string   "contact_email"
+>>>>>>> upstream/reservation_notifications
   end
 
   add_foreign_key "products", "facilities", :name => "sys_c008556"
