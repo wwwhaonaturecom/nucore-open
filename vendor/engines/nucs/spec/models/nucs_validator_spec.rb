@@ -161,10 +161,39 @@ describe NucsValidator do
   end
 
 
-  it 'should recognize an expired chart string on a GL066 entry with without dates' do
+  it 'should recognize an expired chart string on a GL066 entry without dates' do
     define_gl066(NON_GRANT_CS, :budget_period => '2000')
     assert_raise NucsErrors::DatedGL066Error do
       NucsValidator.new(NON_GRANT_CS, NON_REVENUE_ACCT).account_is_open!
+    end
+  end
+
+
+  it 'should not raise an error if chart string is expired, compared with a prior fulfillment date, and is in 90 day window' do
+    today=Time.zone.today
+    define_gl066(NON_GRANT_CS, :expires_at => today-1)
+    assert_nothing_raised do
+      NucsValidator.new(NON_GRANT_CS, NON_REVENUE_ACCT).account_is_open!((today-2).to_datetime)
+    end
+  end
+
+
+  it 'should raise an error if chart string is expired, compared with a post fulfillment date, and is in 90 day window' do
+    today=Time.zone.today
+    define_gl066(NON_GRANT_CS, :expires_at => today-1)
+    assert_raise NucsErrors::DatedGL066Error do
+      NucsValidator.new(NON_GRANT_CS, NON_REVENUE_ACCT).account_is_open!(today.to_datetime)
+    end
+  end
+
+
+  it 'should raise an error if chart string is expired, compared with a prior fulfillment date, and is outside the 90 day window' do
+    today=Time.zone.today
+    Timecop.freeze today+91.days do
+      define_gl066(NON_GRANT_CS, :expires_at => today-1)
+      assert_raise NucsErrors::DatedGL066Error do
+        NucsValidator.new(NON_GRANT_CS, NON_REVENUE_ACCT).account_is_open!((today-2).to_datetime)
+      end
     end
   end
 

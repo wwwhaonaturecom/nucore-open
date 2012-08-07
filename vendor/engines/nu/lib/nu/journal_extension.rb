@@ -27,7 +27,7 @@ module Nu
         end
 
         begin
-          ValidatorFactory.instance(account.account_number, od.product.account).account_is_open!
+          ValidatorFactory.instance(account.account_number, od.product.account).account_is_open!(od.fulfilled_at)
         rescue ValidatorError => e
           row_errors << "Account #{account} on order detail ##{od} is invalid. It #{e.message}."
         end

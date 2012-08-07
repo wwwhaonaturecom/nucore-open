@@ -21,6 +21,11 @@ class Product < ActiveRecord::Base
       :less_than_or_equal_to => 99999,
       :if => :account_required
   ) if SettingsHelper.feature_on? :expense_accounts
+
+  # Use lambda so we can dynamically enable/disable in specs
+  validate :if => lambda {SettingsHelper::feature_on?(:product_specific_contacts)} do
+    errors.add(:contact_email, :required) unless email.present?
+  end
   
   scope :active,             :conditions => { :is_archived => false, :is_hidden => false }
   scope :active_plus_hidden, :conditions => { :is_archived => false}
@@ -49,6 +54,13 @@ class Product < ActiveRecord::Base
 
   def <=> (obj)
     name.casecmp obj.name
+  end
+
+  # If there isn't an email specific to the product, fall back to the facility's email
+  def email
+    # If product_specific_contacts is off, always return the facility's email
+    return facility.email unless SettingsHelper::feature_on? :product_specific_contacts
+    contact_email.presence || facility.try(:email)
   end
 
   def description
@@ -127,6 +139,16 @@ class Product < ActiveRecord::Base
     groups = groups_for_order_detail(order_detail)
     return nil if groups.empty?
     price_policies = current_price_policies(date).delete_if { |pp| pp.restrict_purchase? || groups.exclude?(pp.price_group) }
+
+    # provide a predictable ordering of price groups so that equal unit costs
+    # are always handled the same way. Put the base group at the front of the
+    # price policy array so that it takes precedence over all others that have
+    # equal unit cost. See task #49823.
+    base_ndx=price_policies.index{|pp| pp.price_group == PriceGroup.base.first}
+    base=price_policies.delete_at base_ndx if base_ndx
+    price_policies.sort!{|pp1, pp2| pp1.price_group.name <=> pp2.price_group.name}
+    price_policies.unshift base if base
+
     price_policies.min_by do |pp|
       # default to very large number if the estimate returns a nil
       costs = pp.estimate_cost_and_subsidy_from_order_detail(order_detail) || {:cost => 999999999, :subsidy => 0}
