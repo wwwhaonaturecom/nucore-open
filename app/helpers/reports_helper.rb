@@ -5,6 +5,11 @@ module ReportsHelper
     (minutes / 60).round_to(2)
   end
 
+  def time_difference(end_at, start_at)
+    return '' unless start_at && end_at
+    minutes = ((end_at - start_at) / 60).floor
+    minutes.to_s
+  end
 
   def to_percent(decimal)
     (decimal * 100).round_to(1)
