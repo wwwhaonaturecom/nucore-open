@@ -20,10 +20,12 @@ class OrderDetail < ActiveRecord::Base
   has_one    :external_service_receiver, :as => :receiver, :dependent => :destroy
   has_many   :file_uploads, :dependent => :destroy
 
+  delegate :user, :facility, :to => :order
+
   validates_presence_of :product_id, :order_id
   validates_numericality_of :quantity, :only_integer => true, :greater_than_or_equal_to => 1
-  validates_numericality_of :actual_cost, :if => lambda { |o| o.actual_cost_changed? && !o.actual_cost.nil?}
-  validates_numericality_of :actual_subsidy, :if => lambda { |o| o.actual_subsidy_changed? && !o.actual_cost.nil?}
+  validates_numericality_of :actual_cost, :greater_than_or_equal_to => 0, :if => lambda { |o| o.actual_cost_changed? && !o.actual_cost.nil?}
+  validates_numericality_of :actual_subsidy, :greater_than_or_equal_to => 0, :if => lambda { |o| o.actual_subsidy_changed? && !o.actual_cost.nil?}
   validates_presence_of :dispute_reason, :if => :dispute_at
   validates_presence_of :dispute_resolved_at, :dispute_resolved_reason, :if => :dispute_resolved_reason || :dispute_resolved_at
   # only do this validation if it hasn't been ordered yet. Update errors caused by notification sending
@@ -34,8 +36,6 @@ class OrderDetail < ActiveRecord::Base
   ## TODO validate assigned_user is a member of the product's facility
   ## TODO validate order status is global or a member of the product's facility
   ## TODO validate which fields can be edited for which states
-
-  before_create :init_status
 
   scope :with_product_type, lambda { |s| {:joins => :product, :conditions => ["products.type = ?", s.to_s.capitalize]} }
   scope :in_dispute, :conditions => ['dispute_at IS NOT NULL AND dispute_resolved_at IS NULL AND STATE != ?', 'cancelled'], :order => 'dispute_at'
@@ -257,12 +257,18 @@ class OrderDetail < ActiveRecord::Base
 
   # block will be called after the transition, but before the save
   def change_status! (new_status, &block)
-    success = true
-    success = send("to_#{new_status.root.name.downcase.gsub(/ /,'')}!") if new_status.root.name.downcase.gsub(/ /,'') != state
-    raise AASM::InvalidTransition, "Event '#{new_status.root.name.downcase.gsub(/ /,'')}' cannot transition from '#{state}'" unless success
-    self.order_status = new_status
-    block.call(self) if block
-    self.save!
+    new_state = new_status.state_name
+    # don't try to change state if it's not a valid state or it's the same as it was before
+    if OrderDetail.aasm_states.map(&:name).include?(new_state) && new_state != state.to_sym
+      raise AASM::InvalidTransition, "Event '#{new_state}' cannot transition from '#{state}'" unless send("to_#{new_state}!")
+    end
+    # don't try to change status if it's the same as before
+    unless new_status == order_status
+      self.order_status = new_status
+      block.call(self) if block
+      self.save!
+    end
+    return true
   end
 
   # This method is a replacement for change_status! that also will cancel the associated reservation when necessary
@@ -284,10 +290,11 @@ class OrderDetail < ActiveRecord::Base
     change_status!(OrderStatus.complete.first) do |od|
       od.fulfilled_at = event_time
       od.assign_price_policy(event_time)
-      # If there isn't a price policy for that date the user can use, we want to prevent the user
-      # from purchasing
-      raise NUCore::PurchaseException.new(I18n.t('price_policies.errors.none_exist_for_date')) unless od.price_policy
     end
+  end
+
+  def set_default_status!
+    change_status! product.initial_order_status
   end
 
   def cancelable?
@@ -445,8 +452,8 @@ class OrderDetail < ActiveRecord::Base
   end
 
   def update_account(new_account)
-    self.account_id = new_account.id
-    assign_estimated_price(new_account)
+    self.account = new_account
+    assign_estimated_price(account)
   end
 
   def assign_estimated_price(second_account=nil, date = Time.zone.now)
@@ -463,7 +470,7 @@ class OrderDetail < ActiveRecord::Base
 
   def assign_estimated_price!(second_account=nil, date = Time.zone.now)
     assign_estimated_price(second_account, date)
-    raise NUCore::PurchaseException.new(I18n.t('price_policies.errors.none_exist_for_date')) unless estimated_cost
+    self.save!
   end
 
   def assign_estimated_price_from_policy(price_policy)
@@ -670,12 +677,6 @@ class OrderDetail < ActiveRecord::Base
   end
 
   private
-
-  # initialize order detail status with product status
-  def init_status
-    self.order_status = product.try(:initial_order_status)
-    self.state = product.initial_order_status.root.name.downcase.gsub(/ /,'')
-  end
 
   def has_completed_reservation?
     !product.is_a?(Instrument) || (reservation && (reservation.canceled_at || reservation.actual_end_at || reservation.reserve_end_at < Time.zone.now))

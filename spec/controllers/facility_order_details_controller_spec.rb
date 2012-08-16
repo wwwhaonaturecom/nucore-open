@@ -18,11 +18,13 @@ describe FacilityOrderDetailsController do
       :user => @director,
       :created_by => @director.id,
       :account => @account,
-      :ordered_at => Time.zone.now
+      :ordered_at => Time.zone.now,
+      :state => 'purchased'
     )
     @price_group=Factory.create(:price_group, :facility => @authable)
     @price_policy=Factory.create(:item_price_policy, :product => @product, :price_group => @price_group)
     @order_detail=Factory.create(:order_detail, :order => @order, :product => @product, :price_policy => @price_policy)
+    @order_detail.set_default_status!
     @params={ :facility_id => @authable.url_name, :order_id => @order.id, :id => @order_detail.id }
   end
 
@@ -110,6 +112,18 @@ describe FacilityOrderDetailsController do
         maybe_grant_always_sign_in :director
         do_request
         @order_detail.reload.state.should == 'cancelled'
+      end
+      it 'should render edit on failure' do
+        maybe_grant_always_sign_in :director
+        OrderDetail.any_instance.stubs(:save!).raises(ActiveRecord::RecordInvalid)
+        do_request
+        response.should render_template :edit
+        should set_the_flash
+      end
+      it 'should redirect to timeline view on success' do
+        maybe_grant_always_sign_in :director
+        do_request
+        response.should redirect_to timeline_facility_reservations_path
       end
     end
 

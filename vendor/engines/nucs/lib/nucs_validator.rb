@@ -36,7 +36,7 @@ class NucsValidator
   # will be raised.
   #
   # You must have set +@account+ before calling this method!
-  def account_is_open!
+  def account_is_open!(fulfill_date=nil)
     return if Whitelist.includes?(@chart_string)
     raise NucsErrors::InputError.new('account', nil) unless @account
     return validate_zero_fund! if @fund.start_with?('0')
@@ -50,7 +50,7 @@ class NucsValidator
       validate_gl066_components!(tree.roll_up_node)
     end
 
-    validate_gl066_PAD_components!(components)
+    validate_gl066_PAD_components!(components, fulfill_date)
   end
 
 
@@ -194,13 +194,23 @@ class NucsValidator
 
   #
   # Validate Project, Activity, and date components
-  def validate_gl066_PAD_components!(gls)
+  def validate_gl066_PAD_components!(gls, fulfill_date=nil)
     validate_activity, validate_project=grant?, !@project.blank?
 
     raise InputError.new('activity', nil) if @project && @activity.blank?
     raise UnknownGL066Error.new('activity', @activity) if validate_activity && !gls.any?{|gl| gl.activity == @activity }
     raise UnknownGL066Error.new('project', @project) if validate_project && !gls.any?{|gl| gl.project == @project }
-    raise DatedGL066Error.new('is expired or not yet active') unless gls.any?{|gl| !gl.expired? }
+
+    expired=gls.select{|gl| gl.expired? }
+
+    # invalidate on expiration date if:
+    # * we are given an order fulfillment date and the order was fulfilled after the chart string expired
+    # * we are given an order fulfillment date and we are outside the 90 day grace period
+    # * no fulfillment date was given and at least one chart string record is expired
+    # for more background see http://pm.tablexi.com/issues/49243
+    if expired.present? && (fulfill_date.nil? || expired.all?{|gl| fulfill_date > gl.expires_at || gl.expires_at+90.days < Time.zone.now })
+      raise DatedGL066Error.new('is expired or not yet active')
+    end
 
     fund_i=@fund.to_i
 
