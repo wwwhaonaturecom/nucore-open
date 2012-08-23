@@ -201,14 +201,12 @@ class NucsValidator
     raise UnknownGL066Error.new('activity', @activity) if validate_activity && !gls.any?{|gl| gl.activity == @activity }
     raise UnknownGL066Error.new('project', @project) if validate_project && !gls.any?{|gl| gl.project == @project }
 
-    expired=gls.select{|gl| gl.expired? }
-
     # invalidate on expiration date if:
     # * we are given an order fulfillment date and the order was fulfilled after the chart string expired
     # * we are given an order fulfillment date and we are outside the 90 day grace period
-    # * no fulfillment date was given and at least one chart string record is expired
+    # * no fulfillment date was given and all chart string records are expired
     # for more background see http://pm.tablexi.com/issues/49243
-    if expired.present? && (fulfill_date.nil? || expired.all?{|gl| fulfill_date > gl.expires_at || gl.expires_at+90.days < Time.zone.now })
+    if gls.all?{|gl| gl.expired? } && (fulfill_date.blank? || gls.all?{|gl| fulfill_date > gl.expires_at || gl.expires_at+90.days < Time.zone.now })
       raise DatedGL066Error.new('is expired or not yet active')
     end
 
