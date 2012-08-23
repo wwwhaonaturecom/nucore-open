@@ -178,6 +178,16 @@ describe NucsValidator do
   end
 
 
+  it 'should not raise an error if chart string has an expired and unexpired record and no fulfillment date is given.' do
+    today=Time.zone.today
+    define_gl066(NON_GRANT_CS, :expires_at => today-1.year)
+    define_gl066(NON_GRANT_CS, :expires_at => today+1.day)
+    assert_nothing_raised do
+      NucsValidator.new(NON_GRANT_CS, NON_REVENUE_ACCT).account_is_open!
+    end
+  end
+
+
   it 'should raise an error if chart string is expired, compared with a post fulfillment date, and is in 90 day window' do
     today=Time.zone.today
     define_gl066(NON_GRANT_CS, :expires_at => today-1)
