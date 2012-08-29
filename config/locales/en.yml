@@ -19,6 +19,7 @@ en:
     login: Login
     logout: Logout
     cart: Cart
+    notices: Notices
 
   shared:
     footer:
@@ -243,6 +244,13 @@ en:
       foot: "* Reflects only orders that the user has not been notified of yet."
       submit: "Send Notifications"
 
+  facility_orders:
+    edit:
+      attention: "The following order details need your attention. Before you can add to this order you need to address them."
+      head:
+        h1: "Summary Of Order #%{order_number}"
+        h2: "Order Detail #%{order_number}"
+
   facility_order_details:
     edit:
       head:
@@ -257,6 +265,7 @@ en:
           at: "Ordered At"
           for: "Ordered For"
           by: "Ordered By"
+          summary: "Summary Of Order #%{order_number}"
         fulfilled: "Fulfilled At"
         account: "Payment Source"
         assigned: "Assigned User"
@@ -728,6 +737,11 @@ en:
           cancel_hours: "Cancelation Minimum (hours)"
           auto_cancel: "Automatic Cancelation (minutes)"
 
+  notifications:
+    index:
+      head:
+        h1: "Notices"
+
   devise:
     failure:
       invalid: "Invalid username or password."
@@ -777,6 +791,11 @@ en:
           no_orders: "No orders were selected to journal"
           fiscal_span: "Journals may not span multiple fiscal years. Please select only orders in the same fiscal year."
 
+    facility_orders:
+      update:
+        zero_quantity: "Please enter a quantity for the product you'd like to add"
+        error: "An error was encountered while adding the product %{product}."
+        success: "%{product} was successfully added to this order."
     facility_order_details:
       edit:
         notice:
@@ -785,6 +804,10 @@ en:
           no_policy: "This order does not have a price policy assigned. Please ensure that there is a price policy for the date this order was fulfilled. Clicking 'Save' will attempt to assign a price policy to this order and save any other changes."
       remove_from_journal:
         notice: "The order has been removed from its journal"
+      destroy:
+        notice: "You cannot delete an order detail that isn't being merged"
+        error: "Could not delete order detail %{order_detail_id}"
+        success: "The order detail was successfully removed"
 
     reservations:
       create:
@@ -804,6 +827,9 @@ en:
         'Dispute Reason', 'Dispute Resolved At', 'Dispute Resolved Reason', 'Reviewed At',
         'Statemented On', 'Journal Date', 'Reconciled Note'
       ]
+
+    notifications:
+      no_notices: "You have no notifications at this time"
 
   models:
     order:

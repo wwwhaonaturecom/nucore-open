@@ -38,7 +38,7 @@ gem 'prawn',            '0.12.0'
 gem 'prawn_rails',      '0.0.5'
 
 ## other
-gem 'rake',             '0.8.7'
+gem 'rake'
 gem 'ruby-ole',         '1.2.11.1'
 gem 'spreadsheet',      '0.6.5.5'
 gem 'fast-aes',         '0.1.1'
