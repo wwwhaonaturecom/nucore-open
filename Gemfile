@@ -66,7 +66,7 @@ group :development, :test do
   gem 'ruby-debug', '0.10.3'
   gem 'single_test', '0.4.0'
   gem 'ci_reporter'
-  gem 'timecop'
+  gem 'timecop', '0.3.5'
   gem 'rcov'
 end
 

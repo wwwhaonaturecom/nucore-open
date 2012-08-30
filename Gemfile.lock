@@ -211,7 +211,7 @@ GEM
     spreadsheet (0.6.5.5)
       ruby-ole (>= 1.0)
     thor (0.14.6)
-    timecop (0.4.5)
+    timecop (0.3.5)
     treetop (1.4.10)
       polyglot
       polyglot (>= 0.3.1)
@@ -267,6 +267,6 @@ DEPENDENCIES
   single_test (= 0.4.0)
   spork (= 0.9.0.rc9)
   spreadsheet (= 0.6.5.5)
-  timecop
+  timecop (= 0.3.5)
   vestal_versions (= 1.2.4.3)!
   will_paginate (= 3.0.2)
