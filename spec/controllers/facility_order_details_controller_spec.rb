@@ -79,6 +79,26 @@ describe FacilityOrderDetailsController do
 
     it_should_allow_operators_only
 
+
+    context 'from summary' do
+      before :each do
+        @path=edit_facility_order_path(@authable, @order)
+        @params[:return_to]=@path
+        @params[:order_detail]={
+          :order_status_id => OrderStatus.new_os.first.id,
+          :actual_cost => '5.0',
+          :actual_subsidy => '0',
+          :reconciled_note => '',
+          :account_id => @account.id.to_s
+        }
+      end
+
+      it_should_allow :director, 'to go back to order summary' do
+        assert_redirected_to @path
+      end
+    end
+
+
     context 'cancel reservation' do
       before :each do
         start_date=Time.zone.now+1.day
@@ -187,6 +207,34 @@ describe FacilityOrderDetailsController do
       assert_redirected_to edit_facility_order_order_detail_path(@authable, @order_detail.order, @order_detail)
     end
 
+  end
+
+
+  context 'destroy' do
+    before :each do
+      @method=:delete
+      @action=:destroy
+    end
+
+    it_should_allow_operators_only :redirect do
+      flash[:notice].should be_present
+      @order_detail.reload.should_not be_frozen
+      assert_redirected_to edit_facility_order_path(@authable, @order)
+    end
+
+    context 'merge order' do
+      before :each do
+        @clone=@order.clone
+        assert @clone.save
+        @order.update_attribute :merge_with_order_id, @clone.id
+      end
+
+      it_should_allow :director, 'to destroy a detail that is part of a merge order' do
+        assert_raises(ActiveRecord::RecordNotFound) { OrderDetail.find @order_detail.id }
+        flash[:notice].should be_present
+        assert_redirected_to edit_facility_order_path(@authable, @clone)
+      end
+    end
   end
 
 end

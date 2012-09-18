@@ -42,7 +42,7 @@ gem 'newrelic_rpm',     '~> 3.4.1'
 gem 'exception_notification', :require => 'exception_notifier'
 
 ## other
-gem 'rake',             '0.8.7'
+gem 'rake'
 gem 'ruby-ole',         '1.2.11.1'
 gem 'spreadsheet',      '0.6.5.5'
 gem 'fast-aes',         '0.1.1'
@@ -69,7 +69,7 @@ group :development, :test do
   gem 'ruby-debug', '0.10.3'
   gem 'single_test', '0.4.0'
   gem 'ci_reporter'
-  gem 'timecop'
+  gem 'timecop', '0.3.5'
   gem 'rcov'
 end
 

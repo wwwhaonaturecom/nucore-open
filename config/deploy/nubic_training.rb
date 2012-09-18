@@ -30,6 +30,7 @@ namespace :deploy do
   task :symlink_configs do
     run "ln -s #{deploy_to}/database.yml #{release_path}/config/database.yml"
     run "ln -s #{deploy_to}/settings.local.yml #{release_path}/config/settings.local.yml"
+    run "ln -s #{deploy_to}/newrelic.yml #{release_path}/config/newrelic.yml"
     run "ln -s #{deploy_to}/files #{release_path}/public/files"
     run "ln -s #{deploy_to}/database.yml #{release_path}/vendor/engines/nucs/config/database.yml"
   end

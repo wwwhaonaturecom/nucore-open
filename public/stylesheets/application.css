@@ -758,6 +758,38 @@ ul.form li.clear,table ul,.search_form fieldset li .chzn-container,.search_form 
     float: right;
 }
 
+#order_detail_edit {
+    margin-top: 1.5em;
+}
+
+/***
+ * Order
+ */
+#product_add_quantity {
+    width: 3em;
+    height: 19px;
+}
+
+.edit_order .chzn-container-single .chzn-single {
+    height: 24px;
+}
+
+#send_receipt_btn {
+    width: 122px;
+    float: right;
+    margin-top: 3.5em;
+}
+
+#product_add_btn {
+    margin-left: 0;
+    margin-top: 1em;
+}
+
+#merge-orders p {
+    margin-top: 4em;
+}
+
+
 /***
  * Product listing
  ***/
@@ -826,6 +858,27 @@ ul.form li.clear,table ul,.search_form fieldset li .chzn-container,.search_form 
 }
 #bulk_email_export {
   float: right;
+}
+
+
+/***
+ * Notifications
+ ***/
+
+#notifications li {
+    padding: 2em 0;
+    margin-bottom: 2em;
+    text-align: center;
+    -moz-box-shadow: 10px 10px 5px #888;
+    -webkit-box-shadow: 10px 10px 5px #888;
+    box-shadow: 10px 10px 5px #888;
+    -moz-border-radius: 15px;
+    border-radius: 15px;
+    border: 1px solid #888;
+}
+
+.dismiss-notice {
+    margin-left: 5em;
 }
 
 
