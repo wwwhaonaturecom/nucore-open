@@ -37,13 +37,16 @@ gem 'jquery-rails',     '1.0.12'
 gem 'prawn',            '0.12.0'
 gem 'prawn_rails',      '0.0.5'
 
+## monitoring
+gem 'newrelic_rpm',     '~> 3.4.1'
+gem 'exception_notification', :require => 'exception_notifier'
+
 ## other
 gem 'rake'
 gem 'ruby-ole',         '1.2.11.1'
 gem 'spreadsheet',      '0.6.5.5'
 gem 'fast-aes',         '0.1.1'
 gem 'pdf-reader',       '0.10.1'
-gem 'exception_notification', :require => 'exception_notifier'
 gem 'fastercsv',        '1.5.4'
 gem 'daemons',          '1.1.6'
 
@@ -57,7 +60,7 @@ gem 'bcsec',             '2.1.1', :require => 'pers'
 gem 'bcdatabase',        '1.0.6'
 gem 'schema_qualified_tables', '1.0.0'
 
-group :development, :test do                          
+group :development, :test do
   gem 'rspec-rails', '2.9'
   gem 'spork', '0.9.0.rc9'
   gem 'mocha', '0.9.7'
