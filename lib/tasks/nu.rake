@@ -1,5 +1,30 @@
 namespace :nu do
 
+  desc 'find orders that should have received cancer center pricing'
+  task :find_cancer_center_order_details => :environment do |t, args|
+    import DateHelper
+
+    cancer_center_group = PriceGroup.find(2)
+    start_date = Time.zone.parse('09/01/12').beginning_of_day
+    order_details = OrderDetail.where(:state => ['complete']).where('fulfilled_at > ?', start_date).where('price_policy_id IS NOT NULL')
+
+    puts "Total orders completed in September: #{order_details.count}"
+
+    order_details.each_with_index do |od, i|
+      original_cost = od.actual_cost
+      original_subsidy = od.actual_subsidy
+      original_price_policy = od.price_policy
+      original_group = od.price_policy.price_group.name
+      od.assign_price_policy
+      # assign price policy only updates id
+      od.price_policy = PricePolicy.find(od.price_policy_id)
+      if od.price_policy.price_group_id == cancer_center_group.id && od.price_policy != original_price_policy
+        puts "#{od}, #{od.fulfilled_at}, #{od.facility}, #{od.product}, #{od.account}, #{od.account.owner.user.name}, #{original_group}, #{original_cost}, #{original_subsidy}, #{od.price_policy.price_group.name}, #{od.actual_cost}, #{od.actual_subsidy}"
+      end
+    end
+    puts "Done"
+  end
+
   desc 'order updates for task #46319'
   task :update_order_details_46319 => :environment do |t, args|
     od_to_price={
@@ -148,7 +173,7 @@ namespace :nu do
     relays.each {|relay| relay.destroy }
   end
 
-  
+
   namespace :journal do
 
     desc 'meets needs of Task #32337'
@@ -166,7 +191,7 @@ namespace :nu do
       xml_name="#{today.gsub(/-/,'')}_CCC_UPLOAD.XML"
       xml_src=File.join(from_dir, xml_name)
       xml_dest=File.join(to_dir, xml_name)
-      
+
       av=ActionView::Base.new(Rails.application.config.view_path)
       File.open(xml_src, 'w') do |xml|
         journals.each do |journal|
