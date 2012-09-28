@@ -15,22 +15,22 @@ end
 prawn_document pdf_config do |pdf|
   vertical_gutter = 10
   pdf.font_size = 8
-  
+
   pdf.define_grid(:columns => 2, :rows => 7)
   #b = pdf.grid(0,0)
-  
+
   # NU LOGO
   logo_width = 124
   logo_height = 76
   pdf.image "#{Rails.root}/public/images/logo-nu-black.jpg", :width => logo_width, :height => logo_height, :at => pdf.bounds.top_left
-  
+
   # INVOICE DETAILS BOX (TOP RIGHT)
   invoice_details_box_width = pdf.bounds.width / 2
-  
+
   invoice_bounding_box = pdf.bounding_box [pdf.bounds.width / 2, pdf.bounds.top], :width => invoice_details_box_width do
     invoice_details = [["Invoice:", "#{@account.id}-#{@statement.id}"],
                        ["Date:", @statement.created_at.strftime("%m/%d/%Y")]]
-    
+
     invoice_details << ["Purchase Order:", @account.account_number] if @account.is_a?(PurchaseOrderAccount)
     # Might bring this back if we find a good method for calculating billing period
     # invoice_details << ["Billing Period", "#{@statement.first_order_detail_date.strftime("%m/%d/%Y")} - #{@statement.created_at.strftime("%m/%d/%Y")}"];
@@ -38,17 +38,17 @@ prawn_document pdf_config do |pdf|
     invoice_details_inner_table = pdf.make_table(invoice_details) do
       cells.style(:borders => [], :padding => 2, :width => invoice_details_box_width / 2)
     end
-    
+
     pdf.table([[@facility.to_s], [invoice_details_inner_table]]) do
       row(0).style(:font_style => :bold, :background_color => 'cccccc', :size => 12, :width => invoice_details_box_width)
     end
   end
-  
+
   second_row_box_width = pdf.bounds.width / 2 - 20
   # start below the taller of the top box and the image
   second_row_box_top = pdf.bounds.top - [invoice_bounding_box.height, logo_height].max - vertical_gutter
 
-  # BILL TO TABLE  
+  # BILL TO TABLE
   bill_to_box = pdf.bounding_box [pdf.bounds.left, second_row_box_top], :width => second_row_box_width do
     pdf.text "NET 30", :style => :bold
     pdf.table [["Bill To:"],
@@ -72,34 +72,37 @@ prawn_document pdf_config do |pdf|
       cells.style(:width => 200)
     end
   end
-  
-  
+
+
   # TRANSACTION LISTING
-  bottom_of_second_row = [bill_to_box.absolute_bottom, remit_to_box.absolute_bottom].min - pdf.bounds.absolute_bottom 
-  
+  bottom_of_second_row = [bill_to_box.absolute_bottom, remit_to_box.absolute_bottom].min - pdf.bounds.absolute_bottom
+
   pdf.move_cursor_to(bottom_of_second_row - vertical_gutter)
 
   total_due = 0;
   rows = @statement.order_details.sort{|d,o| d.order.ordered_at<=>o.order.ordered_at}.reverse.map do |od|
     total_due += od.actual_total
+    subsidy_display = number_to_currency(od.actual_subsidy)
+    subsidy_display += "\n#{od.price_policy.price_group.name}" if od.actual_subsidy > 0
     [
       od.order.ordered_at.strftime("%m/%d/%Y"),
       "#{od.product}",
       "#{od.quantity}",
-      number_to_currency(od.actual_total/od.quantity),
-      number_to_currency(od.actual_subsidy),
+      number_to_currency(od.actual_cost/od.quantity),
+      subsidy_display,
       number_to_currency(od.actual_total)
     ]
   end
-  
-  headers = ["Transaction Date", "Item Name", "Quantity", "Unit Cost", "Subsidy Amount", "Total Cost"]  
+
+  headers = ["Transaction Date", "Item Name", "Quantity", "Unit Cost", "Subsidy Amount", "Total Cost"]
   footer = ["", "", "", "", "TOTAL DUE", number_to_currency(total_due)]
-  
+
   pdf.table([headers] + rows + [footer], :header => true, :width => pdf.bounds.width) do
     cells.style(:borders => [])
     row(0).style(:font_style => :bold, :background_color => 'cccccc', :borders => [:top, :left, :bottom, :right])
     column(0).width = 80
     column(1).width = 200
+    column(2..3).width = 45
     column(2..5).style(:align => :right)
     row(rows.size + 1).style(:font_style => :bold)
   end
@@ -109,7 +112,7 @@ prawn_document pdf_config do |pdf|
   pdf.text "Phone: #{@facility.phone_number}" if @facility.phone_number
   pdf.text "Fax: #{@facility.fax_number}" if @facility.fax_number
   pdf.text "Email: #{@facility.email}" if @facility.email
-  
+
   #pdf.number_pages "Page <page> of <total>", [0, -15]
 
 end
