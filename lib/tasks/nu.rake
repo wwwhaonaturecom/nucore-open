@@ -30,11 +30,6 @@ namespace :nu do
     puts "Done"
   end
 
-<<<<<<< Updated upstream
-
-
-=======
->>>>>>> Stashed changes
   desc 'order updates for task #46319'
   task :update_order_details_46319 => :environment do |t, args|
     od_to_price={
