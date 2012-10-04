@@ -24,12 +24,11 @@ namespace :nu do
           od.actual_subsidy = original_subsidy
         end
         puts "#{od}, #{od.fulfilled_at}, #{od.facility}, #{od.product}, #{od.account}, #{od.account.owner.user.name}, #{original_group}, #{original_cost}, #{original_subsidy}, #{od.price_policy.price_group.name}, #{od.actual_cost}, #{od.actual_subsidy}"
+        od.save!
       end
     end
     puts "Done"
   end
-
-
 
   desc 'order updates for task #46319'
   task :update_order_details_46319 => :environment do |t, args|
