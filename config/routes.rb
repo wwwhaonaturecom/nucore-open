@@ -134,8 +134,8 @@ Nucore::Application.routes.draw do |map|
 
     facility.resources :facility_accounts, :controller => 'facility_facility_accounts', :only => [:index, :new, :create, :edit, :update] if SettingsHelper.feature_on? :recharge_accounts
 
-    facility.resources :orders, :controller => 'facility_orders', :only => [:index, :show], :collection => {:batch_update => :post, :show_problems => :get, :disputed => :get, :tab_counts => :get} do |order|
-      order.resources :order_details, :controller => 'facility_order_details', :only => [:edit, :update ], :member => {:remove_from_journal => :get} do |order_detail|
+    facility.resources :orders, :controller => 'facility_orders', :only => [:index, :edit, :update], :member => { :send_receipt => :post }, :collection => {:batch_update => :post, :show_problems => :get, :disputed => :get, :tab_counts => :get } do |order|
+      order.resources :order_details, :controller => 'facility_order_details', :only => [:edit, :update, :destroy], :member => {:remove_from_journal => :get} do |order_detail|
         order_detail.new_price '/new_price', :controller => 'facility_order_details', :action => 'new_price', :conditions => {:method => :get}
         order_detail.resolve_dispute '/resolve_dispute', :controller => 'facility_order_details', :action => 'resolve_dispute', :conditions => {:method => :put}
         order_detail.resources :reservations, :controller => 'facility_reservations', :only => [:edit, :update, :show]
@@ -205,6 +205,11 @@ Nucore::Application.routes.draw do |map|
         reservation.pick_accessories '/pick_accessories', :controller => 'reservations', :action => 'pick_accessories', :conditions => {:method => [:get, :post]}
       end
     end
+  end
+
+  #notifications
+  resources :notifications, :only => [ :index ] do
+    collection { get :count }
   end
 
   # reservations

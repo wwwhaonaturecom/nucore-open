@@ -10,7 +10,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20120807174404) do
+ActiveRecord::Schema.define(:version => 20120824185714) do
 
   create_table "account_users", :force => true do |t|
     t.integer  "account_id",               :precision => 38, :scale => 0, :null => false
@@ -186,6 +186,17 @@ ActiveRecord::Schema.define(:version => 20120807174404) do
     t.datetime "journal_date",                                                    :null => false
   end
 
+  create_table "notifications", :force => true do |t|
+    t.string    "type",                                                     :null => false
+    t.integer   "subject_id",                :precision => 38, :scale => 0, :null => false
+    t.string    "subject_type",                                             :null => false
+    t.integer   "user_id",                   :precision => 38, :scale => 0, :null => false
+    t.string    "notice",                                                   :null => false
+    t.timestamp "dismissed_at", :limit => 6
+    t.datetime  "created_at"
+    t.datetime  "updated_at"
+  end
+
   create_table "nucs_accounts", :force => true do |t|
     t.string "value",     :limit => 16,  :null => false
     t.string "auxiliary", :limit => 512
@@ -289,6 +300,7 @@ ActiveRecord::Schema.define(:version => 20120807174404) do
     t.integer  "statement_id",                           :precision => 38, :scale => 0
     t.integer  "journal_id",                             :precision => 38, :scale => 0
     t.string   "reconciled_note"
+    t.integer  "created_by",                             :precision => 38, :scale => 0, :null => false
   end
 
 
@@ -303,14 +315,15 @@ ActiveRecord::Schema.define(:version => 20120807174404) do
   add_index "order_statuses", ["facility_id", "parent_id", "name"], :name => "sys_c008542", :unique => true, :tablespace => "bc_nucore"
 
   create_table "orders", :force => true do |t|
-    t.integer  "account_id",                :precision => 38, :scale => 0
-    t.integer  "user_id",                   :precision => 38, :scale => 0, :null => false
-    t.integer  "created_by",                :precision => 38, :scale => 0, :null => false
-    t.datetime "created_at",                                               :null => false
-    t.datetime "updated_at",                                               :null => false
+    t.integer  "account_id",                        :precision => 38, :scale => 0
+    t.integer  "user_id",                           :precision => 38, :scale => 0, :null => false
+    t.integer  "created_by",                        :precision => 38, :scale => 0, :null => false
+    t.datetime "created_at",                                                       :null => false
+    t.datetime "updated_at",                                                       :null => false
     t.datetime "ordered_at"
-    t.integer  "facility_id",               :precision => 38, :scale => 0
-    t.string   "state",       :limit => 50
+    t.integer  "facility_id",                       :precision => 38, :scale => 0
+    t.string   "state",               :limit => 50
+    t.integer  "merge_with_order_id",               :precision => 38, :scale => 0
   end
 
 

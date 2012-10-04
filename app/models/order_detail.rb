@@ -1,7 +1,8 @@
 class OrderDetail < ActiveRecord::Base
   include NUCore::Database::SortHelper
   include TranslationHelper
-
+  include NotificationSubject
+  
   versioned
 
   # Used when ordering to override certain restrictions
@@ -13,17 +14,21 @@ class OrderDetail < ActiveRecord::Base
   belongs_to :journal
   belongs_to :order
   belongs_to :assigned_user, :class_name => 'User', :foreign_key => 'assigned_user_id'
+  belongs_to :created_by_user, :class_name => 'User', :foreign_key => :created_by
   belongs_to :order_status
   belongs_to :account
   belongs_to :bundle, :foreign_key => 'bundle_product_id'
   has_one    :reservation, :dependent => :destroy
   has_one    :external_service_receiver, :as => :receiver, :dependent => :destroy
+  has_many   :notifications, :as => :subject, :dependent => :destroy
   has_many   :file_uploads, :dependent => :destroy
 
   delegate :user, :facility, :ordered_at, :to => :order
   delegate :journal_date, :to => :journal
+  
+  alias_method :merge!, :save!
 
-  validates_presence_of :product_id, :order_id
+  validates_presence_of :product_id, :order_id, :created_by
   validates_numericality_of :quantity, :only_integer => true, :greater_than_or_equal_to => 1
   validates_numericality_of :actual_cost, :greater_than_or_equal_to => 0, :if => lambda { |o| o.actual_cost_changed? && !o.actual_cost.nil?}
   validates_numericality_of :actual_subsidy, :greater_than_or_equal_to => 0, :if => lambda { |o| o.actual_subsidy_changed? && !o.actual_cost.nil?}
@@ -593,6 +598,23 @@ class OrderDetail < ActiveRecord::Base
   # Returns true if this order detail is part of a bundle purchase, false otherwise
   def bundled?
     !bundle.nil?
+  end
+
+  def to_notice(notification_class, *args)
+    case notification_class.name
+      when MergeNotification.name
+        notice="<a href=\"#{edit_facility_order_path(order.facility, order.merge_order)}\">Order ##{order.merge_order.id}</a> needs your attention. A line item was added after purchase and "
+
+        notice += case product
+          when Instrument then 'has an incomplete reservation.'
+          when Service then 'has an incomplete order form.'
+          else; 'is incomplete.'
+        end
+
+        notice.html_safe
+      else
+        ''
+    end
   end
 
   # returns a hash of :notice (and/or?) :error
