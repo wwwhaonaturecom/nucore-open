@@ -92,27 +92,56 @@ describe NucsGl066 do
   end
 
 
-  { '2010|171|4011100|10002342|-|-||' => 6, '-|610|4011400|60023761|01|77000|27-APR-09|26-APR-11' => 8 }.each do |k, v|
-    it "should successfully tokenize #{k}" do
-      assert_nothing_raised do
+  context 'tokenize_source_line' do
+
+    { '2010|171|4011100|10002342|-|-||' => 6, '-|610|4011400|60023761|01|77000|27-APR-09|26-APR-11' => 8 }.each do |k, v|
+      it "should successfully tokenize #{k}" do
+        assert_nothing_raised do
+          tokens=NucsGl066.tokenize_source_line(k)
+          tokens.should be_a_kind_of(Array)
+          tokens.size.should == v
+        end
+      end
+
+
+      it "should successfully create a new record from #{k}" do
         tokens=NucsGl066.tokenize_source_line(k)
-        tokens.should be_a_kind_of(Array)
-        tokens.size.should == v
+        gl=NucsGl066.create_from_source(tokens)
+        gl.should be_a_kind_of(NucsGl066)
+        gl.should_not be_new_record
+
+        if tokens.size > 6
+          gl.starts_at.should == Time.zone.parse(tokens[6])
+          gl.expires_at.should == Time.zone.parse(tokens[7])
+        end
       end
     end
 
 
-    it "should successfully create a new record from #{k}" do
-      tokens=NucsGl066.tokenize_source_line(k)
-      gl=NucsGl066.create_from_source(tokens)
-      gl.should be_a_kind_of(NucsGl066)
-      gl.should_not be_new_record
+    it 'should give next year as current fiscal year' do
+      fiscal_year_test '-|820|1800100|80021533|-|70000||', '2011-10-01', 2012
+    end
 
-      if tokens.size > 6
-        gl.starts_at.should == Time.zone.parse(tokens[6])
-        gl.expires_at.should == Time.zone.parse(tokens[7])
+
+    it 'should give this year as current fiscal year' do
+      fiscal_year_test '-|812|1800100|80021533|-|70000||', '2011-08-01', 2011
+    end
+
+
+    it 'should give this year as current fiscal year when it is fiscal end date' do
+      fiscal_year_test '-|812|1800100|80021533|-|70000||', '2011-09-01', 2011
+    end
+
+
+    def fiscal_year_test(chart_string, date, expected_year)
+      Timecop.freeze Time.zone.parse(date)
+
+      assert_nothing_raised do
+        tokens=NucsGl066.tokenize_source_line chart_string
+        tokens.first.should == expected_year
       end
     end
+
   end
 
 end
