@@ -71,6 +71,7 @@ group :development, :test do
   gem 'ci_reporter'
   gem 'timecop', '0.3.5'
   gem 'rcov'
+  gem 'silent-oracle'
 end
 
 group :production, :staging do
