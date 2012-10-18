@@ -207,6 +207,7 @@ GEM
     schema_qualified_tables (1.0.0)
       activerecord (>= 2.3)
     shoulda (2.11.3)
+    silent-oracle (0.1.0)
     single_test (0.4.0)
     spork (0.9.0.rc9)
     spreadsheet (0.6.5.5)
@@ -266,6 +267,7 @@ DEPENDENCIES
   ruby-ole (= 1.2.11.1)
   schema_qualified_tables (= 1.0.0)
   shoulda (= 2.11.3)
+  silent-oracle
   single_test (= 0.4.0)
   spork (= 0.9.0.rc9)
   spreadsheet (= 0.6.5.5)
