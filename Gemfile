@@ -14,7 +14,7 @@ end
 
 ## auth
 gem 'devise',           '1.3.4'
-gem 'cancan',           '1.6.7'
+gem 'cancan',           '1.6.8'
 gem 'devise_ldap_authenticatable', '0.4.3'
 
 ## deployment

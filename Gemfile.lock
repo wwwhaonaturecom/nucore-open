@@ -78,7 +78,7 @@ GEM
       schema_qualified_tables (~> 1.0)
       warden (~> 1.0)
     builder (2.1.2)
-    cancan (1.6.7)
+    cancan (1.6.8)
     capistrano (2.6.0)
       highline
       net-scp (>= 1.0.0)
@@ -233,7 +233,7 @@ DEPENDENCIES
   bcdatabase (= 1.0.6)
   bcsec (= 2.1.1)
   c2po (~> 1.0.0)!
-  cancan (= 1.6.7)
+  cancan (= 1.6.8)
   capistrano (= 2.6.0)
   capistrano-ext (= 1.2.1)
   ci_reporter
