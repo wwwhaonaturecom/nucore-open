@@ -1,12 +1,14 @@
 class ReservationsController < ApplicationController
+  include FacilityReservationsHelper
+
   customer_tab  :all
-  before_filter :authenticate_user!
+  before_filter :authenticate_user!, :except => [ :index ]
   before_filter :check_acting_as,  :only => [ :switch_instrument, :show, :list ]
   before_filter :load_basic_resources, :only => [:new, :create, :edit, :update]
   before_filter :load_and_check_resources, :only => [ :move, :switch_instrument, :pick_accessories ]
 
   include TranslationHelper
-  
+
   def initialize
     super
     @active_tab = 'reservations'
@@ -16,17 +18,27 @@ class ReservationsController < ApplicationController
   def index
     @facility     = Facility.find_by_url_name!(params[:facility_id])
     @instrument   = @facility.instruments.find_by_url_name!(params[:instrument_id])
+
     @start_at     = params[:start] ? Time.zone.at(params[:start].to_i) : Time.zone.now
-    @start_date   = @start_at.to_date
-    @end_at       = params[:end] ? Time.zone.at(params[:end].to_i) : @start_at
-    @reservations = @instrument.reservations.active
+    @start_date   = @start_at.beginning_of_day
+
+    @end_at       = params[:end] ? Time.zone.at(params[:end].to_i) : @start_at.end_of_day
+
+    @reservations = @instrument.reservations.
+                                active.
+                                in_range(@start_at, @end_at).
+                                includes(:order_detail => { :order => :user })
+
+
     @rules        = @instrument.schedule_rules
-    
-    # restrict to available if it requires if it requires approval,
-    # but params[:all] will override that
-    @rules = @rules.available_to_user(acting_user) if @instrument.requires_approval
-    
-    
+
+    # restrict to available if it requires approval and the user
+    # isn't a facility admin
+    if @instrument.requires_approval && acting_user && acting_user.cannot_override_restrictions?(@instrument)
+      @rules = @rules.available_to_user(acting_user)
+    end
+
+    # We're not using unavailable rules for month view
     if @end_at - @start_at <= 1.week
       # build unavailable schedule
       @unavailable = ScheduleRule.unavailable(@rules)
@@ -35,8 +47,9 @@ class ReservationsController < ApplicationController
     end
 
     respond_to do |format|
+      as_calendar_object_options = {:start_date => @start_date, :with_details => current_user && params[:with_details]}
       as_calendar_object_options = {:start_date => @start_date, :with_details => params[:with_details]}
-      format.js { render :json => @reservations.map{|r| r.as_calendar_object(as_calendar_object_options)}.flatten + 
+      format.js { render :json => @reservations.map{|r| r.as_calendar_object(as_calendar_object_options)}.flatten +
                                   @unavailable.map{ |r| r.as_calendar_object(as_calendar_object_options)}.flatten }
     end
   end
@@ -61,7 +74,7 @@ class ReservationsController < ApplicationController
     end
 
     @order_details = @order_details.paginate(:page => params[:page])
-    
+
     @order_details.each do |od|
       res = od.reservation
       # do you need to click stop
@@ -84,7 +97,7 @@ class ReservationsController < ApplicationController
   def create
     raise ActiveRecord::RecordNotFound unless @reservation.nil?
     @reservation = @order_detail.build_reservation(params[:reservation].merge(:instrument => @instrument))
-    
+
     if !@order_detail.bundled? && params[:order_account].blank?
       flash.now[:error]=I18n.t 'controllers.reservations.create.no_selection'
       @reservation.valid? # run validations so it sets reserve_end_at
@@ -108,7 +121,7 @@ class ReservationsController < ApplicationController
         @reservation.save_as_user!(session_user)
         @order_detail.reload.assign_estimated_price!(nil, @reservation.reserve_end_at)
         @order_detail.save!
-        
+
         flash[:notice] = I18n.t 'controllers.reservations.create.success'
 
         if mergeable
@@ -151,7 +164,7 @@ class ReservationsController < ApplicationController
     @order        = Order.find(params[:order_id])
     @order_detail = @order.order_details.find(params[:order_detail_id])
     @reservation  = Reservation.find(params[:id])
-    
+
     raise ActiveRecord::RecordNotFound if (@reservation != @order_detail.reservation)
   end
 
@@ -215,10 +228,10 @@ class ReservationsController < ApplicationController
   # GET /orders/:order_id/order_details/:order_detail_id/reservations/switch_instrument
   def switch_instrument
     authorize! :start_stop, @reservation
-    
+
     relay_error_msg = 'An error was encountered while attempted to toggle the instrument. Please try again.'
     raise ActiveRecord::RecordNotFound unless params[:switch] && (params[:switch] == 'on' || params[:switch] == 'off')
-    
+
     begin
       relay = @instrument.relay
       if (params[:switch] == 'on' && @reservation.can_switch_instrument_on?)
@@ -265,9 +278,9 @@ class ReservationsController < ApplicationController
       flash[:error] = relay_error_msg
     end
 
-    if params[:switch] == 'off' 
-      @product_accessories = @instrument.product_accessories.for_acting_as(acting_as?)
-      if @product_accessories.present?
+    if params[:switch] == 'off'
+      @product_accessories = visible_accessories(@reservation)
+      if @product_accessories.any?
         render 'pick_accessories', :layout => false and return
       end
     end
@@ -278,9 +291,9 @@ class ReservationsController < ApplicationController
   def pick_accessories
     @error_status = nil
     @errors_by_id = {}
-    @product_accessories = @instrument.product_accessories.for_acting_as(acting_as?)
+    @product_accessories = visible_accessories(@reservation)
     @complete_state = OrderStatus.find_by_name!('Complete')
-    
+
     @count = 0
     params.each do |k, v|
       if k =~ /quantity(\d+)/ and v.present?
@@ -312,7 +325,7 @@ class ReservationsController < ApplicationController
     end
 
     if @error_status
-      @product_accessories = @instrument.product_accessories.for_acting_as(acting_as?)
+      @product_accessories = visible_accessories(@reservation)
       render 'pick_accessories', :format => :html, :layout => false, :status => @error_status
     else
       flash[:notice] = "Reservation Ended, #{helpers.pluralize(@count, 'accessory')} added"

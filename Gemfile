@@ -14,7 +14,7 @@ end
 
 ## auth
 gem 'devise',           '1.3.4'
-gem 'cancan',           '1.6.7'
+gem 'cancan',           '1.6.8'
 gem 'devise_ldap_authenticatable', '0.4.3'
 
 ## deployment
@@ -71,6 +71,7 @@ group :development, :test do
   gem 'ci_reporter'
   gem 'timecop', '0.3.5'
   gem 'rcov'
+  gem 'silent-oracle'
 end
 
 group :production, :staging do
