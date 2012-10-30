@@ -1,6 +1,4 @@
 class ReservationsController < ApplicationController
-  include FacilityReservationsHelper
-
   customer_tab  :all
   before_filter :authenticate_user!, :except => [ :index ]
   before_filter :check_acting_as,  :only => [ :switch_instrument, :show, :list ]
@@ -281,6 +279,7 @@ class ReservationsController < ApplicationController
     if params[:switch] == 'off'
       @product_accessories = visible_accessories(@reservation)
       if @product_accessories.any?
+        flash.now[:notice] = t('reservations.finished')
         render 'pick_accessories', :layout => false and return
       end
     end
@@ -292,6 +291,11 @@ class ReservationsController < ApplicationController
     @error_status = nil
     @errors_by_id = {}
     @product_accessories = visible_accessories(@reservation)
+    
+    if request.get?
+      render 'pick_accessories', :layout => false and return
+    end
+    
     @complete_state = OrderStatus.find_by_name!('Complete')
 
     @count = 0
@@ -325,7 +329,7 @@ class ReservationsController < ApplicationController
     end
 
     if @error_status
-      @product_accessories = visible_accessories(@reservation)
+      @product_accessories = @instrument.product_accessories.for_acting_as(acting_as?)
       render 'pick_accessories', :format => :html, :layout => false, :status => @error_status
     else
       flash[:notice] = "Reservation Ended, #{helpers.pluralize(@count, 'accessory')} added"
