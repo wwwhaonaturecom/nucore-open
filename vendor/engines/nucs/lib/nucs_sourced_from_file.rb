@@ -12,6 +12,10 @@ module NucsSourcedFromFile
   # source line data delimiter
   NUCS_TOKEN_SEPARATOR='|'
 
+  #
+  # MM-DD +String+ of NU's fiscal year end
+  NUCS_FISCAL_YEAR_MONTH_DAY='09-01'
+
 
   def self.included(base)
     base.extend(ClassMethods)

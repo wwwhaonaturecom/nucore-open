@@ -2,7 +2,6 @@ $(function() {
   var dialog = null;
 
   function pickAccessoriesHandleResponse(e, jqXHR, status) {
-    console.debug("got response", e, jqXHR.responseText, status);
     var response = jqXHR.responseText;
     
     dialog.html(response);
@@ -40,7 +39,10 @@ $(function() {
       $(this).find('input[type=submit]').prop('disabled', true); 
     });
 
-    clicked.fadeOut();
+    if (!clicked.hasClass('persistent')) { 
+      clicked.fadeOut();
+    }
+
     // load pick_accessories_form into dialog
     dialog.load(
       url,

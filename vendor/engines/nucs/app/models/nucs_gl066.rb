@@ -13,7 +13,7 @@ class NucsGl066 < ActiveRecord::Base
   # If no date was specified during import one will be calculated
   # on the fly from +@budget_period+ if the attribute exists
   def starts_at
-    return (self[:starts_at].nil? && !budget_period.nil?) ? (Time.zone.parse("#{budget_period}0901")-1.year) : self[:starts_at]
+    return (self[:starts_at].nil? && !budget_period.nil?) ? (Time.zone.parse("#{budget_period}-#{NUCS_FISCAL_YEAR_MONTH_DAY}")-1.year) : self[:starts_at]
   end
 
 
@@ -35,8 +35,16 @@ class NucsGl066 < ActiveRecord::Base
 
 
   def self.tokenize_source_line(source_line)
-    raise ImportError.new if source_line !~ /^\d{4,4}\||\d{2,2}-[A-Z]{3,3}-\d{2,2}\|\d{2,2}-[A-Z]{3,3}-\d{2,2}$/
-    return source_line.split(NUCS_TOKEN_SEPARATOR)
+    if source_line =~ /^\d{4,4}\||\d{2,2}-[A-Z]{3,3}-\d{2,2}\|\d{2,2}-[A-Z]{3,3}-\d{2,2}$/
+      tokens=source_line.split(NUCS_TOKEN_SEPARATOR)
+    elsif source_line =~ /^-\|(812|820)/
+      tokens=source_line.split(NUCS_TOKEN_SEPARATOR)
+      tokens[0]=current_fiscal_year
+    else
+      raise ImportError.new
+    end
+
+    tokens
   end
 
 
@@ -57,6 +65,15 @@ class NucsGl066 < ActiveRecord::Base
     end
 
     create(attrs)
+  end
+
+
+  private
+
+  def self.current_fiscal_year
+    today=Time.zone.now.to_date
+    fiscal_end=Time.zone.parse("#{today.year}-#{NUCS_FISCAL_YEAR_MONTH_DAY}").to_date
+    fiscal_end < today ? today.year+1 : today.year
   end
 
 end
