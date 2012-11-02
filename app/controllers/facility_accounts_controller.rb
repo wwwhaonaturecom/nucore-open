@@ -35,9 +35,9 @@ class FacilityAccountsController < ApplicationController
   before_filter :authenticate_user!
   before_filter :check_acting_as
   before_filter :init_current_facility
+  before_filter :init_account
 
-  load_resource :class => Affiliate, :find_by => :name, :only => :create
-  load_and_authorize_resource :class => Account
+  authorize_resource :class => Account
 
   before_filter :check_billing_access, :only => billing_access_checked_actions
 
@@ -55,7 +55,6 @@ class FacilityAccountsController < ApplicationController
 
   # GET /facilties/:facility_id/accounts/:id
   def show
-    @account = Account.find(params[:id])
   end
 
   # GET /facilities/:facility_id/accounts/new
@@ -66,12 +65,10 @@ class FacilityAccountsController < ApplicationController
 
   # GET /facilities/:facility_id/accounts/:id/edit
   def edit
-    @account = Account.find(params[:id])
   end
 
   # PUT /facilities/:facility_id/accounts/:id
   def update
-    @account     = Account.find(params[:id])
     class_params = account_class_params
 
     if @account.is_a?(AffiliateAccount)
@@ -169,7 +166,6 @@ class FacilityAccountsController < ApplicationController
 
   # GET /facilities/:facility_id/accounts/:account_id/members
   def members
-    @account = Account.find(params[:account_id])
   end
 
   # GET /facilities/:facility_id/accounts_receivable
@@ -184,7 +180,6 @@ class FacilityAccountsController < ApplicationController
   
   # GET /facilities/:facility_id/accounts/:account_id/statements/:statement_id
   def show_statement
-    @account = Account.find(params[:account_id])
     @facility = current_facility
     action='show_statement'
 
@@ -207,8 +202,6 @@ class FacilityAccountsController < ApplicationController
   
   # GET /facilities/:facility_id/accounts/:account_id/suspend
   def suspend
-    @account = Account.find(params[:account_id])
-
     begin
       @account.suspend!
       flash[:notice] = I18n.t 'controllers.facility_accounts.suspend.success'
@@ -221,8 +214,6 @@ class FacilityAccountsController < ApplicationController
 
   # GET /facilities/:facility_id/accounts/:account_id/unsuspend
   def unsuspend
-    @account = Account.find(params[:account_id])
-
     begin
       @account.unsuspend!
       flash[:notice] = I18n.t 'controllers.facility_accounts.unsuspend.success'
@@ -231,6 +222,17 @@ class FacilityAccountsController < ApplicationController
     end
 
     redirect_to facility_account_path(current_facility, @account)
+  end
+
+
+  private
+
+  def init_account
+    if params.has_key? :id
+      @account=Account.find params[:id].to_i
+    elsif params.has_key? :account_id
+      @account=Account.find params[:account_id].to_i
+    end
   end
 
 end
