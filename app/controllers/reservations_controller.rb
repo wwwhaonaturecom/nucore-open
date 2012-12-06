@@ -1,6 +1,4 @@
 class ReservationsController < ApplicationController
-  include FacilityReservationsHelper
-
   customer_tab  :all
   before_filter :authenticate_user!, :except => [ :index ]
   before_filter :check_acting_as,  :only => [ :switch_instrument, :show, :list ]
@@ -8,6 +6,7 @@ class ReservationsController < ApplicationController
   before_filter :load_and_check_resources, :only => [ :move, :switch_instrument, :pick_accessories ]
 
   include TranslationHelper
+  include FacilityReservationsHelper
 
   def initialize
     super
@@ -281,6 +280,7 @@ class ReservationsController < ApplicationController
     if params[:switch] == 'off'
       @product_accessories = visible_accessories(@reservation)
       if @product_accessories.any?
+        flash.now[:notice] = t('reservations.finished')
         render 'pick_accessories', :layout => false and return
       end
     end
@@ -292,40 +292,42 @@ class ReservationsController < ApplicationController
     @error_status = nil
     @errors_by_id = {}
     @product_accessories = visible_accessories(@reservation)
+    
+    if request.get?
+      render 'pick_accessories', :layout => false and return
+    end
+    
     @complete_state = OrderStatus.find_by_name!('Complete')
 
     @count = 0
     params.each do |k, v|
-      if k =~ /quantity(\d+)/ and v.present?
-        OrderDetail.transaction do
-          product   = @facility.products.find_by_id!($1)
-          quantity  = v.to_i
-          new_od    = nil
+      next unless k =~ /quantity(\d+)/ && v.present? && v != '0'
 
-          begin
-            if quantity > 0
-              new_ods = @order.add(product, quantity)
-              new_ods.map{|od| od.change_status!(@complete_state)}
-              @count += quantity
-            else
-              raise ArgumentError.new
-            end
+      OrderDetail.transaction do
+        product   = @facility.products.find_by_id!($1)
+        quantity  = v.to_i
 
-            next
-          rescue ArgumentError
-            ## otherwise something's wrong w/ new_od... safe it for the view
-            @error_status = 406
-            @errors_by_id[product.id] = "Invalid Quantity"
-
-            ## all save or non save.
-            raise ActiveRecord::Rollback
+        begin
+          if quantity > 0
+            new_ods = @order.add(product, quantity)
+            new_ods.map{|od| od.change_status!(@complete_state)}
+            @count += quantity
+          else
+            raise ArgumentError.new
           end
+        rescue ArgumentError
+          ## otherwise something's wrong w/ new_od... safe it for the view
+          @error_status = 406
+          @errors_by_id[product.id] = "Invalid Quantity"
+
+          ## all save or non save.
+          raise ActiveRecord::Rollback
         end
       end
     end
 
     if @error_status
-      @product_accessories = visible_accessories(@reservation)
+      @product_accessories = @instrument.product_accessories.for_acting_as(acting_as?)
       render 'pick_accessories', :format => :html, :layout => false, :status => @error_status
     else
       flash[:notice] = "Reservation Ended, #{helpers.pluralize(@count, 'accessory')} added"

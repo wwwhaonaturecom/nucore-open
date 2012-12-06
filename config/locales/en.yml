@@ -327,6 +327,7 @@ en:
     delete:
       confirm: Are you sure you wish to cancel this reservation?
       link: Cancel
+    finished: Reservation Ended
 
   statements:
     index:
@@ -458,6 +459,10 @@ en:
       unassigned: "Unassigned"
 
   product_accessories:
+    pick_accessories:
+      link: Add Accessories to order...
+      instruct: "Please enter a quantity for each accessory used during the reservation. If an accessory was not used please leave the quantity blank."
+    
     index:
       description: "Here you may define one or more accessories that can be used during a reservation of this product"
 
@@ -717,7 +722,7 @@ en:
 
     instrument_fields:
       show_details: "Show reservation details (name, email, etc) on schedule"
-      control_mechanism: "How the instrument and its time is managed"
+      control_mechanism: "How the instrument and its time is managed. Please be aware that if 'Reservation only' is selected the actual and overage rates of this instrument's pricing rules should be zero."
       relay:
         intro: "(Optional) If the instrument is connected to an approved power relay, please enter the information below. Power relays must be purchased separately."
         label:
