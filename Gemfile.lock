@@ -21,6 +21,11 @@ PATH
   specs:
     nucs (1.0.0)
 
+PATH
+  remote: vendor/engines/nupmu
+  specs:
+    nupmu (1.0.0)
+
 GEM
   remote: http://rubygems.org/
   remote: http://download.bioinformatics.northwestern.edu/gems/
@@ -253,6 +258,7 @@ DEPENDENCIES
   nokogiri (= 1.4.4)
   nu (~> 1.0.0)!
   nucs (~> 1.0.0)!
+  nupmu (~> 1.0.0)!
   paperclip (= 2.3.12)
   pdf-reader (= 0.10.1)
   prawn (= 0.12.0)
