@@ -2,13 +2,14 @@ class OrderStatus < ActiveRecord::Base
   acts_as_nested_set
 
   has_many :order_details
+  belongs_to :facility
 
   validates_presence_of :name
   validates_uniqueness_of :name, :scope => [:parent_id, :facility_id]
   validates_each :parent_id do |model, attr, value|
     begin
       model.errors.add(attr, 'must be a root') unless (value.nil? || OrderStatus.find(value).root?)
-    rescue
+    rescue Exception => e
       model.errors.add(attr, 'must be a valid root')
     end
   end
@@ -18,6 +19,18 @@ class OrderStatus < ActiveRecord::Base
   scope :cancelled,  :conditions => {:name => 'Cancelled'},  :limit => 1
   scope :complete,   :conditions => {:name => 'Complete'},   :limit => 1
   scope :reconciled, :conditions => {:name => 'Reconciled'}, :limit => 1
+
+  def editable?
+    !!facility
+  end
+
+  def state_name
+    root.name.downcase.gsub(/ /,'').to_sym
+  end
+
+  def downcase_name
+    name.downcase.gsub(/\s+/, '_')
+  end
 
   def is_left_of? (o)
     rgt < o.lft

@@ -3,7 +3,7 @@ class OrdersController < ApplicationController
 
   before_filter :authenticate_user!
   before_filter :check_acting_as,          :except => [:cart, :add, :choose_account, :show, :remove, :purchase, :receipt, :update]
-  before_filter :init_order,               :except => [:cart, :index]
+  before_filter :init_order,               :except => [:cart, :index, :receipt]
   before_filter :protect_purchased_orders, :except => [:cart, :receipt, :confirmed, :index]
 
   def initialize
@@ -12,12 +12,12 @@ class OrdersController < ApplicationController
   end
 
   def init_order
-    @order = acting_user.orders.find(params[:id])
+    @order = Order.find(params[:id])
   end
 
   def protect_purchased_orders
     if @order.state == 'purchased'
-      redirect_to receipt_order_url(@order) and return
+      redirect_to receipt_order_path(@order) and return
     end
   end
 
@@ -29,6 +29,9 @@ class OrdersController < ApplicationController
 
   # GET /orders/:id
   def show
+    @order_statuses = OrderStatus.non_protected_statuses(@order.facility)
+    facility_ability = Ability.new(session_user, @order.facility, self)
+    @order.being_purchased_by_admin = facility_ability.can?(:act_as, @order.facility)
     @order.validate_order! if @order.new?
   end
 
@@ -41,9 +44,14 @@ class OrdersController < ApplicationController
         order_detail_updates[$2.to_i][$1.to_sym] = value
       end
     end
-    @order.update_details(order_detail_updates)
-
-    redirect_to order_path(@order) and return
+    
+    if @order.update_details(order_detail_updates)
+      redirect_to order_path(@order) and return
+    else
+      logger.debug "errors #{@order.errors.full_messages}"
+      flash[:error] = @order.errors.full_messages.join("<br/>").html_safe
+      render :show
+    end
   end
 
   # PUT /orders/:id/clear
@@ -52,52 +60,75 @@ class OrdersController < ApplicationController
     redirect_to order_path(@order) and return
   end
 
+  # GET /orders/2/add/
   # PUT /orders/2/add/
   def add
-    @quantity   = params[:quantity].to_i || session[:add_to_cart][:quantity]
-    @product_id = params[:product_id]    || session[:add_to_cart][:product_id]
+    ## get items to add from the form post or from the session
+    ods_from_params = (params[:order].presence and params[:order][:order_details].presence) || []
+    items =  ods_from_params.presence || session[:add_to_cart].presence || []
     session[:add_to_cart] = nil
-    @product    = Product.find(@product_id)
 
+
+    # ignore ods w/ empty or 0 quantities
+    items = items.select { |od| od.is_a?(Hash) and od[:quantity].present? and (od[:quantity] = od[:quantity].to_i) > 0 }
+    return redirect_to(:back, :notice => "Please add at least one quantity to order something") unless items.size > 0
+
+    first_product = Product.find(items.first[:product_id])
+    facility_ability = Ability.new(session_user, first_product.facility, self)
+
+    # if acting_as, make sure the session user can place orders for the facility
+    if acting_as? && facility_ability.cannot?(:act_as, first_product.facility)
+      flash[:error] = "You are not authorized to place an order on behalf of another user for the facility #{current_facility.try(:name)}."
+      redirect_to order_path(@order) and return
+    end
+
+
+
+    ## handle a single instrument reservation
+    if items.size == 1 and (quantity = items.first[:quantity].to_i) == 1 #only one od w/ quantity of 1
+      if first_product.respond_to?(:reservations)                              # and product is reservable
+        
+        # make a new cart w/ instrument (unless this order is empty.. then use that one)
+        @order = acting_user.cart(session_user, @order.order_details.empty?)
+        @order.add(first_product, 1)
+
+        # bypass cart kicking user over to new reservation screen
+        return redirect_to new_order_order_detail_reservation_path(@order.id, @order.order_details.first)
+      end
+    end
+
+    ## make sure the order has an account
     if @order.account.nil?
-      unless @product.is_a?(Instrument)
-        # send to choose_account:
-        # if it's not set in the order OR
-        # payment source isn't valid for this facility
-        session[:add_to_cart] = {:quantity => @quantity, :product_id => @product.id }
-        return redirect_to choose_account_order_url(@order)
-      end
+      ## add auto_assign back here if needed
 
-      begin
-        @order.auto_assign_account!(@product)
-      rescue => e
-        flash[:error]=e.message
-        return redirect_to facility_path(@product.facility)
-      end
+      ## save the state to the session and redirect
+      session[:add_to_cart] = items
+      redirect_to choose_account_order_path(@order) and return
     end
 
-    # if acting_as, make sure the session use can place orders for the facility
-    if acting_as? && !session_user.administrator? && !manageable_facilities.include?(@product.facility)
-      flash[:error] = "You are not authorized to place an order on behalf of another user for the facility #{@product.facility.name}."
-      redirect_to order_url(@order) and return
-    end
-
+    ## process each item
     @order.transaction do
-      begin
-        order_detail = @order.add(@product, @quantity) # if product is a bundle, order_detail is an array of details
-        @order.invalidate!
-        return redirect_to new_order_order_detail_reservation_path(@order, order_detail) if @product.is_a?(Instrument)
-        flash[:notice] = "#{@product.class.name} added to cart."
-      rescue NUCore::MixedFacilityCart
-        flash[:error] = "You can not add a product from another facility; please clear your cart or place a separate order."
-      rescue Exception => e
-        flash[:error] = "An error was encountered while adding the product."
-        Rails.logger.error(e.backtrace.join("\n"))
+      items.each do |item|
+        @product = Product.find(item[:product_id])
+        begin
+          @order.add(@product, item[:quantity])
+          @order.invalidate! ## this is because we just added an order_detail
+        rescue NUCore::MixedFacilityCart
+          @order.errors.add(:base, "You can not add a product from another facility; please clear your cart or place a separate order.")
+        rescue Exception => e
+          @order.errors.add(:base, "An error was encountered while adding the product #{@product}.")
+          Rails.logger.error(e.message)
+          Rails.logger.error(e.backtrace.join("\n"))
+        end
+      end
+
+      if @order.errors.any?
+        flash[:error] = "There were errors adding to your cart:<br>#{@order.errors.full_messages.join('<br>')}".html_safe
         raise ActiveRecord::Rollback
       end
     end
 
-    redirect_to order_url(@order)
+    redirect_to order_path(@order)
   end
 
   # PUT /orders/:id/remove/:order_detail_id
@@ -110,22 +141,20 @@ class OrdersController < ApplicationController
       OrderDetail.transaction do
         if order_details.all?{|od| od.destroy}
           flash[:notice] = "The bundle has been removed."
-          redirect_to order_url(@order)
         else
           flash[:error] = "An error was encountered while removing the bundle."
-          redirect_to order_url(@order)
         end
       end
     # remove single products
     else
       if order_detail.destroy
         flash[:notice] = "The product has been removed."
-        redirect_to order_url(@order)
       else
         flash[:error] = "An error was encountered while removing the product."
-        redirect_to order_url(@order)
       end
     end
+
+    redirect_to params[:redirect_to].presence || order_path(@order)
 
     # clear out account on the order if its now empty
     if  @order.order_details.empty?
@@ -148,13 +177,8 @@ class OrdersController < ApplicationController
         @order.transaction do
           begin
             @order.invalidate
-            @order.update_attributes!(:account_id => account.id)
-            @order.order_details.each do |od|
-              # update detail account
-              od.update_account(account)
-              od.save!
-            end
-          rescue
+            @order.update_attributes!(:account => account)
+          rescue Exception => e
             success = false
             raise ActiveRecord::Rollback
           end
@@ -163,9 +187,9 @@ class OrdersController < ApplicationController
 
       if success
         if session[:add_to_cart].nil?
-          redirect_to cart_url
+          redirect_to cart_path
         else
-          redirect_to add_order_url(@order)
+          redirect_to add_order_path(@order)
         end
         return
       else
@@ -181,16 +205,21 @@ class OrdersController < ApplicationController
     end
 
     if session[:add_to_cart].blank?
-      @product = @order.order_details[0].product
+      @product = @order.order_details[0].try(:product)
     else
-      @product = Product.find(session[:add_to_cart][:product_id])
+      @product = Product.find(session[:add_to_cart].first[:product_id])
     end
-    @accounts = acting_user.accounts.active.for_facility(@product.facility)
+
+    redirect_to(cart_path) && return unless @product
+
+    @accounts = acting_user.accounts.for_facility(@product.facility).active
     @errors   = {}
     details   = @order.order_details
     @accounts.each do |account|
-      if session[:add_to_cart] && session[:add_to_cart][:product_id]
-        error = account.validate_against_product(Product.find(session[:add_to_cart][:product_id]), acting_user)
+      if session[:add_to_cart] and
+         ods = session[:add_to_cart].presence and
+         product_id = ods.first[:product_id]
+        error = account.validate_against_product(Product.find(product_id), acting_user)
         @errors[account.id] = error if error
       end
       unless @errors[account.id]
@@ -208,36 +237,62 @@ class OrdersController < ApplicationController
 
   # PUT /orders/1/purchase
   def purchase
+    facility_ability = Ability.new(session_user, @order.facility, self)
     #revalidate the cart, but only if the user is not an admin
-    @order.being_purchased_by_admin = session_user.operator_of? @facility
-    if @order.validate_order! && @order.purchase!
-      Notifier.order_receipt(:user => @order.user, :order => @order).deliver
-
-      if @order.order_details.size == 1 && @order.order_details[0].product.is_a?(Instrument) && !@order.order_details[0].bundled?
-        od=@order.order_details[0]
-
-        if od.reservation.can_switch_instrument_on?
-          redirect_to order_order_detail_reservation_switch_instrument_path(@order, od, od.reservation, :switch => 'on', :redirect_to => reservations_path)
-        else
-          redirect_to reservations_path
+    @order.being_purchased_by_admin = facility_ability.can?(:act_as, @order.facility)
+    
+    @order.ordered_at = parse_usa_date(params[:order_date], join_time_select_values(params[:order_time])) if params[:order_date].present? && params[:order_time].present? && acting_as?
+    
+    begin
+      @order.transaction do
+        # Empty message because validate_order! and purchase! don't give us useful messages as to why they failed
+        raise NUCore::PurchaseException.new("") unless @order.validate_order! && @order.purchase!
+        
+        if facility_ability.can? :order_in_past, @order 
+          # update order detail statuses if you've changed it while acting as
+          if acting_as? && params[:order_status_id].present?
+            @order.backdate_order_details!(session_user, params[:order_status_id])
+          else 
+            @order.complete_past_reservations!
+          end
         end
 
-        flash[:notice]='Reservation completed successfully'
-      else
-        redirect_to receipt_order_url(@order)
-      end
+        Notifier.order_receipt(:user => @order.user, :order => @order).deliver unless acting_as? && !params[:send_notification]
 
-      return
-    else
-      flash[:error] = 'Unable to place order.'
-      @order.invalidate!
-      redirect_to order_url(@order) and return
+        # If we're only making a single reservation, we'll redirect
+        if @order.order_details.size == 1 && @order.order_details[0].product.is_a?(Instrument) && !@order.order_details[0].bundled? && !acting_as?
+          od=@order.order_details[0]
+
+          if od.reservation.can_switch_instrument_on?
+            redirect_to order_order_detail_reservation_switch_instrument_path(@order, od, od.reservation, :switch => 'on', :redirect_to => reservations_path)
+          else
+            redirect_to reservations_path
+          end
+
+          flash[:notice]='Reservation completed successfully'
+        else
+          redirect_to receipt_order_path(@order)
+        end
+
+        return
+      end
+    rescue Exception => e
+      flash[:error] = I18n.t('orders.purchase.error')
+      flash[:error] += " #{e.message}" if e.message
+      @order.reload.invalidate!
+      redirect_to order_path(@order) and return
     end
   end
 
   # GET /orders/1/receipt
   def receipt
+    @order = Order.find(params[:id])
     raise ActiveRecord::RecordNotFound unless @order.purchased?
+
+    @order_details = @order.order_details.select{|od| od.can_be_viewed_by?(acting_user) }
+    raise ActiveRecord::RecordNotFound if @order_details.empty?
+
+    @accounts = @order_details.collect(&:account).uniq
   end
 
   # GET /orders

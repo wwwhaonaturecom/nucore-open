@@ -11,7 +11,6 @@ class ScheduleRule < ActiveRecord::Base
   validates_presence_of :instrument_id
   validates_inclusion_of :duration_mins, :in => @@durations
   validates_numericality_of :discount_percent, :greater_than_or_equal_to => 0, :less_than => 100
-  validates_inclusion_of :on_sun, :on_mon, :on_tue, :on_wed, :on_thu, :on_fri, :on_sat, :in => [true, false]
   validates_numericality_of :start_hour, :end_hour, :only_integer => true, :greater_than_or_equal_to => 0, :less_than_or_equal_to => 24
   validates_numericality_of :start_min,  :end_min, :only_integer => true, :greater_than_or_equal_to => 0, :less_than => 60
 
@@ -26,6 +25,25 @@ class ScheduleRule < ActiveRecord::Base
          where product_access_schedule_rules.product_access_group_id = product_users.product_access_group_id
          and product_access_schedule_rules.schedule_rule_id = schedule_rules.id)))")
   end
+
+  def self.unavailable_for_date(instrument, day)
+    rules = where(:instrument_id => instrument.id)
+    rules = unavailable(rules)
+    rules = rules.select {|item| item.send(:"on_#{day.strftime("%a").downcase}?")}
+    reservations = []
+    rules.each do |rule|
+      res = Reservation.new({
+        :instrument => instrument,
+        :reserve_start_at => day.dup.change(:hour => rule.start_hour, :min => rule.start_min),
+        :reserve_end_at => day.dup.change(:hour => rule.end_hour, :min => rule.end_min),
+        :blackout => true
+        })
+      reservations << res
+    end
+    reservations
+  end
+
+
    
   def at_least_one_day_selected
     errors.add(:base, "Please select at least one day") unless
@@ -70,7 +88,7 @@ class ScheduleRule < ActiveRecord::Base
   def days_string
     days = []
     Date::ABBR_DAYNAMES.each do |day|
-      days << day if self.send("on_#{day.downcase}")
+      days << day if self.send("on_#{day.downcase}?")
     end
     days.join ', '
   end
@@ -122,7 +140,7 @@ class ScheduleRule < ActiveRecord::Base
     rules = Range.new(0,num_days-1).inject([]) do |array, i|
       date = start_date + i.days
       # check if rule occurs on this day
-      if self.send("on_#{Date::ABBR_DAYNAMES[date.wday].downcase}")
+      if self.send("on_#{Date::ABBR_DAYNAMES[date.wday].downcase}?")
         array << {
           "className" => unavailable ? 'unavailable' : 'default',
           "title"  => unavailable ? '' : "Interval: #{duration_mins.to_s} minute" + (duration_mins == 1 ? '' : 's'),
@@ -158,8 +176,7 @@ class ScheduleRule < ActiveRecord::Base
 
     # group rules by day, sort by start_hour
     Date::ABBR_DAYNAMES.each do |day|
-      day_rules = rules.select{ |rule| rule.send("on_#{day.downcase}") }.sort_by{ |rule| rule.start_hour }
-      # for now, skip days with no rules
+      day_rules = rules.select{ |rule| rule.send("on_#{day.downcase}?") }.sort_by{ |rule| rule.start_hour }
       if day_rules.empty?
         # build entire day not rule
         not_rule = ScheduleRule.new("on_#{day.downcase}" => true, :start_hour => 0, :start_min => 0, :end_hour => 24, :end_min => 0,

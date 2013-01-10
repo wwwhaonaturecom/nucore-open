@@ -3,6 +3,7 @@ class FacilityOrderDetailsController < ApplicationController
   before_filter :authenticate_user!
   before_filter :check_acting_as
   before_filter :init_current_facility
+  before_filter :init_order_detail, :except => :remove_from_journal
 
   load_and_authorize_resource :class => OrderDetail
 
@@ -16,14 +17,12 @@ class FacilityOrderDetailsController < ApplicationController
 
   # GET /facilities/:facility_id/orders/:order_id/order_details/:id/edit
   def edit
-    @order        = Order.find_by_id_and_facility_id(params[:order_id], current_facility.id)
-    @order_detail = @order.order_details.find(params[:id])
     set_active_tab
     @in_open_journal=@order_detail.journal && @order_detail.journal.open?
 
     condition=case @order_detail.account
       when NufsAccount
-        (@order_detail.journal && @order_detail.journal.is_successful) || OrderDetail.need_journal(current_facility).include?(@order_detail)
+        (@order_detail.journal && @order_detail.journal.is_successful) || OrderDetail.need_journal.include?(@order_detail)
       else
         !@order_detail.statement.nil?
     end
@@ -39,15 +38,12 @@ class FacilityOrderDetailsController < ApplicationController
         flash.now[:notice]=I18n.t 'controllers.facility_order_details.edit.notice.no_policy'
       end
     end
-    
+
   end
 
   # PUT /facilities/:facility_id/orders/:order_id/order_details/:id
   def update
-    @order        = Order.find(params[:order_id])
-    @order_detail = @order.order_details.find(params[:id])
-
-    unless @order_detail.state == 'new' || @order_detail.state == 'inprocess' || session_user.manager_of?(current_facility)
+    unless @order_detail.state == 'new' || @order_detail.state == 'inprocess' || can?(:update, @order_detail)
       raise ActiveRecord::RecordNotFound
     end
 
@@ -78,7 +74,7 @@ class FacilityOrderDetailsController < ApplicationController
           os = OrderStatus.find(od_params[:order_status_id])
           # cancel instrument orders
           if os.root == OrderStatus.cancelled.first && @order_detail.reservation
-            raise "Order # #{@order_detail} failed cancellation." unless @order_detail.cancel_reservation(session_user, os, true)
+            raise "Order # #{@order_detail} failed cancellation." unless @order_detail.cancel_reservation(session_user, os, true, params[:with_cancel_fee] == '1')
           # cancel other orders or change status of any order
           else
             @order_detail.change_status!(os)
@@ -86,7 +82,9 @@ class FacilityOrderDetailsController < ApplicationController
         end
         @order_detail.save!
         flash[:notice] = 'The order has been updated successfully'
-        redirect_to (@order_detail.reservation ? facility_reservations_path(current_facility) : facility_orders_path(current_facility)) and return
+        redirect_to(params[:return_to].present? ? params[:return_to] :
+                    @order_detail.reservation ? timeline_facility_reservations_path(current_facility) :
+                    facility_orders_path(current_facility)) and return
       rescue Exception => e
         flash.now[:error] = 'An error was encounted while updating the order'
         Rails.logger.warn "#{e.message}\n#{e.backtrace.join("\n")}"
@@ -98,9 +96,6 @@ class FacilityOrderDetailsController < ApplicationController
 
   # POST /facilities/:facility_id/orders/:order_id/order_details/:order_detail_id/resolve_dispute
   def resolve_dispute
-    @order        = current_facility.orders.find(params[:order_id])
-    @order_detail = @order.order_details.find(params[:order_detail_id])
-
     unless current_user.manager_of?(current_facility) && @order_detail.dispute_at && @order_detail.dispute_resolved_at.nil?
       raise ActiveRecord::RecordNotFound
     end
@@ -131,8 +126,6 @@ class FacilityOrderDetailsController < ApplicationController
 
   # GET /facilities/:facility_id/orders/:order_id/order_details/:order_detail_id/new_price
   def new_price
-    @order        = current_facility.orders.find(params[:order_id])
-    @order_detail = @order.order_details.find(params[:order_detail_id])
     qty           = params[:quantity].to_i
 
     cost    = qty * @order_detail.price_policy.unit_cost
@@ -145,15 +138,36 @@ class FacilityOrderDetailsController < ApplicationController
 
   def remove_from_journal
     oid=params[:id]
-    return redirect_to :back unless oid
+    return redirect_to :back if oid.blank?
 
-    oid=oid.to_i
-    od=OrderDetail.find(oid)
-    od.journal=nil
-    od.save!
+    od=OrderDetail.find(oid.to_i)
+
+    OrderDetail.transaction do
+      jr=JournalRow.where(:journal_id => od.journal_id, :order_detail_id => od.id).first
+      jr.try :destroy
+      od.update_attributes! :journal_id => nil
+    end
 
     flash[:notice]=I18n.t 'controllers.facility_order_details.remove_from_journal.notice'
     redirect_to edit_facility_order_order_detail_path(current_facility, od.order, od)
+  end
+
+
+  def destroy
+    if @order.to_be_merged?
+      begin
+        @order_detail.destroy
+        flash[:notice]=I18n.t 'controllers.facility_order_details.destroy.success'
+      rescue => e
+        Rails.logger.error "#{e.message}:#{e.backtrace.join("\n")}"
+        flash[:error]=I18n.t 'controllers.facility_order_details.destroy.error', @order_detail.to_s
+      end
+    else
+      flash[:notice]=I18n.t 'controllers.facility_order_details.destroy.notice'
+      return redirect_to edit_facility_order_path(current_facility, @order)
+    end
+
+    redirect_to edit_facility_order_path(current_facility, @order.merge_order)
   end
   
 
@@ -172,5 +186,11 @@ class FacilityOrderDetailsController < ApplicationController
     else
       @active_tab = "admin_orders"
     end
+  end
+
+  def init_order_detail
+    @order = Order.find(params[:order_id])
+    raise ActiveRecord::RecordNotFound unless @order
+    @order_detail = @order.order_details.find(params[:id] || params[:order_detail_id])
   end
 end

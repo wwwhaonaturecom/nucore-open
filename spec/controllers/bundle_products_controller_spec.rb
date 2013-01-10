@@ -1,15 +1,17 @@
 require 'spec_helper'; require 'controller_spec_helper'
 
+# NOTE: changed create/new/edit/update from it_should_allow_all facility_operators to
+# it_should_allow_managers_only as part of ticket #38481
 describe BundleProductsController do
   render_views
 
   before(:all) { create_users }
 
   before(:each) do
-    @authable=Factory.create(:facility)
-    @facility_account=Factory.create(:facility_account, :facility => @authable)
-    @item=Factory.create(:item, :facility_account => @facility_account, :facility => @authable)
-    @bundle=Factory.create(:bundle, :facility_account => @facility_account, :facility => @authable)
+    @authable=FactoryGirl.create(:facility)
+    @facility_account=FactoryGirl.create(:facility_account, :facility => @authable)
+    @item=FactoryGirl.create(:item, :facility_account => @facility_account, :facility => @authable)
+    @bundle=FactoryGirl.create(:bundle, :facility_account => @facility_account, :facility => @authable)
     @bundle_product=BundleProduct.create!(:bundle => @bundle, :product => @item, :quantity => 1)
   end
 
@@ -37,7 +39,7 @@ describe BundleProductsController do
     before(:each) do
       @method=:post
       @action=:create
-      item2=Factory.create(:item, :facility_account => @facility_account, :facility => @authable)
+      item2=FactoryGirl.create(:item, :facility_account => @facility_account, :facility => @authable)
       @params={
         :facility_id => @authable.url_name,
         :bundle_id => @bundle.url_name,
@@ -50,7 +52,7 @@ describe BundleProductsController do
 
     it_should_require_login
 
-    it_should_allow_all facility_operators do
+    it_should_allow_managers_only :redirect do
       should assign_to(:bundle_product).with_kind_of(BundleProduct)
       should set_the_flash
       assert_redirected_to facility_bundle_bundle_products_url(@authable, @bundle)
@@ -69,7 +71,7 @@ describe BundleProductsController do
 
     it_should_require_login
 
-    it_should_allow_all facility_operators do
+    it_should_allow_managers_only do
       should assign_to(:bundle_product).with_kind_of(BundleProduct)
       assigns(:bundle_product).should be_new_record
       should render_template('new')
@@ -88,7 +90,7 @@ describe BundleProductsController do
 
     it_should_require_login
 
-    it_should_allow_all facility_operators do
+    it_should_allow_managers_only do
       assert_init_bundle
       should render_template('edit')
     end
@@ -113,7 +115,7 @@ describe BundleProductsController do
 
     it_should_require_login
 
-    it_should_allow_all facility_operators do
+    it_should_allow_managers_only :redirect do
       assert_init_bundle
       should assign_to(:bundle_product).with_kind_of(BundleProduct)
       @bundle_product.quantity.should_not == assigns(:bundle_product).quantity
@@ -134,7 +136,7 @@ describe BundleProductsController do
 
     it_should_require_login
 
-    it_should_allow_all facility_operators do
+    it_should_allow_managers_only :redirect do
       assert_init_bundle
 
       begin

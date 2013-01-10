@@ -20,27 +20,36 @@ class Account < ActiveRecord::Base
       acct.errors.add(:base, "Must have an account owner")
     end
   end
-  
+
+
   def facility
     nil
   end
-  
-  @@limited_to_one_facility_subclasses = []
-  def self.limit_facilities
-    @@limited_to_one_facility_subclasses << self.to_s
-  end
-  
+
+
   def self.limited_to_single_facility?
-    @@limited_to_one_facility_subclasses.include? self.to_s
+    AccountManager::FACILITY_ACCOUNT_CLASSES.include? self.name
   end
-  
+
+
   def self.for_facility(facility)
-    all_subclass_names = descendants.collect { |clazz| clazz.to_s }
-    
-    where("type in (:allow_all) or (type in (:limit_one) and facility_id = :facility)", 
-          {:allow_all => all_subclass_names - @@limited_to_one_facility_subclasses,
-            :limit_one => @@limited_to_one_facility_subclasses,
-            :facility => facility})
+    accounts = scoped
+
+    unless facility.all_facility?
+      accounts = accounts.where("accounts.type in (:allow_all) or (accounts.type in (:limit_one) and accounts.facility_id = :facility)",
+            {:allow_all => AccountManager::GLOBAL_ACCOUNT_CLASSES,
+              :limit_one => AccountManager::FACILITY_ACCOUNT_CLASSES,
+              :facility => facility})
+    end
+
+    accounts  
+  end
+
+
+  # find all accounts that have ordered fror a facility
+  def self.has_orders_for_facility(facility)
+    ids = OrderDetail.for_facility(facility).select("distinct order_details.account_id").collect(&:account_id)
+    where(:id => ids)
   end
   
   def facilities
@@ -91,7 +100,9 @@ class Account < ActiveRecord::Base
   end
 
   def account_pretty
-    "#{description} (#{account_number})"
+    desc="#{description} (#{account_number})"
+    desc += " [#{owner_user.name}]" if owner_user
+    desc
   end
   
   def account_list_item
@@ -122,18 +133,19 @@ class Account < ActiveRecord::Base
 
   def self.need_notification (facility)
     # find details that are complete, not yet notified, priced, and not in dispute
-    details = OrderDetail.need_notification(facility)
+    details = OrderDetail.for_facility(facility).need_notification
     find(details.collect{ |detail| detail.account_id }.uniq || [])
   end
 
   def facility_balance (facility, date=Time.zone.now)
-    details = facility.order_details.complete.find(:all, :conditions => ['order_details.fulfilled_at <= ? AND price_policy_id IS NOT NULL AND order_details.account_id = ?', date, id])
+    details = OrderDetail.for_facility(facility).complete.where('order_details.fulfilled_at <= ? AND price_policy_id IS NOT NULL AND order_details.account_id = ?', date, id)
     details.collect{|od| od.total}.sum.to_f
   end
 
   # this will return the balance of orders that have been statemented or journaled (successfully) but not reconciled
   def unreconciled_total(facility)
     details=OrderDetail.account_unreconciled(facility, self)
+
     unreconciled_total=0
 
     details.each do |od|
@@ -154,7 +166,7 @@ class Account < ActiveRecord::Base
                           readonly(false).
                           all
 
-    details.each {|od| od.update_attributes({:reviewed_at => Time.zone.now+7.days, :statement => statement }) }
+    details.each {|od| od.update_attributes({:reviewed_at => Time.zone.now+Settings.billing.review_period, :statement => statement }) }
   end
 
   def can_be_used_by?(user)

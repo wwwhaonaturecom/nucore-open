@@ -3,13 +3,14 @@
 def create_users
   @users=[]
 
-  [ 'admin', 'director', 'staff', 'guest', 'owner', 'purchaser' ].each do |name|
-    user=Factory.create(:user, :username => name)
+  [ 'admin', 'director', 'staff', 'guest', 'owner', 'purchaser', 'senior_staff', 'billing_admin' ].each do |name|
+    user=FactoryGirl.create(:user, :username => name)
     instance_variable_set("@#{name}".to_sym, user)
     @users << user
   end
-
+  
   UserRole.grant(@admin, UserRole::ADMINISTRATOR)
+  UserRole.grant(@billing_admin, UserRole::BILLING_ADMINISTRATOR)
 end
 
 
@@ -125,7 +126,7 @@ end
 
 
 def facility_operators
-  facility_managers + [ :staff ]
+  facility_managers + [ :staff, :senior_staff ]
 end
 
 
@@ -147,6 +148,23 @@ end
 #   A block holding successful auth tests. If given will be passed the
 #   user whose auth is currently being tested. Not required.
 def it_should_allow_managers_only(response=:success, spec_desc='', &eval)
+  it_should_require_login
+
+  it_should_deny(:guest, spec_desc)
+
+  it_should_deny(:staff, spec_desc)
+
+  it_should_deny(:senior_staff)
+
+  it_should_allow_all(facility_managers, spec_desc) do |user|
+    should respond_with response
+    instance_exec(user, &eval) if eval
+  end
+
+  it 'should test more than auth' unless eval
+end
+
+def it_should_allow_managers_and_senior_staff_only(response=:success, spec_desc='', &eval)
   it_should_require_login
 
   it_should_deny(:guest, spec_desc)
@@ -221,6 +239,9 @@ def grant_role(user, authable=nil)
     when 'purchaser'
       AccountUser.grant(user, AccountUser::ACCOUNT_PURCHASER, authable, @admin)
       user.reload.should be_purchaser_of(authable)
+    when 'senior_staff'
+      UserRole.grant(user, UserRole::FACILITY_SENIOR_STAFF, authable)
+      user.reload.should be_facility_senior_staff_of(authable)
   end
 end
 
@@ -233,4 +254,30 @@ end
 def maybe_grant_always_sign_in(user_sym)
   user=instance_variable_get("@#{user_sym.to_s}")
   grant_and_sign_in(user)
+end
+
+def split_date_to_params(key, date)
+  {
+    :"#{key}_date" => format_usa_date(date),
+    :"#{key}_hour" => date.strftime("%I"),
+    :"#{key}_min" => date.min.to_s,
+    :"#{key}_meridian" => date.strftime('%p')
+  }
+end
+
+
+# Takes a parameter set and replaces _start_at and _end_at DateTime parameters split up into their other fields
+# like reserve_start_date, reserve_start_hour, and duration_unit
+# Alters the params hash
+def parametrize_dates(params, key)
+  start_time = params[:"#{key}_start_at"]
+  end_time = params[:"#{key}_end_at"]
+  
+  params.merge!(split_date_to_params("#{key}_start", start_time))
+  params.merge!(:duration_value => ((end_time - start_time) / 60).ceil.to_s, :duration_unit => 'minutes')
+  
+  params.delete :"#{key}_start_at"
+  params.delete :"#{key}_end_at"
+  
+  params
 end

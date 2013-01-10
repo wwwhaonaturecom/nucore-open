@@ -6,11 +6,11 @@ describe ScheduleRulesController do
   before(:all) { create_users }
 
   before(:each) do
-    @authable         = Factory.create(:facility)
-    @facility_account = @authable.facility_accounts.create(Factory.attributes_for(:facility_account))
-    @price_group      = @authable.price_groups.create(Factory.attributes_for(:price_group))
-    @instrument       = @authable.instruments.create(Factory.attributes_for(:instrument, :facility_account_id => @facility_account.id))
-    @price_policy     = @instrument.instrument_price_policies.create(Factory.attributes_for(:instrument_price_policy).update(:price_group_id => @price_group.id))
+    @authable         = FactoryGirl.create(:facility)
+    @facility_account = @authable.facility_accounts.create(FactoryGirl.attributes_for(:facility_account))
+    @price_group      = @authable.price_groups.create(FactoryGirl.attributes_for(:price_group))
+    @instrument       = @authable.instruments.create(FactoryGirl.attributes_for(:instrument, :facility_account_id => @facility_account.id))
+    @price_policy     = @instrument.instrument_price_policies.create(FactoryGirl.attributes_for(:instrument_price_policy).update(:price_group_id => @price_group.id))
     @price_policy.should be_valid
     @params={ :facility_id => @authable.url_name, :instrument_id => @instrument.url_name }
   end
@@ -39,7 +39,7 @@ describe ScheduleRulesController do
       @action=:new
     end
 
-    it_should_allow_managers_only do
+    it_should_allow_managers_and_senior_staff_only do
       assigns[:instrument].should == @instrument
       response.should be_success
       response.should render_template('schedule_rules/new')
@@ -54,11 +54,11 @@ describe ScheduleRulesController do
       @method=:post
       @action=:create
       @params.merge!(
-        :schedule_rule => Factory.attributes_for(:schedule_rule, :instrument => @instrument)
+        :schedule_rule => FactoryGirl.attributes_for(:schedule_rule, :instrument => @instrument)
       )
     end
 
-    it_should_allow_managers_only :redirect do
+    it_should_allow_managers_and_senior_staff_only :redirect do
       should assign_to(:schedule_rule).with_kind_of ScheduleRule
       should set_the_flash
       assert_redirected_to facility_instrument_schedule_rules_url(@authable, @instrument)
@@ -68,7 +68,7 @@ describe ScheduleRulesController do
       before :each do
         @restriction_levels = []
         3.times do
-          @restriction_levels << Factory.create(:product_access_group, :product_id => @instrument.id)
+          @restriction_levels << FactoryGirl.create(:product_access_group, :product_id => @instrument.id)
         end
         sign_in(@admin)
       end
@@ -93,7 +93,7 @@ describe ScheduleRulesController do
   context 'needs schedule rule' do
 
     before :each do
-      @rule=@instrument.schedule_rules.create(Factory.attributes_for(:schedule_rule))
+      @rule=@instrument.schedule_rules.create(FactoryGirl.attributes_for(:schedule_rule))
       @params.merge!(:id => @rule.id)
     end
 
@@ -105,7 +105,7 @@ describe ScheduleRulesController do
         @action=:edit
       end
 
-      it_should_allow_managers_only do
+      it_should_allow_managers_and_senior_staff_only do
         assigns(:schedule_rule).should == @rule
         should render_template 'edit'
       end
@@ -119,11 +119,11 @@ describe ScheduleRulesController do
         @method=:put
         @action=:update
         @params.merge!(
-          :schedule_rule => Factory.attributes_for(:schedule_rule)
+          :schedule_rule => FactoryGirl.attributes_for(:schedule_rule)
         )
       end
 
-      it_should_allow_managers_only :redirect do
+      it_should_allow_managers_and_senior_staff_only :redirect do
         assigns(:schedule_rule).should == @rule
         should set_the_flash
         assert_redirected_to facility_instrument_schedule_rules_url(@authable, @instrument)
@@ -133,7 +133,7 @@ describe ScheduleRulesController do
         before :each do
           @restriction_levels = []
           3.times do
-            @restriction_levels << Factory.create(:product_access_group, :product_id => @instrument.id)
+            @restriction_levels << FactoryGirl.create(:product_access_group, :product_id => @instrument.id)
           end
           sign_in(@admin)
         end
@@ -169,7 +169,7 @@ describe ScheduleRulesController do
         @action=:destroy
       end
 
-      it_should_allow_managers_only :redirect do
+      it_should_allow_managers_and_senior_staff_only :redirect do
         assigns(:schedule_rule).should == @rule
         should_be_destroyed @rule
         assert_redirected_to facility_instrument_schedule_rules_url(@authable, @instrument)

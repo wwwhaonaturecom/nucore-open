@@ -1,4 +1,15 @@
 class User < ActiveRecord::Base
+
+  module Overridable
+    def price_groups
+      groups = price_group_members.collect{ |pgm| pgm.price_group }
+      # check internal/external membership
+      groups << (self.username.match(/@/) ? PriceGroup.external.first : PriceGroup.base.first)
+      groups.flatten.uniq
+    end
+  end
+
+  include Overridable
   include Role
 
   devise :ldap_authenticatable, :database_authenticatable, :encryptable, :trackable, :recoverable
@@ -10,6 +21,7 @@ class User < ActiveRecord::Base
   has_many :order_details, :through => :orders
   has_many :price_group_members
   has_many :product_users
+  has_many :notifications
   has_many :products, :through => :product_users
   has_many :assigned_order_details, :class_name => 'OrderDetail', :foreign_key => 'assigned_user_id'
   has_many :user_roles, :dependent => :destroy
@@ -100,31 +112,47 @@ class User < ActiveRecord::Base
   def cart(created_by_user = nil, find_existing=true)
 
     if find_existing
+      created_by_id = created_by_user ? created_by_user.id : id
       # filter out instrument/reservation orders. Each of those requires a brand new order.
       # If any exist unordered it's because the user bailed on the reservation process.
       # Such orders should be cleaned from the DB periodically.
-      oid=OrderDetail.select(:order_id).joins(:order, :product).where(
+      if oid=OrderDetail.select(:order_id).joins(:order, :product).where(
                         'orders.user_id = ? AND orders.created_by = ? AND orders.ordered_at IS NULL AND products.type != ?',
                         id, created_by_user ? created_by_user.id : id, Instrument.name
                       ).group(:order_id).first
 
-      @order = Order.find(oid.order_id) if oid
+        return @order = Order.find(oid.order_id)
+      
+      ##find most recent unordered order 
+      elsif @order = self.orders.where( 
+          :state   => :new,
+          :user_id => self.id,
+          :ordered_at => nil,
+          :created_by => created_by_id
+        ).order("orders.updated_at DESC").try(:first)
+
+        return @order
+      end
     end
 
     @order = Order.create(:user => self, :created_by => created_by_user ? created_by_user.id : id) unless @order
     @order
   end
-
-  def price_groups
-    groups = price_group_members.collect{ |pgm| pgm.price_group }
-    # check internal/external membership
-    groups << (self.username.match(/@/) ? PriceGroup.external.first : PriceGroup.base.first)
-    groups.flatten.uniq
-  end
   
   def account_price_groups
     groups = self.accounts.active.collect{ |a| a.price_groups }.flatten.uniq
   end
+
+
+  #
+  # Given a +Product+ returns all valid accounts this user has for
+  # purchasing that product
+  def accounts_for_product(product)
+    acts=accounts.active.for_facility(product.facility)
+    acts.reject!{|acct| !acct.validate_against_product(product, self).nil?}
+    acts
+  end
+
 
   def full_name
     unless first_name.nil? and last_name.nil?

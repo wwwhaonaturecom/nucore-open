@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20120222161624) do
+ActiveRecord::Schema.define(:version => 20121031230321) do
 
   create_table "account_users", :force => true do |t|
     t.integer  "account_id",               :null => false
@@ -98,21 +98,22 @@ ActiveRecord::Schema.define(:version => 20120222161624) do
   end
 
   create_table "facilities", :force => true do |t|
-    t.string   "name",              :limit => 200,                   :null => false
-    t.string   "abbreviation",      :limit => 50,                    :null => false
-    t.string   "url_name",          :limit => 50,                    :null => false
-    t.boolean  "is_active",                                          :null => false
-    t.datetime "created_at",                                         :null => false
-    t.datetime "updated_at",                                         :null => false
+    t.string   "name",              :limit => 200,                    :null => false
+    t.string   "abbreviation",      :limit => 50,                     :null => false
+    t.string   "url_name",          :limit => 50,                     :null => false
+    t.boolean  "is_active",                                           :null => false
+    t.datetime "created_at",                                          :null => false
+    t.datetime "updated_at",                                          :null => false
     t.text     "description"
     t.boolean  "accepts_cc",                       :default => true
     t.boolean  "accepts_po",                       :default => true
-    t.text     "short_description",                                  :null => false
+    t.boolean  "accepts_multi_add",                :default => false, :null => false
+    t.text     "short_description",                                   :null => false
     t.text     "address"
     t.string   "phone_number"
     t.string   "fax_number"
     t.string   "email"
-    t.string   "journal_mask",      :limit => 50,                    :null => false
+    t.string   "journal_mask",      :limit => 50,                     :null => false
   end
 
   add_index "facilities", ["abbreviation"], :name => "sys_c008532", :unique => true
@@ -130,22 +131,6 @@ ActiveRecord::Schema.define(:version => 20120222161624) do
 
   add_index "facility_accounts", ["facility_id"], :name => "fk_facilities"
 
-  create_table "file_uploads", :force => true do |t|
-    t.integer  "order_detail_id"
-    t.integer  "product_id"
-    t.string   "name",              :limit => 200, :null => false
-    t.string   "file_type",         :limit => 50,  :null => false
-    t.integer  "created_by",                       :null => false
-    t.datetime "created_at",                       :null => false
-    t.string   "file_file_name"
-    t.string   "file_content_type"
-    t.integer  "file_file_size"
-    t.datetime "file_updated_at"
-  end
-
-  add_index "file_uploads", ["order_detail_id"], :name => "fk_files_od"
-  add_index "file_uploads", ["product_id"], :name => "fk_files_product"
-
   create_table "instrument_statuses", :force => true do |t|
     t.integer  "instrument_id", :null => false
     t.boolean  "is_on",         :null => false
@@ -160,16 +145,11 @@ ActiveRecord::Schema.define(:version => 20120222161624) do
     t.decimal "amount",                         :precision => 9, :scale => 2, :null => false
     t.string  "description",     :limit => 200
     t.string  "reference",       :limit => 50
-    t.string  "fund",            :limit => 3,                                 :null => false
-    t.string  "dept",            :limit => 7,                                 :null => false
-    t.string  "project",         :limit => 8
-    t.string  "activity",        :limit => 2
-    t.string  "program",         :limit => 4
-    t.string  "account",         :limit => 5,                                 :null => false
+    t.string  "account",         :limit => 5
   end
 
   create_table "journals", :force => true do |t|
-    t.integer  "facility_id",                      :null => false
+    t.integer  "facility_id"
     t.string   "reference",         :limit => 50
     t.string   "description",       :limit => 200
     t.boolean  "is_successful"
@@ -184,80 +164,16 @@ ActiveRecord::Schema.define(:version => 20120222161624) do
     t.datetime "journal_date",                     :null => false
   end
 
-  create_table "nucs_accounts", :force => true do |t|
-    t.string "value",     :limit => 16,  :null => false
-    t.string "auxiliary", :limit => 512
+  create_table "notifications", :force => true do |t|
+    t.string   "type",         :null => false
+    t.integer  "subject_id",   :null => false
+    t.string   "subject_type", :null => false
+    t.integer  "user_id",      :null => false
+    t.string   "notice",       :null => false
+    t.datetime "dismissed_at"
+    t.datetime "created_at"
+    t.datetime "updated_at"
   end
-
-  add_index "nucs_accounts", ["value"], :name => "index_nucs_accounts_on_value"
-
-  create_table "nucs_chart_field1s", :force => true do |t|
-    t.string "value",     :limit => 16,  :null => false
-    t.string "auxiliary", :limit => 512
-  end
-
-  add_index "nucs_chart_field1s", ["value"], :name => "index_nucs_chart_field1s_on_value"
-
-  create_table "nucs_departments", :force => true do |t|
-    t.string "value",     :limit => 16,  :null => false
-    t.string "auxiliary", :limit => 512
-  end
-
-  add_index "nucs_departments", ["value"], :name => "index_nucs_departments_on_value"
-
-  create_table "nucs_funds", :force => true do |t|
-    t.string "value",     :limit => 8,   :null => false
-    t.string "auxiliary", :limit => 512
-  end
-
-  add_index "nucs_funds", ["value"], :name => "index_nucs_funds_on_value"
-
-  create_table "nucs_gl066s", :force => true do |t|
-    t.string   "budget_period", :limit => 8,  :null => false
-    t.string   "fund",          :limit => 8,  :null => false
-    t.string   "department",    :limit => 16, :null => false
-    t.string   "project",       :limit => 16, :null => false
-    t.string   "activity",      :limit => 16, :null => false
-    t.string   "account",       :limit => 16, :null => false
-    t.datetime "starts_at"
-    t.datetime "expires_at"
-  end
-
-  add_index "nucs_gl066s", ["account"], :name => "index_nucs_gl066s_on_account"
-  add_index "nucs_gl066s", ["activity"], :name => "index_nucs_gl066s_on_activity"
-  add_index "nucs_gl066s", ["department"], :name => "index_nucs_gl066s_on_department"
-  add_index "nucs_gl066s", ["fund"], :name => "index_nucs_gl066s_on_fund"
-  add_index "nucs_gl066s", ["project"], :name => "index_nucs_gl066s_on_project"
-
-  create_table "nucs_grants_budget_trees", :force => true do |t|
-    t.string   "account",              :limit => 16, :null => false
-    t.string   "account_desc",         :limit => 32, :null => false
-    t.string   "roll_up_node",         :limit => 32, :null => false
-    t.string   "roll_up_node_desc",    :limit => 32, :null => false
-    t.string   "parent_node",          :limit => 32, :null => false
-    t.string   "parent_node_desc",     :limit => 32, :null => false
-    t.datetime "account_effective_at",               :null => false
-    t.string   "tree",                 :limit => 32, :null => false
-    t.datetime "tree_effective_at",                  :null => false
-  end
-
-  add_index "nucs_grants_budget_trees", ["account"], :name => "index_nucs_grants_budget_trees_on_account"
-
-  create_table "nucs_programs", :force => true do |t|
-    t.string "value",     :limit => 8,   :null => false
-    t.string "auxiliary", :limit => 512
-  end
-
-  add_index "nucs_programs", ["value"], :name => "index_nucs_programs_on_value"
-
-  create_table "nucs_project_activities", :force => true do |t|
-    t.string "project",   :limit => 16,  :null => false
-    t.string "activity",  :limit => 16,  :null => false
-    t.string "auxiliary", :limit => 512
-  end
-
-  add_index "nucs_project_activities", ["activity"], :name => "index_nucs_project_activities_on_activity"
-  add_index "nucs_project_activities", ["project"], :name => "index_nucs_project_activities_on_project"
 
   create_table "order_details", :force => true do |t|
     t.integer  "order_id",                                                              :null => false
@@ -276,17 +192,18 @@ ActiveRecord::Schema.define(:version => 20120222161624) do
     t.string   "dispute_resolved_reason", :limit => 200
     t.datetime "created_at"
     t.datetime "updated_at"
-    t.integer  "order_status_id",                                                       :null => false
+    t.integer  "order_status_id"
     t.string   "state",                   :limit => 50
     t.integer  "response_set_id"
     t.integer  "group_id"
     t.integer  "bundle_product_id"
-    t.string   "note",                    :limit => 25
+    t.string   "note",                    :limit => 100
     t.datetime "fulfilled_at"
     t.datetime "reviewed_at"
     t.integer  "statement_id"
     t.integer  "journal_id"
     t.string   "reconciled_note"
+    t.integer  "created_by",                                                            :null => false
   end
 
   add_index "order_details", ["account_id"], :name => "fk_od_accounts"
@@ -294,6 +211,20 @@ ActiveRecord::Schema.define(:version => 20120222161624) do
   add_index "order_details", ["order_id"], :name => "sys_c009172"
   add_index "order_details", ["price_policy_id"], :name => "sys_c009175"
   add_index "order_details", ["product_id"], :name => "sys_c009173"
+
+  create_table "order_imports", :force => true do |t|
+    t.integer  "upload_file_id",                    :null => false
+    t.integer  "error_file_id"
+    t.boolean  "fail_on_error",  :default => false
+    t.boolean  "send_receipts",  :default => false
+    t.integer  "created_by",                        :null => false
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  add_index "order_imports", ["created_by"], :name => "index_order_imports_on_created_by"
+  add_index "order_imports", ["error_file_id"], :name => "index_order_imports_on_error_file_id"
+  add_index "order_imports", ["upload_file_id"], :name => "index_order_imports_on_upload_file_id"
 
   create_table "order_statuses", :force => true do |t|
     t.string  "name",        :limit => 50, :null => false
@@ -307,17 +238,20 @@ ActiveRecord::Schema.define(:version => 20120222161624) do
 
   create_table "orders", :force => true do |t|
     t.integer  "account_id"
-    t.integer  "user_id",                   :null => false
-    t.integer  "created_by",                :null => false
-    t.datetime "created_at",                :null => false
-    t.datetime "updated_at",                :null => false
+    t.integer  "user_id",                           :null => false
+    t.integer  "created_by",                        :null => false
+    t.datetime "created_at",                        :null => false
+    t.datetime "updated_at",                        :null => false
     t.datetime "ordered_at"
     t.integer  "facility_id"
-    t.string   "state",       :limit => 50
+    t.string   "state",               :limit => 50
+    t.integer  "merge_with_order_id"
+    t.integer  "order_import_id"
   end
 
   add_index "orders", ["account_id"], :name => "sys_c008808"
   add_index "orders", ["facility_id"], :name => "orders_facility_id_fk"
+  add_index "orders", ["order_import_id"], :name => "index_orders_on_order_import_id"
 
   create_table "price_group_members", :force => true do |t|
     t.string  "type",           :limit => 50, :null => false
@@ -349,12 +283,11 @@ ActiveRecord::Schema.define(:version => 20120222161624) do
   add_index "price_groups", ["facility_id", "name"], :name => "sys_c008577", :unique => true
 
   create_table "price_policies", :force => true do |t|
-    t.string   "type",                :limit => 50,                                :null => false
-    t.integer  "instrument_id"
-    t.integer  "service_id"
-    t.integer  "item_id"
-    t.integer  "price_group_id",                                                   :null => false
-    t.datetime "start_date",                                                       :null => false
+    t.string   "type",                :limit => 50,                                                   :null => false
+    t.integer  "product_id"
+    t.integer  "price_group_id",                                                                      :null => false
+    t.boolean  "can_purchase",                                                     :default => false, :null => false
+    t.datetime "start_date",                                                                          :null => false
     t.decimal  "unit_cost",                         :precision => 10, :scale => 2
     t.decimal  "unit_subsidy",                      :precision => 10, :scale => 2
     t.decimal  "usage_rate",                        :precision => 10, :scale => 2
@@ -368,7 +301,7 @@ ActiveRecord::Schema.define(:version => 20120222161624) do
     t.decimal  "usage_subsidy",                     :precision => 10, :scale => 2
     t.decimal  "reservation_subsidy",               :precision => 10, :scale => 2
     t.decimal  "overage_subsidy",                   :precision => 10, :scale => 2
-    t.datetime "expire_date",                                                      :null => false
+    t.datetime "expire_date",                                                                         :null => false
   end
 
   add_index "price_policies", ["price_group_id"], :name => "sys_c008589"
@@ -384,6 +317,14 @@ ActiveRecord::Schema.define(:version => 20120222161624) do
     t.integer "product_access_group_id", :null => false
     t.integer "schedule_rule_id",        :null => false
   end
+
+  create_table "product_accessories", :force => true do |t|
+    t.integer "product_id",   :null => false
+    t.integer "accessory_id", :null => false
+  end
+
+  add_index "product_accessories", ["accessory_id"], :name => "product_accessories_accessory_id_fk"
+  add_index "product_accessories", ["product_id"], :name => "product_accessories_product_id_fk"
 
   create_table "product_users", :force => true do |t|
     t.integer  "product_id",              :null => false
@@ -414,6 +355,7 @@ ActiveRecord::Schema.define(:version => 20120222161624) do
     t.string   "account",                 :limit => 5
     t.boolean  "show_details",                           :default => false, :null => false
     t.integer  "auto_cancel_mins"
+    t.string   "contact_email"
   end
 
   add_index "products", ["facility_account_id"], :name => "fk_facility_accounts"
@@ -488,6 +430,22 @@ ActiveRecord::Schema.define(:version => 20120222161624) do
 
   add_index "statements", ["facility_id"], :name => "fk_statement_facilities"
 
+  create_table "stored_files", :force => true do |t|
+    t.integer  "order_detail_id"
+    t.integer  "product_id"
+    t.string   "name",              :limit => 200, :null => false
+    t.string   "file_type",         :limit => 50,  :null => false
+    t.integer  "created_by",                       :null => false
+    t.datetime "created_at",                       :null => false
+    t.string   "file_file_name"
+    t.string   "file_content_type"
+    t.integer  "file_file_size"
+    t.datetime "file_updated_at"
+  end
+
+  add_index "stored_files", ["order_detail_id"], :name => "fk_files_od"
+  add_index "stored_files", ["product_id"], :name => "fk_files_product"
+
   create_table "user_roles", :force => true do |t|
     t.integer "user_id",     :null => false
     t.integer "facility_id"
@@ -552,9 +510,6 @@ ActiveRecord::Schema.define(:version => 20120222161624) do
 
   add_foreign_key "facility_accounts", "facilities", :name => "fk_facilities"
 
-  add_foreign_key "file_uploads", "order_details", :name => "fk_files_od"
-  add_foreign_key "file_uploads", "products", :name => "fk_files_product"
-
   add_foreign_key "instrument_statuses", "products", :name => "fk_int_stats_product", :column => "instrument_id"
 
   add_foreign_key "order_details", "accounts", :name => "fk_od_accounts"
@@ -572,6 +527,9 @@ ActiveRecord::Schema.define(:version => 20120222161624) do
 
   add_foreign_key "price_policies", "price_groups", :name => "sys_c008589"
 
+  add_foreign_key "product_accessories", "products", :name => "product_accessories_accessory_id_fk", :column => "accessory_id"
+  add_foreign_key "product_accessories", "products", :name => "product_accessories_product_id_fk"
+
   add_foreign_key "product_users", "products", :name => "fk_products"
 
   add_foreign_key "products", "facilities", :name => "sys_c008556"
@@ -583,5 +541,8 @@ ActiveRecord::Schema.define(:version => 20120222161624) do
   add_foreign_key "schedule_rules", "products", :name => "sys_c008573", :column => "instrument_id"
 
   add_foreign_key "statements", "facilities", :name => "fk_statement_facilities"
+
+  add_foreign_key "stored_files", "order_details", :name => "fk_files_od"
+  add_foreign_key "stored_files", "products", :name => "fk_files_product"
 
 end

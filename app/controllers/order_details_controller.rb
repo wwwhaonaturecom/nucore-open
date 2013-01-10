@@ -53,25 +53,31 @@ class OrderDetailsController < ApplicationController
   def init_order_detail
     @order = Order.find(params[:order_id])
     @order_detail = @order.order_details.find(params[:id] || params[:order_detail_id])
-    raise ActiveRecord::RecordNotFound unless @order.user_id == acting_user.id || @order_detail.account.owner_user.id = @order.user_id || @order_detail.account.business_admins.any?{|u| u.id = @order.user_id} 
+    raise ActiveRecord::RecordNotFound unless @order.to_be_merged? || @order_detail.can_be_viewed_by?(acting_user)
   end
 
   # GET /orders/:order_id/order_details/:order_detail_id/order_file
   def order_file
-    raise ActiveRecord::RecordNotFound if @order_detail.product.file_uploads.template.empty?
-    @file = @order_detail.file_uploads.new(:file_type => 'template_result')
+    raise ActiveRecord::RecordNotFound if @order_detail.product.stored_files.template.empty?
+    @file = @order_detail.stored_files.new(:file_type => 'template_result')
   end
 
   # POST /orders/:order_id/order_details/:order_detail_id/upload_order_file
   def upload_order_file
-    @file = @order_detail.file_uploads.new(params[:file_upload])
+    @file = @order_detail.stored_files.new(params[:file_upload])
     @file.file_type  = 'template_result'
     @file.name       = 'Order File'
     @file.created_by = session_user.id ## this is correct, session_user instead of acting_user
 
     if @file.save
       flash[:notice] = 'Order File uploaded successfully'
-      redirect_to(order_path(@order))
+
+      if @order_detail.order.to_be_merged?
+        @order_detail.merge! # trigger the OrderDetailObserver callbacks
+        redirect_to edit_facility_order_path(@order_detail.facility, @order_detail.order.merge_order || @order_detail.order)
+      else
+        redirect_to(order_path(@order))
+      end
     else
       flash.now[:error] = 'An error was encountered while uploading the Order File'
       render :order_file
@@ -80,7 +86,7 @@ class OrderDetailsController < ApplicationController
 
   # GET /orders/:order_id/order_details/:order_detail_id/remove_order_file
   def remove_order_file
-    if @order_detail.file_uploads.template_result.all? {|file| file.destroy}
+    if @order_detail.stored_files.template_result.all? {|file| file.destroy}
       flash[:notice] = 'The uploaded Order File has been deleted successfully'
     else
       flash[:error] = 'An error was encountered while deleting the uploaded Order File'

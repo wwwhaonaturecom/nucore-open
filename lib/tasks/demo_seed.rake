@@ -1,6 +1,9 @@
 # This file contains a base set of data appropriate for development or testing.
 # The data can then be loaded with the rake db:bi_seed.
-
+#
+# !!!! BE AWARE that ActiveRecord's #find_or_create_by... methods do not
+# always work properly! You're better off doing a #find_by, checking
+# the return's existence, and creating if necessary !!!!
 namespace :demo  do
   desc "bootstrap db with data appropriate for demonstration"
 
@@ -37,29 +40,35 @@ namespace :demo  do
       }
     ]
 
-    chart_strings.each do |cs|
-      NucsFund.find_or_create_by_value(cs[:fund])
-      NucsDepartment.find_or_create_by_value(cs[:department])
-      NucsAccount.find_or_create_by_value(cs[:account]) if cs[:account]
-      NucsProjectActivity.find_or_create_by_project_and_activity(:project => cs[:project], :activity => cs[:activity])
-      NucsGl066.find_or_create_by_fund_and_department_and_project_and_account(cs)
+    if Settings.validator.class_name == 'NucsValidator'
+      chart_strings.each do |cs|
+        NucsFund.find_or_create_by_value(cs[:fund])
+        NucsDepartment.find_or_create_by_value(cs[:department])
+        NucsAccount.find_or_create_by_value(cs[:account]) if cs[:account]
+        NucsProjectActivity.find_or_create_by_project_and_activity(:project => cs[:project], :activity => cs[:activity])
+        NucsGl066.find_or_create_by_fund_and_department_and_project_and_account(cs)
+      end
     end
 
-    
-    pgnu = PriceGroup.find_or_create_by_name({
-      :name => 'Base Rate', :is_internal => true, :display_order => 1
-    })
-    pgnu.save(:validate => false) # override facility validator
 
-    pgcc = PriceGroup.find_or_create_by_name({
-      :name => 'Cancer Center Rate', :is_internal => true, :display_order => 2
-    })
-    pgcc.save(:validate => false) # override facility validator
+    order=1
+    pgnu=pgex=nil
 
-    pgex = PriceGroup.find_or_create_by_name({
-      :name => 'External Rate', :is_internal => false, :display_order => 3
-    })
-    pgex.save(:validate => false) # override facility validator
+    Settings.price_group.name.to_hash.each do |k,v|
+      price_group = PriceGroup.find_or_create_by_name({
+        :name => v, :is_internal => (k == :base || k == :cancer_center), :display_order => order
+      })
+
+      price_group.save(:validate => false) # override facility validator
+
+      if k == :base
+        pgnu=price_group
+      elsif k == :external
+        pgex=price_group
+      end
+
+      order += 1
+    end
 
 
     fa = FacilityAccount.find_or_create_by_facility_id({
@@ -107,11 +116,6 @@ namespace :demo  do
       :facility_account_id => fa.id
     })
 
-    if instrument.new_record?
-      puts "INSTRUMENT CREATE FAILED!"
-      instrument.errors.full_messages.each{|m| puts m}      
-    end
-
     RelaySynaccessRevB.find_or_create_by_instrument_id({
       :instrument_id => instrument.id,
       :ip            => '192.168.10.135',
@@ -120,19 +124,25 @@ namespace :demo  do
       :password      => 'admin'
     })
 
-    bundle = Bundle.find_or_create_by_url_name({
-      :facility_id         => facility.id,
-      :account             => '75340',
-      :name                => 'Example Bundle',
-      :url_name            => 'example-bundle',
-      :description         => '<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus non ipsum id odio cursus euismod eu bibendum nisl. Sed nec.</p>',
-      :requires_approval   => false,
-      :is_archived         => false,
-      :is_hidden           => false,
-      :facility_account_id => fa.id,
-    })
-    bundle_item    = BundleProduct.create(:bundle => bundle, :product => item, :quantity => 1)
-    bundle_service = BundleProduct.create(:bundle => bundle, :product => service, :quantity => 1)
+    bundle=Bundle.find_by_url_name 'example-bundle'
+
+    unless bundle
+      bundle = Bundle.create!({
+        :facility_id         => facility.id,
+        :account             => '75340',
+        :name                => 'Example Bundle',
+        :url_name            => 'example-bundle',
+        :description         => '<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus non ipsum id odio cursus euismod eu bibendum nisl. Sed nec.</p>',
+        :requires_approval   => false,
+        :is_archived         => false,
+        :is_hidden           => false,
+        :facility_account_id => fa.id,
+      })
+    end
+
+    BundleProduct.create(:bundle => bundle, :product => item, :quantity => 1)
+    BundleProduct.create(:bundle => bundle, :product => service, :quantity => 1)
+
     @item          = item
     @service       = service
     @instrument    = instrument
@@ -168,8 +178,8 @@ namespace :demo  do
     pgp.reservation_window=14
     pgp.save!
     
-    inpp = InstrumentPricePolicy.find_or_create_by_instrument_id_and_price_group_id({
-      :instrument_id        => instrument.id,
+    inpp = InstrumentPricePolicy.find_or_create_by_product_id_and_price_group_id({
+      :product_id           => instrument.id,
       :price_group_id       => pgnu.id,
       :start_date           => Time.zone.now-1.year,
       :expire_date          => Time.zone.now+1.year,
@@ -186,8 +196,8 @@ namespace :demo  do
       :cancellation_cost    => 0,
     })
     inpp.save(:validate => false) # override date validator
-    itpp = ItemPricePolicy.find_or_create_by_item_id_and_price_group_id({
-      :item_id           => item.id,
+    itpp = ItemPricePolicy.find_or_create_by_product_id_and_price_group_id({
+      :product_id        => item.id,
       :price_group_id    => pgnu.id,
       :start_date        => Time.zone.now-1.year,
       :expire_date       => Time.zone.now+1.year,
@@ -195,8 +205,8 @@ namespace :demo  do
       :unit_subsidy      => 0,
     })
     itpp.save(:validate => false) # override date validator
-    spp = ServicePricePolicy.find_or_create_by_service_id_and_price_group_id({
-      :service_id        => service.id,
+    spp = ServicePricePolicy.find_or_create_by_product_id_and_price_group_id({
+      :product_id        => service.id,
       :price_group_id    => pgnu.id,
       :start_date        => Time.zone.now-1.year,
       :expire_date       => Time.zone.now+1.year,
@@ -285,56 +295,65 @@ namespace :demo  do
       :price_group_id => pgnu.id,
     })
 
+    # account creation / setup
+    # see FacilityAccountsController#create
     nufsaccount = NufsAccount.find_by_account_number('111-2222222-33333333-01')
 
     unless nufsaccount
-      nufsaccount=NufsAccount.create({
+      nufsaccount=NufsAccount.create!({
         :account_number => '111-2222222-33333333-01',
         :description    => "Paul PI's Chart String",
         :expires_at     => Time.zone.now+1.year,
         :created_by     => user_director.id,
+        :account_users_attributes => [
+          { :user_id => user_pi.id, :user_role => 'Owner', :created_by => user_director.id },
+          { :user_id => user_student.id, :user_role => 'Purchaser', :created_by => user_director.id }
+        ]
       })
-      nufsaccount.account_users_attributes = [{:user_id => user_pi.id, :user_role => 'Owner', :created_by => user_director.id }]
-      nufsaccount.save!
-      nufsaccount.account_users.create(:user_id => user_student.id, :user_role => 'Purchaser', :created_by => user_director.id)
+      nufsaccount.set_expires_at!
     end
 
-    ccaccount = CreditCardAccount.find_by_account_number('xxxx-xxxx-xxxx-xxxx')
     other_affiliate=Affiliate.find_or_create_by_name('Other')
 
-    unless ccaccount
-      ccaccount=CreditCardAccount.create({
-        :account_number     => 'xxxx-xxxx-xxxx-xxxx',
-        :description        => "Paul PI's Credit Card",
-        :expires_at         => Time.zone.now+1.year,
-        :name_on_card       => 'Paul PI',
-        :expiration_month   => '10',
-        :expiration_year    => '2014',
-        :created_by         => user_director.id,
-        :affiliate_id       => other_affiliate.id,
-        :affiliate_other    => 'Some Affiliate'
-      })
-      ccaccount.account_users_attributes = [{:user_id => user_pi.id, :user_role => 'Owner', :created_by => user_director.id }]
-      ccaccount.save!
-      ccaccount.account_users.create(:user_id => user_student.id, :user_role => 'Purchaser', :created_by => user_director.id)
-    end
+    if EngineManager.engine_loaded? :c2po
+      ccaccount = CreditCardAccount.find_by_account_number('xxxx-xxxx-xxxx-xxxx')
+      
+      unless ccaccount
+        ccaccount=CreditCardAccount.create!({
+          :account_number     => 'xxxx-xxxx-xxxx-xxxx',
+          :description        => "Paul PI's Credit Card",
+          :expires_at         => Time.zone.now+1.year,
+          :name_on_card       => 'Paul PI',
+          :expiration_month   => '10',
+          :expiration_year    => '2014',
+          :created_by         => user_director.id,
+          :affiliate_id       => other_affiliate.id,
+          :affiliate_other    => 'Some Affiliate',
+          :account_users_attributes => [
+            { :user_id => user_pi.id, :user_role => 'Owner', :created_by => user_director.id },
+            { :user_id => user_student.id, :user_role => 'Purchaser', :created_by => user_director.id }
+          ]
+        })
+      end
 
-    poaccount = PurchaseOrderAccount.find_by_account_number('12345')
+      poaccount = PurchaseOrderAccount.find_by_account_number('12345')
 
-    unless poaccount
-      poaccount=PurchaseOrderAccount.create({
-        :account_number => '12345',
-        :description    => "Paul PI's Purchase Order",
-        :expires_at     => Time.zone.now+1.year,
-        :created_by     => user_director.id,
-        :facility_id    => facility.id,
-        :affiliate_id       => other_affiliate.id,
-        :affiliate_other    => 'Some Affiliate',
-        :remittance_information => "Billing Dept\nEdward External\n1702 E Research Dr\nAuburn, AL 36830"
-      })
-      poaccount.account_users_attributes = [{:user_id => user_pi.id, :user_role => 'Owner', :created_by => user_director.id }]
-      poaccount.save!
-      poaccount.account_users.create(:user_id => user_student.id, :user_role => 'Purchaser', :created_by => user_director.id)
+      unless poaccount
+        poaccount=PurchaseOrderAccount.create!({
+          :account_number => '12345',
+          :description    => "Paul PI's Purchase Order",
+          :expires_at     => Time.zone.now+1.year,
+          :created_by     => user_director.id,
+          :facility_id    => facility.id,
+          :affiliate_id       => other_affiliate.id,
+          :affiliate_other    => 'Some Affiliate',
+          :remittance_information => "Billing Dept\nEdward External\n1702 E Research Dr\nAuburn, AL 36830",
+          :account_users_attributes => [
+            { :user_id => user_pi.id, :user_role => 'Owner', :created_by => user_director.id },
+            { :user_id => user_student.id, :user_role => 'Purchaser', :created_by => user_director.id }
+          ]
+        })
+      end
     end
 
     # purchased orders, complete, statements sent, 3 months ago
@@ -422,6 +441,7 @@ namespace :demo  do
         group_id   = (o.order_details.collect{|od| od.group_id || 0 }.max || 0) + 1
         product.bundle_products.each do |bp|
           od = OrderDetail.create!({
+            :created_by         => o.user.id,
             :order_id           => o.id,
             :product_id         => bp.product_id,
             :actual_cost     => rand(2),
@@ -438,6 +458,7 @@ namespace :demo  do
         end
       else
         od = OrderDetail.create!({
+          :created_by      => o.user.id,
           :order_id        => o.id,
           :product_id      => product.id,
           :actual_cost     => rand(2),
@@ -491,5 +512,13 @@ namespace :demo  do
     order_detail.actual_cost    = costs[:cost]
     order_detail.actual_subsidy = costs[:subsidy]
     order_detail.save!
+  end
+
+
+  def dump_record(model)
+    if model.new_record?
+      puts "#{model.class.name} CREATE FAILED!"
+      model.errors.full_messages.each{|m| puts m}
+    end
   end
 end

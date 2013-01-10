@@ -1,5 +1,6 @@
 class PriceGroup < ActiveRecord::Base
   belongs_to :facility
+  has_many   :order_details, :through => :price_policies, :dependent => :restrict
   has_many   :price_group_members, :dependent => :destroy
   has_many   :price_policies, :dependent => :destroy
 
@@ -8,12 +9,15 @@ class PriceGroup < ActiveRecord::Base
   validates_uniqueness_of :name, :scope => :facility_id
 
   default_scope :order => 'is_internal DESC, display_order ASC, name ASC'
+  
   before_destroy :is_not_global
   before_create  lambda {|o| o.display_order = 999 if !o.facility_id.nil?}
 
-  scope :base,  :conditions => { :name => 'Base Rate', :facility_id => nil }
-  scope :external,      :conditions => { :name => 'External Rate', :facility_id => nil }
-  scope :cancer_center, :conditions => { :name => 'Cancer Center Rate', :facility_id => nil }
+  scope :base,  :conditions => { :name => Settings.price_group.name.base, :facility_id => nil }
+  scope :external,      :conditions => { :name => Settings.price_group.name.external, :facility_id => nil }
+  scope :cancer_center, :conditions => { :name => Settings.price_group.name.cancer_center, :facility_id => nil }
+
+  scope :globals, :conditions => { :facility_id => nil }
 
   def user_price_group_members
     UserPriceGroupMember.find(:all, :conditions => { :price_group_id => id, :type => 'UserPriceGroupMember' })
@@ -24,7 +28,11 @@ class PriceGroup < ActiveRecord::Base
   end
 
   def is_not_global
-    self.facility_id_was != nil
+    !global?
+  end
+
+  def global?
+    self.facility.nil?
   end
 
   def can_purchase?(product)
@@ -49,5 +57,10 @@ class PriceGroup < ActiveRecord::Base
 
   def <=> (obj)
     "#{display_order}-#{name}".casecmp("#{obj.display_order}-#{obj.name}")
+  end
+
+  def can_delete?
+    # use !.any? because it uses SQL count(), unlike none?
+    !global? && !order_details.any?
   end
 end

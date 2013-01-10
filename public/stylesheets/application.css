@@ -26,7 +26,7 @@ h1 {
 	font-size:32px;
 	letter-spacing:-1px;
 	line-height:1em;
-	margin-bottom:.75em;
+	margin-bottom:.5em;
 	padding-bottom:10px;
 }
 
@@ -50,6 +50,10 @@ label {
 
 label.inline {
 	display:inline;
+}
+label.inline_wide {
+	display:inline-block;
+	width: 11em;
 }
 
 .text_left {
@@ -86,6 +90,10 @@ input[type=button] {
 	line-height:normal;
 	padding:5px 14px 6px;
 	text-shadow:0 1px 1px rgba(255, 255, 255, 0.75);
+}
+
+small {
+	font-size: smaller;
 }
 
 /***************************************
@@ -187,6 +195,11 @@ a.btn:hover,input.btn:hover {
 	cursor:hand;
 }
 
+h1 .btn {
+	float: right;
+	letter-spacing: 0;
+}
+
 
 .footnote {
 	font-size:10px;
@@ -213,9 +226,70 @@ a.btn:hover,input.btn:hover {
 	font-size:11px;
 }
 
+.very_dense {
+	font-size: 10px;
+}
+
 .nowrap {
 	white-space:nowrap;
 }
+
+fieldset.collapsable legend {
+	padding-left: 12px;
+	cursor: pointer;
+	font-weight: bold;
+	position: relative;
+}
+fieldset.collapsable legend:before {
+	content: '';
+	position: absolute;
+	z-index: 1;
+	width: 10px;
+	height: 10px;
+	left: 0;
+	top: 3px;
+	background: url(../images/sprite-collapse.png) no-repeat -10px 0;
+}
+fieldset.collapsable.collapsed legend:before {
+	background-position: 0 0;
+}
+
+/****************************************
+ * Displaying fields edited in the WYSIWYG editor
+ ****************************************/
+
+.wysiwyg {}
+.wysiwyg ul,
+.wysiwyg ol {
+	margin: 1.12em 0;
+	margin-left: 1.9em;
+}
+.wysiwyg ol ul,
+.wysiwyg ul ol,
+.wysiwyg ul ul,
+.wysiwyg ol ol,
+.wysiwyg ol li,
+.wysiwyg ul li {
+	margin-top: 0;
+	margin-bottom: 0
+}
+.wysiwyg ul {
+	list-style-type: disc;
+}
+.wysiwyg ol {
+	list-style-type: decimal;
+}
+
+.wysiwyg blockquote {
+	border-left: 2px solid #DDD;
+	margin: 1em 1.5em;
+	padding-left: 0.5em;
+}
+
+#content .wysiwyg p {
+	margin: 1em 0;
+}
+
 
 /***************************************
 main layout ids
@@ -226,7 +300,7 @@ main layout ids
 	background-repeat: no-repeat;
 	border-bottom:2px solid #1570a2;
 	font-size:15px;
-	font-weight:700;
+	font-weight:bold;
 	overflow:hidden;
 	text-align:center;
 }
@@ -237,9 +311,8 @@ main layout ids
 }
 
 #acting_as a {
-	color:#FFF;
 	font-size:12px;
-	font-weight:400;
+	font-weight:normal;
 }
 
 #logo {
@@ -371,6 +444,11 @@ main layout ids
 	margin-top:6px;
 }
 
+.backdate_fields {
+	float: left;
+	padding: 8px 0 0 6px;
+}
+
 ul li.warning {
 	background:url(../images/icon_warning.jpg) no-repeat 0 0;
 	color:#B44D4D;
@@ -409,6 +487,10 @@ th {
 	padding:10px 5px;
 	text-align:center;
 	text-shadow:1px 1px #fff;
+}
+
+th.actions, td.actions {
+  width: 100px;
 }
 
 .sortable {
@@ -486,15 +568,20 @@ p.error {
 	margin-right:20px;
 }
 
-.search_form fieldset#calendar_filter input[type=text] {
+.search_form fieldset#calendar_filter input[type=text],
+.search_form fieldset#calendar_filter select {
+	width:100px;
 	border:1px solid #AAA;
 	height:24px;
 	margin-bottom:4px;
-	width:100px;
 }
 
 .search_form fieldset#search,.search_form fieldset#search ul {
 	width:500px;
+}
+
+.search_form li {
+  list-style: none;
 }
 
 body .search_form .chzn-container .chzn-drop {
@@ -504,10 +591,6 @@ body .search_form .chzn-container .chzn-drop {
 .search_form fieldset#calendar_filter {
 	margin-left:10px;
 	padding:0 20px;
-}
-
-.search_form select {
-	width:200px;
 }
 
 .search_form input[type=submit] {
@@ -569,6 +652,24 @@ ul.tabs li a {
 	padding:10px 8px;
 }
 
+ul.tabs .updating,
+ul.tabs .updated {
+	display: inline-block;
+	width: 16px;
+	height: 16px;
+    margin-left: 0.4em;
+    margin-right: 4px;
+    text-decoration: none;
+}
+ul.tabs .updating {
+	background-image: url(../images/spinner-arrow.gif);
+	position: relative;
+	top: 3px;
+}
+ul.tabs .updated {
+	padding-bottom: 4px;
+}
+
 
 /***************************************
 billing
@@ -604,7 +705,7 @@ ul.form li.clear,table ul,.search_form fieldset li .chzn-container,.search_form 
 	margin:0;
 }
 
-.margin_bottom,ul.form li {
+.margin_bottom, ul.form > li {
 	margin-bottom:15px;
 }
 
@@ -632,3 +733,191 @@ ul.form li.clear,table ul,.search_form fieldset li .chzn-container,.search_form 
 .ordered_on_width {
 	width:130px;
 }
+
+/***
+ * Popup calendar
+ */
+
+.ui-datepicker-calendar thead span {
+    color: black;
+}
+
+/***
+ * Dialog boxes
+ */
+.ui-dialog input[disabled] {
+	opacity: 0.3;
+	cursor: default;
+}
+/***
+ * Order detail
+ */
+#cancel-fee-opt {
+    display: none;
+    margin-top: 1em;
+    width: 76%;
+}
+
+#cancel-fee-opt label {
+    float: right;
+}
+
+#order_detail_edit {
+    margin-top: 1.5em;
+}
+
+/***
+ * Order
+ */
+#product_add_quantity {
+    width: 3em;
+    height: 19px;
+}
+
+.edit_order .chzn-container-single .chzn-single {
+    height: 24px;
+}
+
+#send_receipt_btn {
+    width: 122px;
+    float: right;
+    margin-top: 3.5em;
+}
+
+#product_add_btn {
+    margin-left: 0;
+    margin-top: 1em;
+}
+
+#merge-orders p {
+    margin-top: 4em;
+}
+
+
+/***
+ * Product listing
+ ***/
+
+.price_policy_error {
+	display: block;
+	float: right;
+	color: red;
+}
+
+/***
+ * Reservations
+ */
+
+#pick_accessories_dialog .notice {
+    color: black;
+}
+
+#pick_accessories_dialog input[type=submit] {
+    margin-top: 1em;
+}
+
+#pick_accessories_dialog table tr,
+#pick_accessories_dialog table td {
+    border: none;
+}
+
+.product_quantity {
+	width: 3em;
+	margin-right: 0.5em;
+}
+
+#choose-account-frm input[type=radio] {
+    display: block;
+    margin: 0 auto;
+}
+
+/*.reservations tr.current {
+	background-color: #DDFFDD;
+}*/
+
+.copy_actual_from_reservation {
+  margin-top: 1.5em;
+}
+.copy_actual_from_reservation .start_date,
+.copy_actual_from_reservation .end_date {
+  display: none;
+}
+
+/***
+ * Bulk Email
+ ***/
+#bulk_email fieldset {
+  float: none;
+  margin: 1em 0;
+}
+#dates_between li {
+  float: left;
+  margin: 0 1em 0 0;
+}
+#user_types label {
+  display: inline;
+}
+#bulk_email.search_form input[type="submit"] {
+  float: none;
+  margin-top: 0;
+}
+.results_header {
+  border-top: 1px solid #CCCCCC;
+  padding: 1em 0;
+}
+#bulk_email_export {
+  float: right;
+}
+
+
+/***
+ * Notifications
+ ***/
+
+#notifications li {
+    padding: 2em 0;
+    margin-bottom: 2em;
+    text-align: center;
+    -moz-box-shadow: 10px 10px 5px #888;
+    -webkit-box-shadow: 10px 10px 5px #888;
+    box-shadow: 10px 10px 5px #888;
+    -moz-border-radius: 15px;
+    border-radius: 15px;
+    border: 1px solid #888;
+}
+
+.dismiss-notice {
+    margin-left: 5em;
+}
+
+
+/***
+ * Bulk import
+ ***/
+
+#bulk-import h2 {
+  margin-top: 1em;
+}
+
+#bulk-import form, #bulk-import-template {
+  width: 20%;
+  margin: 0 auto;
+}
+
+#bulk-import label {
+  margin: .5em 0;
+}
+
+#bulk-import .btn {
+  margin: 1em 0 0 3em;
+}
+
+#bulk-import input[type=file] {
+  margin-bottom: 1em;
+}
+
+#bulk-import-template {
+  display: block;
+  margin-top: 3em;
+}
+

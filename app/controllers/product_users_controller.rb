@@ -67,13 +67,17 @@ class ProductUsersController < ApplicationController
   
   def update_restrictions
     product_param_name = @product.class.name.underscore.downcase 
+    unless params[product_param_name]
+      redirect_to self.send("facility_#{product_param_name}_users_url", current_facility, @product)
+      return
+    end
     params[product_param_name][:product_users].each do |key, value|
       product_user = @product.product_users.find(key)
       product_user.update_attributes(value)  
     end
     
     flash[:notice] = t("product_users.update_restrictions.notice")
-    redirect_to self.send("facility_#{product_param_name}_users_url", @facility, @product)
+    redirect_to self.send("facility_#{product_param_name}_users_url", current_facility, @product)
   end
 
   def init_product

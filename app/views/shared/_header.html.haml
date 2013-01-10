@@ -14,12 +14,18 @@
           )
       - else
         %li#user= "#{session_user.full_name} (#{session_user.username})"
-        - if current_user.external?
+        - if current_user.external? && SettingsHelper.feature_on?(:password_update)
           %li= link_to t("user_password.edit.head"), :edit_current_password 
         %li
           = link_to t('pages.cart'), :cart
-          (
-          = current_cart.order_details.sum(:quantity)
-          )
+          = "(#{current_cart.order_details.sum(:quantity)})"
+        - if current_user.operator? || current_user.administrator?
+          - n_count=current_user.notifications.active.count
+          - if n_count > 0
+            %li
+              = link_to t('pages.notices'), notifications_path
+              %span#notice-count
+                = "(#{n_count})"
+
         %li.last= link_to t('pages.logout'), :destroy_user_session
   .clear

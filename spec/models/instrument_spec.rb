@@ -1,12 +1,14 @@
 require 'spec_helper'
+require 'product_shared_examples'
 
 describe Instrument do
-
+  it_should_behave_like 'ReservationProduct', :instrument
+  
   context "factory" do
     it "should create using factory" do
-      @facility         = Factory.create(:facility)
-      @facility_account = @facility.facility_accounts.create(Factory.attributes_for(:facility_account))
-      @instrument       = @facility.instruments.create(Factory.attributes_for(:instrument, :facility_account_id => @facility_account.id))
+      @facility         = FactoryGirl.create(:facility)
+      @facility_account = @facility.facility_accounts.create(FactoryGirl.attributes_for(:facility_account))
+      @instrument       = @facility.instruments.create(FactoryGirl.attributes_for(:instrument, :facility_account_id => @facility_account.id))
       @instrument.should be_valid
       @instrument.type.should == 'Instrument'
     end
@@ -20,18 +22,180 @@ describe Instrument do
     end
   end
 
+  context "updating nested relay" do
+    before :each do
+      @facility         = FactoryGirl.create(:facility)
+      @facility_account = @facility.facility_accounts.create(FactoryGirl.attributes_for(:facility_account))
+      @instrument       = @facility.instruments.create(FactoryGirl.attributes_for(:instrument, :facility_account_id => @facility_account.id))
+    end
+
+    context "existing type: 'timer' (Timer without relay)" do
+      before :each do
+        @instrument.relay = RelayDummy.new
+        @instrument.relay.save!
+        @instrument.control_mechanism.should == 'timer'
+      end
+
+      context "update with new control_mechanism: 'relay' (Timer with relay)" do
+        context "when validations not met" do
+          before :each do
+            @updated = @instrument.update_attributes(:control_mechanism => "relay", :relay_attributes => {:type => 'RelaySynaccessRevA'})
+          end
+
+          it "should fail" do
+            @updated.should be_false
+          end
+
+          it "should have errors" do
+            @instrument.errors.full_messages.should_not == []
+          end
+        end
+
+        context "when validations met" do
+          before :each do
+            @updated = @instrument.update_attributes(:control_mechanism => "relay", :relay_attributes => FactoryGirl.attributes_for(:relay)) 
+          end
+
+          it "should succeed" do
+            @updated.should be_true
+          end
+
+          it "should have no errors" do
+            @instrument.errors.full_messages.should == []
+          end
+          
+          it "should have control mechanism of relay" do
+            @instrument.reload.control_mechanism.should == 'relay'
+          end
+        end
+      end
+
+      context "update with new control_mechanism: 'manual' (Reservation Only)" do
+        before :each do
+          @updated = @instrument.update_attributes(:control_mechanism => 'manual')
+        end
+
+        it "should succeed" do
+          @updated.should be_true
+        end
+
+        it "should have a control_mechanism of manual" do
+          @instrument.reload.control_mechanism.should == 'manual'
+        end
+
+        it "should destroy the relay" do
+          @instrument.reload.relay.should be_nil
+        end
+      end
+    end
+
+    context "existing type: RelaySynaccessA" do
+      before :each do
+        FactoryGirl.create(:relay, :instrument_id => @instrument.id)
+        @instrument.reload.control_mechanism.should == 'relay'
+      end
+
+      context "update with new control_mechanism: 'manual' (Reservation Only)" do
+        before :each do
+          @updated = @instrument.update_attributes(:control_mechanism => 'manual')
+        end
+
+        it "should succeed" do
+          @updated.should be_true
+        end
+
+        it "should have a control_mechanism of manual" do
+          @instrument.reload.control_mechanism.should == 'manual'
+        end
+
+        it "should destroy the relay" do
+          @instrument.reload.relay.should be_nil
+        end
+      end
+
+      context "update with new control_mechanism: 'timer' (Timer without relay)" do
+        before :each do
+          @updated = @instrument.update_attributes(:control_mechanism => 'timer')
+        end
+
+        it "should succeed" do
+          @updated.should be_true
+        end
+
+        it "control mechanism should be a timer" do
+          @instrument.reload.control_mechanism.should == 'timer'
+        end
+      end
+    end
+
+    context "existing type: manual 'Reservation Only'" do
+      before :each do
+        @instrument.relay.destroy if @instrument.relay
+        @instrument.reload.control_mechanism.should == Relay::CONTROL_MECHANISMS[:manual]
+      end
+
+      context "update with new control_mechanism: 'relay' (Timer with relay)" do
+        context "when validations not met" do
+          before :each do
+            @updated = @instrument.update_attributes(:control_mechanism => "relay", :relay_attributes => {:type => 'RelaySynaccessRevA'}) 
+          end
+
+          it "should fail" do
+            @updated.should be_false
+          end
+
+          it "should have errors" do
+            @instrument.errors.full_messages.should_not == []
+          end
+        end
+
+        context "when validations met" do
+          before :each do
+            @updated = @instrument.update_attributes(:control_mechanism => "relay", :relay_attributes => FactoryGirl.attributes_for(:relay)) 
+          end
+          it "should succeed" do
+            @updated.should be_true
+          end
+
+          it "should have no errors" do
+            @instrument.errors.full_messages.should == []
+          end
+
+          it "should have control mechanism of relay" do
+            @instrument.reload.control_mechanism.should == 'relay'
+          end
+        end
+      end
+
+      context "update with new control_mechanism: 'timer' (Timer without relay)" do
+        before :each do
+          @updated = @instrument.update_attributes(:control_mechanism => 'timer')
+        end
+
+        it "should succeed" do
+          @updated.should be_true
+        end
+
+        it "control mechanism should be a timer" do
+          @instrument.reload.control_mechanism.should == 'timer'
+        end
+      end
+    end
+  end
+  
   context "reservations with schedule rules from 9 am to 5 pm every day, with 60 minute durations" do
     before(:each) do
-      @facility         = Factory.create(:facility)
-      @facility_account = @facility.facility_accounts.create(Factory.attributes_for(:facility_account))
+      @facility         = FactoryGirl.create(:facility)
+      @facility_account = @facility.facility_accounts.create(FactoryGirl.attributes_for(:facility_account))
       # create instrument, min reserve time is 60 minutes, max is 60 minutes
-      @options          = Factory.attributes_for(:instrument, :facility_account_id => @facility_account.id,
+      @options          = FactoryGirl.attributes_for(:instrument, :facility_account_id => @facility_account.id,
                                                  :min_reserve_mins => 60, :max_reserve_mins => 60)
       @instrument       = @facility.instruments.create(@options)
       assert @instrument.valid?
       # add rule, available every day from 9 to 5, 60 minutes duration
-      @rule             = @instrument.schedule_rules.create(Factory.attributes_for(:schedule_rule))
+      @rule             = @instrument.schedule_rules.create(FactoryGirl.attributes_for(:schedule_rule))
       assert @rule.valid?
+      Reservation.any_instance.stubs(:admin?).returns(false)
     end
     
     it "should not allow reservation in the past" do
@@ -120,10 +284,10 @@ describe Instrument do
 
   context "next available reservation based on schedule rules" do
     before(:each) do
-      @facility         = Factory.create(:facility)
-      @facility_account = @facility.facility_accounts.create(Factory.attributes_for(:facility_account))
+      @facility         = FactoryGirl.create(:facility)
+      @facility_account = @facility.facility_accounts.create(FactoryGirl.attributes_for(:facility_account))
       # create instrument, min reserve time is 60 minutes, max is 60 minutes
-      @options          = Factory.attributes_for(:instrument, :facility_account_id => @facility_account.id,
+      @options          = FactoryGirl.attributes_for(:instrument, :facility_account_id => @facility_account.id,
                                                  :min_reserve_mins => 60, :max_reserve_mins => 60)
       @instrument       = @facility.instruments.create(@options)
       assert @instrument.valid?
@@ -131,7 +295,7 @@ describe Instrument do
     
     it "should find next available reservation with 60 minute interval rule, without any pending reservations" do
       # add rule, available every day from 9 to 5, 60 minutes duration/interval
-      @rule = @instrument.schedule_rules.create(Factory.attributes_for(:schedule_rule))
+      @rule = @instrument.schedule_rules.create(FactoryGirl.attributes_for(:schedule_rule))
       assert @rule.valid?
       # stub so today at 9 am is not in the future
       Reservation.any_instance.stubs(:in_the_future).returns(true)
@@ -153,7 +317,7 @@ describe Instrument do
 
     it "should find next available reservation with 5 minute interval rule, without any pending reservations" do
       # add rule, available every day from 9 to 5, 5 minute duration/interval
-      @rule = @instrument.schedule_rules.create(Factory.attributes_for(:schedule_rule, :duration_mins => 5))
+      @rule = @instrument.schedule_rules.create(FactoryGirl.attributes_for(:schedule_rule, :duration_mins => 5))
       assert @rule.valid?
       # stub so today at 9 am is not in the future
       Reservation.any_instance.stubs(:in_the_future).returns(true)
@@ -176,7 +340,7 @@ describe Instrument do
 
     it "should find next available reservation with pending reservations" do
       # add rule, available every day from 9 to 5, 60 minutes duration
-      @rule = @instrument.schedule_rules.create(Factory.attributes_for(:schedule_rule))
+      @rule = @instrument.schedule_rules.create(FactoryGirl.attributes_for(:schedule_rule))
       assert @rule.valid?
       # add reservation for tomorrow morning at 9 am
       @start        = Time.zone.now.end_of_day + 1.second + 9.hours
@@ -191,10 +355,10 @@ describe Instrument do
 
   context "available hours based on schedule rules" do
     before(:each) do
-      @facility         = Factory.create(:facility)
-      @facility_account = @facility.facility_accounts.create(Factory.attributes_for(:facility_account))
+      @facility         = FactoryGirl.create(:facility)
+      @facility_account = @facility.facility_accounts.create(FactoryGirl.attributes_for(:facility_account))
       # create instrument, min reserve time is 60 minutes, max is 60 minutes
-      @options          = Factory.attributes_for(:instrument, :facility_account_id => @facility_account.id,
+      @options          = FactoryGirl.attributes_for(:instrument, :facility_account_id => @facility_account.id,
                                                  :min_reserve_mins => 60, :max_reserve_mins => 60)
       @instrument       = @facility.instruments.create(@options)
       assert @instrument.valid?
@@ -202,7 +366,7 @@ describe Instrument do
     
     it "should have first avail hour at 9 am, last avail hour at 4 pm, with every day rule from 9 to 5" do
       # add rule, available every day from 9 to 5, 60 minutes duration
-      @rule = @instrument.schedule_rules.create(Factory.attributes_for(:schedule_rule))
+      @rule = @instrument.schedule_rules.create(FactoryGirl.attributes_for(:schedule_rule))
       assert @rule.valid?
       @instrument.first_available_hour.should == 9
       @instrument.last_available_hour.should == 16
@@ -211,18 +375,18 @@ describe Instrument do
 
   context "last reserve dates, days from now" do
     before(:each) do
-      @facility         = Factory.create(:facility)
-      @facility_account = @facility.facility_accounts.create(Factory.attributes_for(:facility_account))
-      @price_group      = @facility.price_groups.create(Factory.attributes_for(:price_group))
+      @facility         = FactoryGirl.create(:facility)
+      @facility_account = @facility.facility_accounts.create(FactoryGirl.attributes_for(:facility_account))
+      @price_group      = @facility.price_groups.create(FactoryGirl.attributes_for(:price_group))
       # create instrument, min reserve time is 60 minutes, max is 60 minutes
-      @options          = Factory.attributes_for(:instrument, :facility_account_id => @facility_account.id,
+      @options          = FactoryGirl.attributes_for(:instrument, :facility_account_id => @facility_account.id,
                                                  :min_reserve_mins => 60, :max_reserve_mins => 60)
       @instrument       = @facility.instruments.create(@options)
-      @price_group_product=Factory.create(:price_group_product, :product => @instrument, :price_group => @price_group)
+      @price_group_product=FactoryGirl.create(:price_group_product, :product => @instrument, :price_group => @price_group)
       assert @instrument.valid?
       
       # create price policy with default window of 1 day
-      @price_policy     = @instrument.instrument_price_policies.create(Factory.attributes_for(:instrument_price_policy).update(:price_group_id => @price_group.id))
+      @price_policy     = @instrument.instrument_price_policies.create(FactoryGirl.attributes_for(:instrument_price_policy).update(:price_group_id => @price_group.id))
     end
 
     it "should have last_reserve_date == tomorrow, last_reserve_days_from_now == 1 when window is 1" do
@@ -235,11 +399,35 @@ describe Instrument do
       # create price policy with window of 15 days
       @price_group_product.reservation_window=15
       assert @price_group_product.save
-      @options       = Factory.attributes_for(:instrument_price_policy).update(:price_group_id => @price_group.id)
+      @options       = FactoryGirl.attributes_for(:instrument_price_policy).update(:price_group_id => @price_group.id)
       @price_policy2 = @instrument.instrument_price_policies.new(@options)
       @price_policy2.save(:validate => false) # save without validations
       assert_equal 15, @instrument.max_reservation_window
       assert_equal (Time.zone.now+15.days).to_date, @instrument.last_reserve_date
+    end
+  end
+
+  context 'can_purchase?' do
+    before :each do
+      @facility         = FactoryGirl.create(:facility)
+      @facility_account = @facility.facility_accounts.create(FactoryGirl.attributes_for(:facility_account))
+      @instrument       = @facility.instruments.create(FactoryGirl.attributes_for(:instrument, :facility_account_id => @facility_account.id))
+      @price_group = FactoryGirl.create(:price_group, :facility => @facility)
+      @user = FactoryGirl.create(:user)
+      FactoryGirl.create(:user_price_group_member, :user => @user, :price_group => @price_group)
+      @user.reload
+      @user_price_policy_ids = @user.price_groups.map(&:id)
+      @price_policy = FactoryGirl.create(:instrument_price_policy, :product => @instrument, :price_group => @price_group)
+      #TODO remove this line
+      FactoryGirl.create(:price_group_product, :price_group => @price_group, :product => @instrument)
+    end
+    it 'should be purchasable if there are schedule rules' do
+      @schedule_rule = FactoryGirl.create(:schedule_rule, :instrument => @instrument)
+      @instrument.reload
+      @instrument.should be_can_purchase(@user_price_policy_ids)
+    end
+    it 'should not be purchasable if there are no schedule rules' do
+      @instrument.should_not be_can_purchase(@user_price_policy_ids)
     end
   end
 end

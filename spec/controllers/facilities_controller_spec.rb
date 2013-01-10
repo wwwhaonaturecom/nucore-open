@@ -14,7 +14,7 @@ describe FacilitiesController do
   before(:all) { create_users }
 
   before(:each) do
-    @authable = Factory.create(:facility)
+    @authable = FactoryGirl.create(:facility)
   end
 
 
@@ -53,7 +53,7 @@ describe FacilitiesController do
     end
 
     it_should_require_login
-  
+
     it_should_deny_all [ :guest, :director ]
 
     it_should_allow :admin do
@@ -70,7 +70,7 @@ describe FacilitiesController do
       @method=:get
       @action=:index
     end
-    
+
     it_should_allow_all [ :admin, :guest ] do
       assigns[:facilities].should == [@authable]
       response.should be_success
@@ -89,9 +89,9 @@ describe FacilitiesController do
     end
 
     it_should_require_login
-  
+
     it_should_deny :guest
-  
+
     it_should_allow :director do
       response.should be_success
       response.should render_template('facilities/manage')
@@ -101,7 +101,6 @@ describe FacilitiesController do
 
 
   context "show" do
-
     before(:each) do
       @method=:get
       @action=:show
@@ -113,7 +112,13 @@ describe FacilitiesController do
       response.should be_success
       response.should render_template('facilities/show')
     end
-    
+
+    it 'should 404 for invalid facility' do
+      @params.merge!({:id => 'randomstringofcharacters'})
+      do_request
+      response.code.should == "404"
+    end
+
   end
 
 
@@ -131,9 +136,9 @@ describe FacilitiesController do
     context "as facility operators with two facilities" do
 
       before(:each) do
-        @facility2 = Factory.create(:facility)
+        @facility2 = FactoryGirl.create(:facility)
         @controller.stubs(:current_facility).returns(@authable)
-        @controller.stubs(:manageable_facilities).returns([@authable, @facility2])
+        @controller.stubs(:operable_facilities).returns([@authable, @facility2])
         @controller.expects(:init_current_facility).never
       end
 
@@ -143,29 +148,41 @@ describe FacilitiesController do
         response.should render_template('facilities/list')
       end
     end
-    
+
     context "as facility operators with one facility" do
       before(:each) do
         @controller.stubs(:current_facility).returns(@authable)
         @controller.expects(:init_current_facility).never
       end
-      # admin won't be redirected since their manageable facilities is something more
-      it_should_allow_all (facility_operators - [:admin]) do
-        assigns(:facilities).should == [@authable]
-        assigns(:manageable_facilities).should == [@authable]
-        response.should redirect_to(facility_orders_path(@authable))
+      context 'has instruments' do
+        before :each do
+          @facility_account = FactoryGirl.create(:facility_account, :facility => @authable)
+          @authable.instruments.create!(FactoryGirl.attributes_for(:instrument, :facility_account => @facility_account))
+        end
+        it_should_allow_all (facility_operators - [:admin]) do
+          assigns(:facilities).should == [@authable]
+          assigns(:operable_facilities).should == [@authable]
+          response.should redirect_to(timeline_facility_reservations_path(@authable))
+        end
+      end
+      context 'has no instruments' do
+        # admin won't be redirected since their operable facilities is something more
+        it_should_allow_all (facility_operators - [:admin]) do
+          assigns(:facilities).should == [@authable]
+          assigns(:operable_facilities).should == [@authable]
+          response.should redirect_to(facility_orders_path(@authable))
+        end
       end
     end
 
     context "as administrator" do
 
       before(:each) do
-        @facility2 = Factory.create(:facility)
+        @facility2 = FactoryGirl.create(:facility)
         @controller.stubs(:current_facility).returns(@authable)
       end
-  
+
       it_should_allow :admin do
-        assigns[:manageable_facilities].should == []
         assigns[:facilities].should == [@authable, @facility2]
         response.should be_success
         response.should render_template('facilities/list')
@@ -173,35 +190,31 @@ describe FacilitiesController do
     end
 
   end
-  
+
   context "transactions" do
     before(:each) do
       @action = :transactions
       @method = :get
-      @params = {:facility_id => @authable.url_name}
+      @params = { :facility_id => @authable.url_name }
       @user = @admin
     end
-    
-    it_should_support_searching
-    
-    it "should set the facility" do
-      sign_in @admin
-      do_request
-      assigns[:facility].should == @authable
-      assigns[:current_facility].should == @authable
-    end
-    
+
+    it_should_support_searching(:fulfilled_at)
+
     it "should use two column head" do
       sign_in @admin
       do_request
       assigns[:layout].should == 'two_column_head'
     end
-    
+
     it "should query against the facility" do
       sign_in @admin
       do_request
-      assigns[:order_details].should contain_string_in_sql("`orders`.`facility_id` = #{@authable.id}")
+      assigns(:order_details).should contain_string_in_sql("`orders`.`facility_id` = ")
     end
+
+    it_should_deny_all [:senior_staff, :staff]
+
   end
 
 end

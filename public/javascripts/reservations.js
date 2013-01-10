@@ -81,8 +81,11 @@ $(document).ready(function() {
 
   function initReserveButton()
   {
+      if(ctrlMechanism == 'manual')
+        return;
+
       var now=new Date(),
-        future=now.clone().addMinutes(2),
+        future=now.clone().addMinutes(5),
         date=$('#reservation_reserve_start_date').val(),
         hour=$('#reservation_reserve_start_hour').val(),
         mins=$('#reservation_reserve_start_min').val(),
@@ -93,10 +96,12 @@ $(document).ready(function() {
   }
 
   // change reservation creation button based on Reservation
-  $('#res-time-select select,#reservation_reserve_start_date').change(initReserveButton);
+  if(typeof(isBundle) != 'undefined' && !isBundle && !ordering_on_behalf) {
+    $('#res-time-select select,#reservation_reserve_start_date').change(initReserveButton);
+    initReserveButton();
+  }
 
   init_datepickers();
-  initReserveButton();
 
   // initialize datepicker
   function init_datepickers() {
@@ -151,6 +156,32 @@ $(document).ready(function() {
     $("#reservation_reserve_start_date").val(event.start.toString("MM/dd/yyyy"));
     
   }
+
+  /* Copy in actual times from reservation time */
+  function copyReservationTimeIntoActual() {
+    var parent = $(this).parents('.copy_actual_from_reservation');
+    var startDate = Date.parse(parent.find('.start_date').text());
+    var endDate = Date.parse(parent.find('.end_date').text());
+    setDateInPicker($('#reservation_actual_start_date'), startDate);
+    setTimeInPickers('reservation_actual_start', startDate);
+    setDateInPicker($('#reservation_actual_end_date'), endDate);
+    setTimeInPickers('reservation_actual_end', endDate);
+    $(this).remove();
+    return false;
+  }
+  function setDateInPicker(picker, date) {
+    var dateFormat = picker.datepicker('option', 'dateFormat');
+    picker.val($.datepicker.formatDate(dateFormat, date));
+  }
+  function setTimeInPickers(id_prefix, date) {
+    var hour = date.getHours() % 12;
+    var ampm = date.getHours() < 12 ? 'AM' : 'PM';
+    if (hour == 0) hour = 12;
+    $('#' + id_prefix + '_hour').val(hour);
+    $('#' + id_prefix + '_min').val(date.getMinutes());
+    $('#' + id_prefix + '_meridian').val(ampm);
+  }
+  $('.copy_actual_from_reservation a').click(copyReservationTimeIntoActual);
 
   //$("div.fc-button-prev").hide();
 });

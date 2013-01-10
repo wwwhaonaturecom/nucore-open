@@ -3,14 +3,15 @@ class FacilitiesController < ApplicationController
   admin_tab     :edit, :manage, :schedule, :update, :agenda, :transactions
   before_filter :authenticate_user!, :except => [:index, :show]  # public pages do not require authentication
   before_filter :check_acting_as, :except => [:index, :show]
-  before_filter :init_current_facility, :only => [:edit, :manage, :schedule, :show, :update, :agenda, :transactions]
 
-  load_resource :find_by => :url_name
-  authorize_resource
+  load_and_authorize_resource :find_by => :url_name
   skip_load_and_authorize_resource :only => [:index, :show]
 
+  # needed for transactions_with_search
   include TransactionSearch
-  
+
+  include FacilitiesHelper
+
   layout 'two_column'
 
   # GET /facilities
@@ -22,23 +23,25 @@ class FacilitiesController < ApplicationController
 
   # GET /facilities/abc123
   def show
-    raise ActiveRecord::RecordNotFound unless current_facility.is_active?
+    raise ActiveRecord::RecordNotFound unless current_facility && current_facility.is_active?
+    @order_form = nil
+    @order_form = Order.new if acting_user && current_facility.accepts_multi_add?
     @active_tab = 'home'
     render :layout => 'application'
   end
 
   # GET /facilities/list
   def list
-    # show list of manageable facilities for current user, and admins manage all facilities
+    # show list of operable facilities for current user, and admins manage all facilities
     @active_tab = 'manage_facilites'
     if session_user.administrator?
       @facilities = Facility.all
       flash.now[:notice] = "No facilities have been added" if @facilities.empty?
     else
-      @facilities = manageable_facilities
+      @facilities = operable_facilities
       raise ActiveRecord::RecordNotFound if @facilities.empty?
       if (@facilities.size == 1)
-        redirect_to facility_orders_path(@facilities[0]) 
+        redirect_to facility_default_admin_path(@facilities.first)
         return
       end
     end
@@ -72,7 +75,7 @@ class FacilitiesController < ApplicationController
 
     if @facility.save
       flash[:notice] = 'The facility was successfully created.'
-      redirect_to manage_facility_url(@facility)
+      redirect_to manage_facility_path(@facility)
     else
       render :action => "new", :layout => 'application'
     end
@@ -82,7 +85,7 @@ class FacilitiesController < ApplicationController
   def update
     if current_facility.update_attributes(params[:facility])
       flash[:notice] = 'The facility was successfully updated.'
-      redirect_to manage_facility_url(current_facility)
+      redirect_to manage_facility_path(current_facility)
     else
       render :action => "edit"
     end
@@ -97,7 +100,8 @@ class FacilitiesController < ApplicationController
     @active_tab = 'admin_products'
     render :layout => 'product'
   end
-  
+
+  # GET /facilities/transactions
   def transactions_with_search
     @active_tab = 'admin_billing'
     @layout = "two_column_head"

@@ -11,9 +11,10 @@ describe ItemsController do
   before(:all) { create_users }
 
   before(:each) do
-    @authable         = Factory.create(:facility)
-    @facility_account = @authable.facility_accounts.create(Factory.attributes_for(:facility_account))
-    @item             = @authable.items.create(Factory.attributes_for(:item, :facility_account_id => @facility_account.id))
+    @authable         = FactoryGirl.create(:facility)
+    @facility_account = @authable.facility_accounts.create(FactoryGirl.attributes_for(:facility_account))
+    @item             = @authable.items.create(FactoryGirl.attributes_for(:item, :facility_account_id => @facility_account.id))
+    @item_pp          = @item.item_price_policies.create(FactoryGirl.attributes_for(:item_price_policy, :price_group => @nupg))
     @params={ :facility_id => @authable.url_name, :id => @item.url_name }
   end
 
@@ -71,7 +72,15 @@ describe ItemsController do
     it_should_allow(:guest) { @block.call }
 
     it_should_allow_all(facility_operators) { @block.call }
-    
+
+    it "should fail without a valid account" do
+      sign_in @guest
+      do_request
+      flash.should_not be_empty
+      assigns[:add_to_cart].should be_false
+      assigns[:error].should == 'no_accounts'
+    end
+
     context "restricted item" do
       before :each do
         @item.update_attributes(:requires_approval => true)
@@ -85,6 +94,8 @@ describe ItemsController do
       
       it "should not show a notice and show an add to cart" do
         @product_user = ProductUser.create(:product => @item, :user => @guest, :approved_by => @admin.id, :approved_at => Time.zone.now)
+        nufs=create_nufs_account_with_owner :guest
+        define_open_account @item.account, nufs.account_number
         sign_in @guest
         do_request
         flash.should be_empty
@@ -92,6 +103,8 @@ describe ItemsController do
       end
       
       it "should allow an admin to allow it to add to cart" do
+        nufs=create_nufs_account_with_owner :admin
+        define_open_account @item.account, nufs.account_number
         sign_in @admin
         do_request
         flash.should_not be_empty
@@ -99,21 +112,12 @@ describe ItemsController do
       end
     end
     
-     context "hidden item" do
+    context "hidden item" do
       before :each do
         @item.update_attributes(:is_hidden => true)
       end
-      it "should throw a 404 if you're not an admin" do
-        sign_in @guest
-        do_request
-        response.should_not be_success
-        response.response_code.should == 404
-      end
-      it "should show the page if you're an admin" do
-        sign_in @admin
-        do_request
+      it_should_allow_operators_only do
         response.should be_success
-        assigns[:item].should == @item
       end
       it "should show the page if you're acting as a user" do
         ItemsController.any_instance.stubs(:acting_user).returns(@guest)
@@ -135,7 +139,7 @@ describe ItemsController do
       @action=:new
     end
 
-    it_should_allow_operators_only do
+    it_should_allow_managers_only do
       should assign_to(:item).with_kind_of Item
       should render_template 'new'
     end
@@ -150,7 +154,7 @@ describe ItemsController do
       @action=:edit
     end
 
-    it_should_allow_operators_only do
+    it_should_allow_managers_only do
       should render_template 'edit'
     end
 
@@ -162,10 +166,10 @@ describe ItemsController do
     before :each do
       @method=:post
       @action=:create
-      @params.merge!(:item => Factory.attributes_for(:item, :facility_account_id => @facility_account.id))
+      @params.merge!(:item => FactoryGirl.attributes_for(:item, :facility_account_id => @facility_account.id))
     end
 
-    it_should_allow_operators_only :redirect do
+    it_should_allow_managers_only :redirect do
       should assign_to(:item).with_kind_of Item
       should set_the_flash
       assert_redirected_to [:manage, @authable, assigns(:item)]
@@ -179,10 +183,10 @@ describe ItemsController do
     before :each do
       @method=:put
       @action=:update
-      @params.merge!(:item => Factory.attributes_for(:item, :facility_account_id => @facility_account.id))
+      @params.merge!(:item => FactoryGirl.attributes_for(:item, :facility_account_id => @facility_account.id))
     end
 
-    it_should_allow_operators_only :redirect do
+    it_should_allow_managers_only :redirect do
       should assign_to(:item).with_kind_of Item
       assigns(:item).should == @item
       should set_the_flash
@@ -199,7 +203,7 @@ describe ItemsController do
       @action=:destroy
     end
 
-    it_should_allow_operators_only :redirect do
+    it_should_allow_managers_only :redirect do
       should assign_to(:item).with_kind_of Item
       should_be_destroyed @item
       assert_redirected_to facility_items_url

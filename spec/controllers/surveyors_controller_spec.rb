@@ -7,10 +7,10 @@ describe SurveyorsController do
 
 
   before(:each) do
-    @authable         = Factory.create(:facility)
-    @facility_account = @authable.facility_accounts.create(Factory.attributes_for(:facility_account))
-    @order_status     = Factory.create(:order_status)
-    @service          = @authable.services.create(Factory.attributes_for(:service, :initial_order_status_id => @order_status.id, :facility_account_id => @facility_account.id))
+    @authable         = FactoryGirl.create(:facility)
+    @facility_account = @authable.facility_accounts.create(FactoryGirl.attributes_for(:facility_account))
+    @order_status     = FactoryGirl.create(:order_status)
+    @service          = @authable.services.create(FactoryGirl.attributes_for(:service, :initial_order_status_id => @order_status.id, :facility_account_id => @facility_account.id))
     @request.env['HTTP_REFERER'] = "http://nucore.com/facilities/#{@authable.url_name}/services/#{@service.url_name}"
 
     @external_service=Surveyor.create!(:location => 'http://ext.service.com')
@@ -77,6 +77,20 @@ describe SurveyorsController do
       should redirect_to @params[:referer]
     end
 
+    context 'merge orders' do
+      before :each do
+        @clone=@order.clone
+        assert @clone.save
+        @order.update_attribute :merge_with_order_id, @clone.id
+        @order.should be_to_be_merged
+      end
+
+      it_should_allow :director, 'to complete survey on merge order' do
+        @order_detail.reload.order.should == @clone
+        assert_raises(ActiveRecord::RecordNotFound) { @order.reload }
+      end
+
+    end
   end
 
 
@@ -98,21 +112,21 @@ describe SurveyorsController do
 
 
   def create_order_detail
-    @product=Factory.create(:item,
+    @product=FactoryGirl.create(:item,
       :facility_account => @facility_account,
       :facility => @authable
     )
     @account=create_nufs_account_with_owner
-    @order=Factory.create(:order,
+    @order=FactoryGirl.create(:order,
       :facility => @authable,
       :user => @director,
       :created_by => @director.id,
       :account => @account,
       :ordered_at => Time.zone.now
     )
-    @price_group=Factory.create(:price_group, :facility => @authable)
-    @price_policy=Factory.create(:item_price_policy, :item => @product, :price_group => @price_group)
-    @order_detail=Factory.create(:order_detail, :order => @order, :product => @product, :price_policy => @price_policy)
+    @price_group=FactoryGirl.create(:price_group, :facility => @authable)
+    @price_policy=FactoryGirl.create(:item_price_policy, :product => @product, :price_group => @price_group)
+    @order_detail=FactoryGirl.create(:order_detail, :order => @order, :product => @product, :price_policy => @price_policy)
   end
   
 end

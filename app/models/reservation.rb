@@ -6,44 +6,78 @@ class Reservation < ActiveRecord::Base
   ## relationships
   belongs_to :instrument
   belongs_to :order_detail
-  
+
+  # used for overriding certain restrictions
+  attr_accessor :reserved_by_admin
 
   validates_uniqueness_of :order_detail_id, :allow_nil => true
   validates_presence_of :instrument_id, :reserve_start_at, :reserve_end_at
-  validate :does_not_conflict_with_other_reservation, :satisfies_minimum_length, :satisfies_maximum_length, :instrument_is_available_to_reserve, :if => :reserve_start_at && :reserve_end_at && :reservation_changed?
-  
+  validate :does_not_conflict_with_other_reservation, 
+           :instrument_is_available_to_reserve,
+           :satisfies_minimum_length, 
+           :satisfies_maximum_length,
+           :if => :reserve_start_at && :reserve_end_at && :reservation_changed?,
+           :unless => :admin?
+
   validates_each [ :actual_start_at, :actual_end_at ] do |record,attr,value|
     if value
       record.errors.add(attr.to_s,'cannot be in the future') if Time.zone.now < value
     end
   end
-  
+
   validate :starts_before_ends
   #validate minimum_cost met
 
   # validates for non_admins
-  #validate :in_window, :if => :has_order_detail?  
-  
+  #validate :in_window, :if => :has_order_detail?
+
   # virtual attributes
   attr_accessor     :duration_mins, :duration_value, :duration_unit,
                     :reserve_start_date, :reserve_start_hour, :reserve_start_min, :reserve_start_meridian,
                     :actual_start_date, :actual_start_hour, :actual_start_min, :actual_start_meridian,
                     :actual_end_date, :actual_end_hour, :actual_end_min, :actual_end_meridian
+  # Represents a resevation time that is unavailable, but is not an admin reservation
+  # Used by timeline view
+  attr_accessor     :blackout
   attr_writer       :note
   before_validation :set_reserve_start_at, :set_reserve_end_at, :set_actual_start_at, :set_actual_end_at
 
   scope :active, :conditions => ["reservations.canceled_at IS NULL AND (orders.state = 'purchased' OR orders.state IS NULL)"], :joins => ['LEFT JOIN order_details ON order_details.id = reservations.order_detail_id', 'LEFT JOIN orders ON orders.id = order_details.order_id']
-  scope :limit,    lambda { |n| {:limit => n}}
+  # scope :limit,    lambda { |n| {:limit => n}}
+
+  def self.today
+    for_date(Time.zone.now)
+  end
+
+  def self.for_date(date)
+    where("(reserve_start_at > :start and reserve_start_at < :end) OR (reserve_end_at > :start and reserve_end_at < :end)",
+      { :start => date.beginning_of_day,
+        :end => date.end_of_day
+      }
+    )
+  end
+
+  def self.in_range(start_time, end_time)
+    where('reserve_start_at >= ?', start_time).
+    where('reserve_start_at < ?', end_time)
+  end
 
   ## delegations
   delegate :note,     :to => :order_detail, :allow_nil => true
+  delegate :ordered_on_behalf_of?, :to => :order_detail, :allow_nil => true
+  delegate :product,  :to => :order_detail
 
   ## AR Hooks
   after_save do
-    if order_detail
+    if order_detail && @note
       order_detail.note = @note
       order_detail.save
     end
+  end
+
+  def assign_actuals_off_reserve
+    self.actual_start_at ||= self.reserve_start_at
+    self.actual_end_at   ||= self.reserve_end_at
   end
 
   def save_extended_validations(options ={})
@@ -53,19 +87,21 @@ class Reservation < ActiveRecord::Base
     return false if self.errors.any?
     self.save
   end
+
   def save_extended_validations!
-    raise ActiveRecord::RecordInvalid.new(self) unless save_extended_validations()  
+    raise ActiveRecord::RecordInvalid.new(self) unless save_extended_validations()
   end
+
   def save_as_user!(user)
     if (user.operator_of?(instrument.facility))
       @reserved_by_admin = true
       self.save!
     else
       @reserved_by_admin = false
-      self.save_extended_validations!  
+      self.save_extended_validations!
     end
   end
-  
+
   def self.upcoming(t=Time.zone.now)
     # If this is a named scope differences emerge between Oracle & MySQL on #reserve_end_at querying.
     # Eliminate by letting Rails filter by #reserve_end_at
@@ -94,6 +130,13 @@ class Reservation < ActiveRecord::Base
     account.owner if account
   end
 
+  def admin?
+    order.nil? && !blackout?
+  end
+
+  def blackout?
+    blackout.present?
+  end
 
   def starts_before_ends
     if reserve_start_at && reserve_end_at
@@ -222,7 +265,7 @@ class Reservation < ActiveRecord::Base
   def in_the_future?
     reserve_start_at > Time.zone.now
   end
-  
+
   def in_the_future
     errors.add(:reserve_start_at, "The reservation must start at a future time") unless in_the_future?
   end
@@ -232,7 +275,7 @@ class Reservation < ActiveRecord::Base
   end
 
   def instrument_is_available_to_reserve? (start_at = self.reserve_start_at, end_at = self.reserve_end_at)
-    
+
     # check for order_detail and order because some old specs don't set an order detail
     # if we're saving as an administrator, we want access to all schedule rules
     if (order_detail and order_detail.order and !@reserved_by_admin)
@@ -240,7 +283,7 @@ class Reservation < ActiveRecord::Base
     else
       rules = instrument.schedule_rules
     end
-    
+
     mins  = (end_at - start_at)/60
     (0..mins).each { |n|
       dt    = start_at.advance(:minutes => n)
@@ -261,29 +304,30 @@ class Reservation < ActiveRecord::Base
   def as_calendar_object(options={})
     # initialize result with defaults
     calendar_object = {
-      "start"  => reserve_start_at.strftime("%a, %d %b %Y %H:%M:%S"),
+      "start"  => (actual_start_at || reserve_start_at).strftime("%a, %d %b %Y %H:%M:%S"),
       "end"    => (actual_end_at || reserve_end_at).strftime("%a, %d %b %Y %H:%M:%S"),
       "allDay" => false,
       "title"  => "Reservation",
     }
 
-    if options[:with_details]
-      if order
+    overrides = {}
+    if order
+      if options[:with_details]
         overrides = {
           "admin"       => false,
           "email"        => order.user.email,
           "name"        => "#{order.user.full_name}",
           "title"       => "#{order.user.first_name}\n#{order.user.last_name}",
         }
-      else
-        overrides = {
+      end
+    else
+      overrides = {
           "admin"       => true,
           "title"       => "Admin\nReservation",
         }
-      end
-
-      calendar_object.merge!(overrides)
     end
+
+    calendar_object.merge!(overrides)
 
     calendar_object
   end
@@ -324,7 +368,7 @@ class Reservation < ActiveRecord::Base
       nil
     end
   end
-  
+
   def reserve_end_hour
     case
     when @reserve_end_hour
@@ -362,7 +406,7 @@ class Reservation < ActiveRecord::Base
   def reserve_end_meridian
     reserve_end_at.nil? ? nil : reserve_end_at.strftime("%p")
   end
-  
+
   def reserve_end_date
     reserve_end_at.nil? ? nil : reserve_end_at.strftime("%m/%d/%Y")
   end
@@ -493,29 +537,6 @@ class Reservation < ActiveRecord::Base
     end
   end
 
-  # return the cheapest available price policy that
-  # * is not expired
-  # * is not restricted
-  # * is included in the provided price groups
-  def cheapest_price_policy(groups = [])
-    return nil if groups.empty?
-    min = nil
-    cheapest_total = 0
-    instrument.current_price_policies.each { |pp|
-      if !pp.expired? && !pp.restrict_purchase? && groups.include?(pp.price_group)
-        costs = pp.estimate_cost_and_subsidy(reserve_start_at, reserve_end_at)
-        unless costs.nil?
-          total = costs[:cost] - costs[:subsidy]
-          if min.nil? || total < cheapest_total
-            cheapest_total = total
-            min = pp
-          end
-        end
-      end
-    }
-    min
-  end
-
   # return the longest available reservation window for the groups
   def longest_reservation_window(groups = [])
     pgps     = instrument.price_group_products.find(:all, :conditions => {:price_group_id => groups.collect{|pg| pg.id}})
@@ -534,7 +555,7 @@ class Reservation < ActiveRecord::Base
     while true
       next_res=instrument.next_available_reservation(after, self)
 
-      return nil if next_res.reserve_start_at > reserve_start_at
+      return nil if next_res.nil? or next_res.reserve_start_at > reserve_start_at
 
       clone.reserve_start_at=next_res.reserve_start_at
       clone.reserve_end_at=next_res.reserve_start_at.advance(:minutes => duration_mins)
@@ -565,7 +586,7 @@ class Reservation < ActiveRecord::Base
   # returns true if this reservation can be moved to
   # an earlier time slot, false otherwise
   def can_move?
-    !(cancelled? || earliest_possible.nil?)
+    !(cancelled? || order_detail.complete? || earliest_possible.nil?)
   end
 
   def can_switch_instrument_on?(check_off = true)
@@ -585,6 +606,10 @@ class Reservation < ActiveRecord::Base
     return false unless actual_end_at.nil?    # already ended
     return false if actual_start_at.nil?      # hasn't been started yet
     true
+  end
+
+  def can_switch_instrument?
+    return can_switch_instrument_off? || can_switch_instrument_on?
   end
 
   def can_kill_power?
@@ -616,7 +641,7 @@ class Reservation < ActiveRecord::Base
 
   def can_edit?
     return true if id.nil? # object is new and hasn't been saved to the DB successfully
-    
+
     # TODO more robust logic?
     can_cancel?
   end
@@ -631,15 +656,33 @@ class Reservation < ActiveRecord::Base
     changes.any? { |k,v| k == 'reserve_start_at' || k == 'reserve_end_at' }
   end
 
+  # Will display the actual start time if it's available, otherwise fall back to reserve time
+  def display_start_at
+    actual_start_at || reserve_start_at
+  end
+
+  def display_end_at
+    actual_end_at || reserve_end_at
+  end
+
   def to_s
     return super unless reserve_start_at && reserve_end_at
 
-    if reserve_start_at.day == reserve_end_at.day
-      str = "#{reserve_start_at.strftime("%a, %m/%d/%Y %l:%M %p")} - #{reserve_end_at.strftime("%l:%M %p")}"
-    else
-      str = "#{reserve_start_at.strftime("%a, %m/%d/%Y %l:%M %p")} - #{reserve_end_at.strftime("%a, %m/%d/%Y %l:%M %p")}"
-    end
+    str = range_to_s(display_start_at, display_end_at)
+
     str + (canceled_at ? ' (Cancelled)' : '')
+  end
+
+  def reserve_to_s
+    range_to_s(reserve_start_at, reserve_end_at)
+  end
+
+  def range_to_s(start_at, end_at)
+    if start_at.day == end_at.day
+      "#{start_at.strftime("%a, %m/%d/%Y %l:%M %p")} - #{end_at.strftime("%l:%M %p")}"
+    else
+      "#{start_at.strftime("%a, %m/%d/%Y %l:%M %p")} - #{end_at.strftime("%a, %m/%d/%Y %l:%M %p")}"
+    end
   end
 
   def actuals_string
@@ -666,12 +709,11 @@ class Reservation < ActiveRecord::Base
   end
 
   def has_actuals?
-    actual_start_at && actual_end_at
+    !!(actual_start_at && actual_end_at)
   end
 
   def requires_but_missing_actuals?
-    pp = order_detail.price_policy
-    !cancelled? && pp && pp.usage_rate && pp.usage_rate > 0 && !has_actuals?
+    !!(!cancelled? && instrument.control_mechanism != Relay::CONTROL_MECHANISMS[:manual] && !has_actuals?)
   end
 
   protected

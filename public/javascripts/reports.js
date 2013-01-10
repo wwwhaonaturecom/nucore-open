@@ -70,11 +70,16 @@ function initReportsUI(selectedIndex)
             // every time a tab loads make sure the export urls are set to export current report
             var url=getUpdateTabUrl(ui);
             $('#export').attr('href', url + '&export_id=report&format=csv');
-            //$('#export-all').attr('href', url + '&export_id=report_data&format=csv');
+            $('#export-all').attr('href', url + '&export_id=report_data&format=csv');
+
+            // Make sure to update the date params in case they were empty or invalid
+            $('#date_start').val($(ui.panel).find('.updated_values .date_start').text())
+            $('#date_end').val($(ui.panel).find('.updated_values .date_end').text())
+            
         },
 
         ajaxOptions: {
-            dataType: "js",
+            dataType: "text html",
             error: function(xhr, status, error) {
                 $('#error-msg').html('Sorry, but the tab could not load. Please try again soon.').show();
             }
@@ -82,7 +87,7 @@ function initReportsUI(selectedIndex)
     });
 
     // handle pagination requests
-    $('.pagination a').live('click',function (){
+    $(document).on('click', '.pagination a', function (){
         var selected=getSelectedTabIndex();
         $('#tabs').tabs('url', selected, this.href).tabs('load', selected);
         return false;
@@ -97,7 +102,7 @@ function initReportsUI(selectedIndex)
 }
 
 
-$(document).ready(function() {
+$(function() {
     $('.datepicker').each(function() {
       $(this).datepicker();
     });

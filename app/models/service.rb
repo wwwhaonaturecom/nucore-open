@@ -1,30 +1,10 @@
 class Service < Product
-  has_many :service_price_policies
-  has_many :price_policies, :foreign_key => 'service_id'
+  has_many :service_price_policies, :foreign_key => :product_id
   has_many :external_service_passers, :as => :passer
   has_many :external_services, :through => :external_service_passers
 
-  validates_presence_of :initial_order_status_id, :facility_account_id
-  validates_numericality_of :account, :only_integer => true, :greater_than_or_equal_to => 0, :less_than_or_equal_to => 99999
-
-
-  def cheapest_price_policy (groups = [])
-    return nil if groups.empty?
-
-    min = nil
-    cheapest_total = 0
-    current_price_policies.each do |pp|
-      if !pp.expired? && !pp.restrict_purchase? && groups.include?(pp.price_group)
-        costs = pp.calculate_cost_and_subsidy
-        total = costs[:cost] - costs[:subsidy]
-        if min.nil? || total < cheapest_total
-          cheapest_total = total
-          min = pp
-        end
-      end
-    end
-    min
-  end
+  validates_presence_of :initial_order_status_id
+  validates_presence_of :facility_account_id if SettingsHelper.feature_on? :recharge_accounts
 
   def active_survey
     active=external_service_passers.find(
@@ -41,15 +21,9 @@ class Service < Product
     !self.active_survey.blank?
   end
 
-  def can_purchase? (group_ids = nil)
-    return false if is_archived? || !facility.is_active?
-    if group_ids.nil?
-      current_price_policies.empty? || current_price_policies.any?{|pp| !pp.expired? && !pp.restrict_purchase?}
-    elsif group_ids.empty?
-      false
-    else
-      current_price_policies.empty? || current_price_policies.any?{|pp| !pp.expired? && !pp.restrict_purchase? && group_ids.include?(pp.price_group_id)}
-    end
+  # returns true if there is an active template... false otherwise
+  def active_template?
+    self.stored_files.template.count > 0
   end
 
 end

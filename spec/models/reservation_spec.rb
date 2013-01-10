@@ -4,11 +4,12 @@ describe Reservation do
   include DateHelper
 
   before(:each) do
-    @facility         = Factory.create(:facility)
-    @facility_account = @facility.facility_accounts.create(Factory.attributes_for(:facility_account))
-    @instrument       = @facility.instruments.create(Factory.attributes_for(:instrument, :facility_account_id => @facility_account.id))
+    @facility         = FactoryGirl.create(:facility)
+    @facility_account = @facility.facility_accounts.create(FactoryGirl.attributes_for(:facility_account))
+    @instrument       = FactoryGirl.create(:instrument, :facility_account_id => @facility_account.id, :facility => @facility)
     # add rule, available every day from 12 am to 5 pm, 60 minutes duration
-    @rule             = @instrument.schedule_rules.create(Factory.attributes_for(:schedule_rule).merge(:start_hour => 0, :end_hour => 17, :duration_mins => 15))
+    @rule             = @instrument.schedule_rules.create(FactoryGirl.attributes_for(:schedule_rule).merge(:start_hour => 0, :end_hour => 17, :duration_mins => 15))
+    Reservation.any_instance.stubs(:admin?).returns(false)
   end
 
 
@@ -64,16 +65,17 @@ describe Reservation do
   context 'with order details' do
 
     before :each do
-      @facility      = Factory.create(:facility)
-      @facility_account = @facility.facility_accounts.create(Factory.attributes_for(:facility_account))
-      @price_group   = Factory.create(:price_group, :facility => @facility)
-      @instrument_pp = Factory.create(:instrument_price_policy, :instrument => @instrument, :price_group => @price_group)
-      @user          = Factory.create(:user)
-      @pg_member     = Factory.create(:user_price_group_member, :user => @user, :price_group => @price_group)
-      @account       = Factory.create(:nufs_account, :account_users_attributes => [Hash[:user => @user, :created_by => @user, :user_role => 'Owner']])
-      @order         = @user.orders.create(Factory.attributes_for(:order, :created_by => @user.id, :account => @account, :facility => @facility))
-      @detail1       = @order.order_details.create(:product_id => @instrument.id, :quantity => 1, :account => @account)
-      @detail2       = @order.order_details.create(:product_id => @instrument.id, :quantity => 1)
+      @facility      = FactoryGirl.create(:facility)
+      @facility_account = @facility.facility_accounts.create(FactoryGirl.attributes_for(:facility_account))
+      @price_group   = FactoryGirl.create(:price_group, :facility => @facility)
+      @instrument_pp = FactoryGirl.create(:instrument_price_policy, :product => @instrument, :price_group => @price_group)
+      @user          = FactoryGirl.create(:user)
+      @pg_member     = FactoryGirl.create(:user_price_group_member, :user => @user, :price_group => @price_group)
+      @account       = FactoryGirl.create(:nufs_account, :account_users_attributes => [Hash[:user => @user, :created_by => @user, :user_role => 'Owner']])
+      @order         = @user.orders.create(FactoryGirl.attributes_for(:order, :created_by => @user.id, :account => @account, :facility => @facility))
+      order_attrs    = FactoryGirl.attributes_for(:order_detail, :product_id => @instrument.id, :quantity => 1)
+      @detail1       = @order.order_details.create(order_attrs.merge(:account => @account))
+      @detail2       = @order.order_details.create(order_attrs)
 
       @instrument.min_reserve_mins = 15
       @instrument.save
@@ -81,6 +83,14 @@ describe Reservation do
       @reservation1  = @instrument.reservations.create(:reserve_start_date => Date.today+1.day, :reserve_start_hour => 10,
                                                        :reserve_start_min => 0, :reserve_start_meridian => 'am',
                                                        :duration_value => 30, :duration_unit => 'minutes', :order_detail => @detail1)
+    end
+
+    context "#earliest_possible" do
+      it "shouldn't throw an exception if Instrument#next_available_reservation returns nil" do
+        Instrument.any_instance.stubs(:next_available_reservation).returns nil
+        @reservation1.earliest_possible
+
+      end
     end
 
     it 'should be the same order' do
@@ -140,7 +150,7 @@ describe Reservation do
 
       @reservation2.should_not be_does_not_conflict_with_other_reservation
 
-      @instrument2 = @facility.instruments.create(Factory.attributes_for(:instrument, :facility_account_id => @facility_account.id))
+      @instrument2 = @facility.instruments.create(FactoryGirl.attributes_for(:instrument, :facility_account_id => @facility_account.id))
 
       @reservation2.instrument=@instrument2
       @reservation2.should be_does_not_conflict_with_other_reservation
@@ -148,7 +158,7 @@ describe Reservation do
 
     context 'moving' do
 
-      before(:each) { @morning=Time.local(Date.today.year, Date.today.month, Date.today.day, 10, 31) }
+      before(:each) { @morning=Time.zone.parse("#{Date.today.to_s} 10:31:00") }
 
       it 'should return the earliest possible time slot' do
         human_date(@reservation1.reserve_start_at).should == human_date(@morning+1.day)
@@ -193,23 +203,32 @@ describe Reservation do
     context 'requires_but_missing_actuals?' do
 
       it 'should be true when there is a usage rate but no actuals' do
-        @instrument_pp.usage_rate=5
-        assert @instrument_pp.save
+        #@instrument_pp.update_attributes!(:usage_rate => 5)
 
         @reservation1.actual_start_at.should be_nil
         @reservation1.actual_end_at.should be_nil
-        @reservation1.order_detail.price_policy=@instrument_pp
-        assert @reservation1.save
+        #@reservation1.order_detail.price_policy=@instrument_pp
+        #assert @reservation1.save
 
         @reservation1.should be_requires_but_missing_actuals
       end
 
+      it 'should be true when there is no policy assigned, but the one it would use requires actuals' do
+        @reservation1.actual_start_at.should be_nil
+        @reservation1.actual_end_at.should be_nil
+        @instrument_pp.update_attributes(:usage_rate => 5)
+
+        assert @reservation1.save
+        @instrument.cheapest_price_policy(@reservation1.order_detail, @reservation1.reserve_end_at).should == @instrument_pp
+        @reservation1.should be_requires_but_missing_actuals
+      end
 
       it 'should be false when there is no price policy' do
         @reservation1.actual_start_at=1.day.ago
         @reservation1.actual_end_at=1.day.ago+1.hour
+        @instrument.instrument_price_policies.clear
         assert @reservation1.save
-
+        @instrument.cheapest_price_policy(@reservation1.order_detail).should be_nil
         @reservation1.order_detail.price_policy.should be_nil
         @reservation1.should_not be_requires_but_missing_actuals
       end
@@ -254,35 +273,162 @@ describe Reservation do
 
     end
 
+    context 'ordered_on_behalf_of?' do
+      it 'should return true if the associated order was ordered by someone else' do
+        @user2 = FactoryGirl.create(:user)
+        @reservation1.order.update_attributes(:created_by_user => @user2)
+        @reservation1.reload.should be_ordered_on_behalf_of
+      end
+      it 'should return false if the associated order was not ordered on behalf of' do
+        user = @reservation1.order_detail.order.user
+        @reservation1.order_detail.order.update_attributes(:created_by_user => user)
+        @reservation1.reload
+        @reservation1.reload.should_not be_ordered_on_behalf_of
+      end
+      it 'should return false for admin reservations' do
+        @admin_reservation = FactoryGirl.create(:reservation, :instrument => @instrument)
+        @admin_reservation.should_not be_ordered_on_behalf_of
+      end
+      
+    end
+
   end
 
+  context 'conflicting reservations' do
+    let!(:reservation) do
+      @instrument.reservations.create!(:reserve_start_date => Date.today+1.day, :reserve_start_hour => 10,
+                                      :reserve_start_min => 0, :reserve_start_meridian => 'am',
+                                      :duration_value => '60', :duration_unit => 'minutes')
+    end
 
-  it "should not let reservations exceed the maximum length" do
-    @instrument.max_reserve_mins = 60
-    @instrument.save
-    @reservation = @instrument.reservations.create(:reserve_start_date => Date.today+1.day, :reserve_start_hour => 10,
+    let (:conflicting_reservation) do
+      res = @instrument.reservations.build(:reserve_start_date => Date.today+1.day, :reserve_start_hour => 10,
+                                      :reserve_start_min => 0, :reserve_start_meridian => 'am',
+                                      :duration_value => '60', :duration_unit => 'minutes')
+      res.valid?
+      res
+    end
+
+    let(:conflicting_admin_reservation) do
+      res = @instrument.reservations.build(:reserve_start_date => Date.today+1.day, :reserve_start_hour => 10,
+                                      :reserve_start_min => 0, :reserve_start_meridian => 'am',
+                                      :duration_value => '60', :duration_unit => 'minutes')
+      res.valid?
+      res.stubs(:admin?).returns(true)
+      res
+    end
+
+    it 'should be a conflicting reservation' do
+      conflicting_reservation.should_not be_does_not_conflict_with_other_reservation
+    end
+
+    it 'should be invalid' do
+      conflicting_reservation.should_not be_valid
+      conflicting_reservation.errors[:base].should include 'The reservation conflicts with another reservation'
+    end
+
+    it 'should allow an admin reservation to overlap' do
+      conflicting_admin_reservation.should be_valid
+    end
+
+    context 'overlapping scheduling rules' do
+      context 'completely within a blacked out time' do
+        before :each do
+          @reservation = @instrument.reservations.build(:reserve_start_date => Date.today+1.day, :reserve_start_hour => 6,
+                                      :reserve_start_min => 0, :reserve_start_meridian => 'pm',
+                                      :duration_value => '60', :duration_unit => 'minutes')
+        end  
+
+        it 'should allow an admin reservation' do
+          @reservation.stubs(:admin?).returns(true)
+          @reservation.should be_valid
+        end
+        
+        it 'should not allow a regular reservation' do
+          @reservation.should_not be_valid
+          @reservation.errors[:base].should include 'The reservation spans time that the instrument is unavailable for reservation'
+        end
+      end
+
+      context 'overlapping a border of blacked out time' do
+        before :each do
+          @reservation = @instrument.reservations.build(:reserve_start_date => Date.today+1.day, :reserve_start_hour => 5,
+                                      :reserve_start_min => 30, :reserve_start_meridian => 'pm',
+                                      :duration_value => '60', :duration_unit => 'minutes')
+        end
+        
+        it 'should allow an admin reservation' do
+          @reservation.stubs(:admin?).returns(true)
+          @reservation.should be_valid
+        end
+        
+        it 'should not allow a regular reservation' do
+          @reservation.should_not be_valid
+          @reservation.errors[:base].should include 'The reservation spans time that the instrument is unavailable for reservation'
+        end
+      end
+    end
+
+  end
+
+  context 'maximum reservation length' do
+    
+    before :each do
+      @instrument.update_attributes(:max_reserve_mins => 60)
+    end
+
+    it "should not let reservations exceed the maximum length" do
+      @reservation = @instrument.reservations.create(:reserve_start_date => Date.today+1.day, :reserve_start_hour => 10,
                                                    :reserve_start_min => 0, :reserve_start_meridian => 'am',
                                                    :duration_value => 61, :duration_unit => 'minutes')
-    assert @reservation.invalid?
-    assert_equal ["The reservation is too long"], @reservation.errors[:base]
-    @reservation = @instrument.reservations.create(:reserve_start_date => Date.today+1.day, :reserve_start_hour => 10,
+      @reservation.should_not be_valid
+      @reservation.errors[:base].should include "The reservation is too long"
+    end
+
+    it "should allow reservations that don't exceed the maximum length" do
+      @reservation = @instrument.reservations.create(:reserve_start_date => Date.today+1.day, :reserve_start_hour => 10,
                                                    :reserve_start_min => 0, :reserve_start_meridian => 'am',
                                                    :duration_value => 60, :duration_unit => 'minutes')
-    assert @reservation.valid?
+      @reservation.should be_valid
+    end
+
+    it 'should allow admin reservation to exceed the maximum length' do
+      @reservation = @instrument.reservations.create(:reserve_start_date => Date.today+1.day, :reserve_start_hour => 10,
+                                                   :reserve_start_min => 0, :reserve_start_meridian => 'am',
+                                                   :duration_value => 61, :duration_unit => 'minutes')
+      @reservation.stubs(:admin?).returns(true)
+      @reservation.should be_valid
+    end
+
   end
 
-  it "should not let reservations be under the minimum length" do
-    @instrument.min_reserve_mins = 30
-    @instrument.save
-    @reservation = @instrument.reservations.create(:reserve_start_date => Date.today+1.day, :reserve_start_hour => 10,
-                                                   :reserve_start_min => 0, :reserve_start_meridian => 'am',
-                                                   :duration_value => 29, :duration_unit => 'minutes')
-    assert @reservation.invalid?
-    assert_equal ["The reservation is too short"], @reservation.errors[:base]
-    @reservation = @instrument.reservations.create(:reserve_start_date => Date.today+1.day, :reserve_start_hour => 10,
-                                                   :reserve_start_min => 0, :reserve_start_meridian => 'am',
-                                                   :duration_value => 30, :duration_unit => 'minutes')
-    assert @reservation.valid?
+  context 'minimum reservation length' do
+    before :each do
+      @instrument.update_attributes(:min_reserve_mins => 30)
+    end
+
+    it "should not let reservations be under the minimum length" do
+      @reservation = @instrument.reservations.create(:reserve_start_date => Date.today+1.day, :reserve_start_hour => 10,
+                                                     :reserve_start_min => 0, :reserve_start_meridian => 'am',
+                                                     :duration_value => 29, :duration_unit => 'minutes')
+      @reservation.should_not be_valid
+      @reservation.errors[:base].should include "The reservation is too short"
+    end
+
+    it 'should let reservations be over the minimum length' do
+      @reservation = @instrument.reservations.create(:reserve_start_date => Date.today+1.day, :reserve_start_hour => 10,
+                                                     :reserve_start_min => 0, :reserve_start_meridian => 'am',
+                                                     :duration_value => 30, :duration_unit => 'minutes')
+      @reservation.should be_valid
+    end
+
+    it 'should allow admin reservations to be less than the minimum length' do
+      @reservation = @instrument.reservations.create(:reserve_start_date => Date.today+1.day, :reserve_start_hour => 10,
+                                                     :reserve_start_min => 0, :reserve_start_meridian => 'am',
+                                                     :duration_value => 29, :duration_unit => 'minutes')
+      @reservation.stubs(:admin?).returns(true)
+      @reservation.should be_valid
+    end
   end
    
   it "should allow multi-day registrations" do
@@ -297,7 +443,7 @@ describe Reservation do
                                                     :duration_value => 4, :duration_unit => 'hours')
     assert @reservation.invalid?
     # create rule2 that is adjacent to rule (10 pm to 12 am), allowing multi-day reservations
-    @rule2        = @instrument.schedule_rules.create(Factory.attributes_for(:schedule_rule).merge(:start_hour => 22, :end_hour => 24))
+    @rule2        = @instrument.schedule_rules.create(FactoryGirl.attributes_for(:schedule_rule).merge(:start_hour => 22, :end_hour => 24))
     assert @rule2.valid?
     @reservation  = @instrument.reservations.create(:reserve_start_date => @tomorrow, :reserve_start_hour => 10,
                                                     :reserve_start_min => 0, :reserve_start_meridian => 'pm',
@@ -321,8 +467,8 @@ describe Reservation do
     context "schedule rules" do
       before :each do
         @rule.destroy
-        @rule_9_to_5 = @instrument.schedule_rules.create(Factory.attributes_for(:schedule_rule, :start_hour => 9, :end_hour => 17, :duration_mins => 15))
-        @rule_5_to_7 = @instrument.schedule_rules.create(Factory.attributes_for(:schedule_rule, :start_hour => 17, :end_hour => 19, :duration_mins => 15))
+        @rule_9_to_5 = @instrument.schedule_rules.create(FactoryGirl.attributes_for(:schedule_rule, :start_hour => 9, :end_hour => 17, :duration_mins => 15))
+        @rule_5_to_7 = @instrument.schedule_rules.create(FactoryGirl.attributes_for(:schedule_rule, :start_hour => 17, :end_hour => 19, :duration_mins => 15))
       end
       
       it "should allow a reservation within the schedule rules" do
@@ -343,16 +489,16 @@ describe Reservation do
       
       context "schedule rules with restrictions" do
         before :each do
-          @user = Factory.create(:user)
-          @account = Factory.create(:nufs_account, :account_users_attributes => [{:user => @user, :created_by => @user, :user_role => 'Owner'}])
+          @user = FactoryGirl.create(:user)
+          @account = FactoryGirl.create(:nufs_account, :account_users_attributes => [{:user => @user, :created_by => @user, :user_role => 'Owner'}])
           
           @instrument.update_attributes(:requires_approval => true)
             
-          @order = Factory.create(:order, :user => @user, :created_by => @user.id, :account => @account, :facility => @facility)
-          @order_detail = Factory.create(:order_detail, :order => @order, :product => @instrument)
+          @order = FactoryGirl.create(:order, :user => @user, :created_by => @user.id, :account => @account, :facility => @facility)
+          @order_detail = FactoryGirl.create(:order_detail, :order => @order, :product => @instrument)
           # @instrument.update_attributes(:requires_approval => true)
           
-          @restriction_level = @rule_5_to_7.product_access_groups.create(Factory.attributes_for(:product_access_group, :product => @instrument))
+          @restriction_level = @rule_5_to_7.product_access_groups.create(FactoryGirl.attributes_for(:product_access_group, :product => @instrument))
           @instrument.reload
           @reservation = Reservation.new(:reserve_start_date => Date.today + 1, 
                                                       :reserve_start_hour => 6, 
@@ -387,7 +533,7 @@ describe Reservation do
           before :each do
             # user is not in the restricted group
             @product_user = ProductUser.create(:user => @user, :product => @instrument, :approved_by => @user.id)
-            @admin = Factory.create(:user)
+            @admin = FactoryGirl.create(:user)
             UserRole.grant(@admin, UserRole::ADMINISTRATOR)
           end
 
@@ -412,21 +558,21 @@ describe Reservation do
     before do
       PriceGroupProduct.destroy_all
 
-      @user = Factory.create(:user)
-      @nupg_pgp=Factory.create(:price_group_product, :product => @instrument, :price_group => @nupg)
+      @user = FactoryGirl.create(:user)
+      @nupg_pgp=FactoryGirl.create(:price_group_product, :product => @instrument, :price_group => @nupg)
 
       # Setup a price group with an account for this user
-      @price_group1 = @facility.price_groups.create(Factory.attributes_for(:price_group))
-      @pg1_pgp=Factory.create(:price_group_product, :product => @instrument, :price_group => @price_group1)
-      @account1 = Factory.create(:nufs_account, :account_users_attributes => [Hash[:user => @user, :created_by => @user, :user_role => 'Owner']])
-      @account_price_group_member1 = AccountPriceGroupMember.create(Factory.attributes_for(:account_price_group_member).merge(:account => @account1, :price_group => @price_group1))
+      @price_group1 = @facility.price_groups.create(FactoryGirl.attributes_for(:price_group))
+      @pg1_pgp=FactoryGirl.create(:price_group_product, :product => @instrument, :price_group => @price_group1)
+      @account1 = FactoryGirl.create(:nufs_account, :account_users_attributes => [Hash[:user => @user, :created_by => @user, :user_role => 'Owner']])
+      @account_price_group_member1 = AccountPriceGroupMember.create(FactoryGirl.attributes_for(:account_price_group_member).merge(:account => @account1, :price_group => @price_group1))
 
       # Setup a second price groups with another account for this user
-      @user_price_group_member = UserPriceGroupMember.create(Factory.attributes_for(:user_price_group_member).merge(:user => @user, :price_group => @nupg))
+      @user_price_group_member = UserPriceGroupMember.create(FactoryGirl.attributes_for(:user_price_group_member).merge(:user => @user, :price_group => @nupg))
 
       # Order against the first account
-      @order = Order.create(Factory.attributes_for(:order).merge(:user => @user, :account => @account1, :created_by => @user))
-      @order_detail = @order.order_details.create(Factory.attributes_for(:order_detail).merge(:product => @instrument, :order_status => @os_new))
+      @order = Order.create(FactoryGirl.attributes_for(:order).merge(:user => @user, :account => @account1, :created_by => @user))
+      @order_detail = @order.order_details.create(FactoryGirl.attributes_for(:order_detail).merge(:product => @instrument, :order_status => @os_new))
 
       @reservation = @instrument.reservations.create(:reserve_start_date => Date.today+1.day, :reserve_start_hour => 10,
                                                      :reserve_start_min => 0, :reserve_start_meridian => 'am',
@@ -435,21 +581,11 @@ describe Reservation do
       @reservation.save
     end
 
-    it "should find the best price policy" do
-      @pp_expensive = InstrumentPricePolicy.create(Factory.attributes_for(:instrument_price_policy).merge(:usage_rate => 22, :instrument => @instrument))
-      @pp_cheap     = InstrumentPricePolicy.create(Factory.attributes_for(:instrument_price_policy).merge(:usage_rate => 11, :instrument => @instrument))
-      @price_group1.price_policies << @pp_expensive
-      @nupg.price_policies         << @pp_cheap
-
-      groups = (@order.user.price_groups + @order.account.price_groups).flatten.uniq
-      assert_equal @pp_cheap, @reservation.cheapest_price_policy(groups)
-    end
-
     it "should find the best reservation window" do
-      @pp_short = InstrumentPricePolicy.create(Factory.attributes_for(:instrument_price_policy).merge(:instrument_id => @instrument.id))
+      @pp_short = InstrumentPricePolicy.create(FactoryGirl.attributes_for(:instrument_price_policy, :product_id => @instrument.id))
       @pg1_pgp.reservation_window=30
       assert @pg1_pgp.save
-      @pp_long  = InstrumentPricePolicy.create(Factory.attributes_for(:instrument_price_policy).merge(:instrument_id => @instrument.id))
+      @pp_long  = InstrumentPricePolicy.create(FactoryGirl.attributes_for(:instrument_price_policy, :product_id => @instrument.id))
       @nupg_pgp.reservation_window=60
       assert @nupg_pgp.save
       @price_group1.price_policies << @pp_short
@@ -483,24 +619,60 @@ describe Reservation do
     before :each do
       @reservation = @instrument.reservations.create!(:reserve_start_at => 1.hour.ago,
                                                      :duration_value => 60, :duration_unit => 'minutes')
+      @reserve_start_at_timestamp = @reservation.reserve_start_at.strftime("%a, %d %b %Y %H:%M:%S")
       @reserve_end_at_timestamp = @reservation.reserve_end_at.strftime("%a, %d %b %Y %H:%M:%S")
 
       @cal_obj_wo_actual_end = @reservation.as_calendar_object
-      @end_time = 5.minutes.from_now
-      @reservation.actual_end_at = @end_time
+      
+      @reservation.actual_start_at = 1.minute.from_now
+      @reservation.actual_end_at = 5.minutes.from_now
+      
       @cal_obj_w_actual_end = @reservation.as_calendar_object
 
+      @actual_start_at_timestamp = @reservation.actual_start_at.strftime("%a, %d %b %Y %H:%M:%S")
       @actual_end_at_timestamp = @reservation.actual_end_at.strftime("%a, %d %b %Y %H:%M:%S")
 
+      assert @reservation.reserve_start_at != @reservation.actual_start_at
       assert @reservation.reserve_end_at != @reservation.actual_end_at
     end
 
+    it "should have start set to reserve_start_at timestamp if no actual" do
+      @cal_obj_wo_actual_end['start'].should == @reserve_start_at_timestamp
+    end
     it "should have end set to reserve_end_at timestamp if no actual" do
       @cal_obj_wo_actual_end['end'].should == @reserve_end_at_timestamp
     end
 
+    it "should have start set to actual timestamp" do
+      @cal_obj_w_actual_end['start'].should == @actual_start_at_timestamp
+    end
     it "should have end set to actual_end_at timestamp" do
       @cal_obj_w_actual_end['end'].should == @actual_end_at_timestamp
     end
   end
+
+  context 'for_date' do
+    before :each do
+      @rule.destroy
+      @rule = @instrument.schedule_rules.create(FactoryGirl.attributes_for(:schedule_rule).merge(:start_hour => 0, :end_hour => 24, :duration_mins => 15))
+      @spans_day_reservation = @instrument.reservations.create!(:reserve_start_at => Time.zone.now.end_of_day - 1.hour,
+                                                     :duration_value => 120, :duration_unit => 'minutes')
+      @today_reservation = @instrument.reservations.create!(:reserve_start_at => Time.zone.now.beginning_of_day + 8.hours,
+                                                     :duration_value => 120, :duration_unit => 'minutes')
+      @yeserday_reservation = @instrument.reservations.create!(:reserve_start_at => Time.zone.now.beginning_of_day - 16.hours,
+                                                     :duration_value => 120, :duration_unit => 'minutes')
+      @tomorrow_reservation = @instrument.reservations.create!(:reserve_start_at => Time.zone.now.end_of_day + 8.hours,
+                                                     :duration_value => 120, :duration_unit => 'minutes')
+    end
+    it 'should return reservations from a single day' do
+      Reservation.for_date(Time.zone.now - 1.day).should contain_all [@yeserday_reservation]
+    end
+    it 'should return a reservation that spans days when looking up the earlier date' do
+      Reservation.for_date(Time.zone.now).should contain_all [@today_reservation, @spans_day_reservation]
+    end
+    it 'should return a reservation that spands days when looking up the later date' do
+      Reservation.for_date(Time.zone.now + 1.day).should contain_all [@tomorrow_reservation, @spans_day_reservation]
+    end
+  end
+
 end

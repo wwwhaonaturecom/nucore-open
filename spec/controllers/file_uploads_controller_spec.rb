@@ -13,14 +13,14 @@ describe FileUploadsController do
   before(:all) { create_users }
 
   before :each do
-    @authable         = Factory.create(:facility)
-    @facility_account = @authable.facility_accounts.create(Factory.attributes_for(:facility_account))
-    @service          = @authable.services.create(Factory.attributes_for(:service, :facility_account_id => @facility_account.id))
+    @authable         = FactoryGirl.create(:facility)
+    @facility_account = @authable.facility_accounts.create(FactoryGirl.attributes_for(:facility_account))
+    @service          = @authable.services.create(FactoryGirl.attributes_for(:service, :facility_account_id => @facility_account.id))
     assert @service.valid?
   end
 
 
-  context 'upload' do
+  context 'upload info' do
 
     before :each do
       @method=:get
@@ -33,12 +33,14 @@ describe FileUploadsController do
       }
     end
 
-    it_should_allow_managers_only
+    it_should_allow_operators_only do
+      response.should be_success
+    end
 
   end
 
 
-  context "create" do
+  context "create info" do
 
     before(:each) do
       @method=:post
@@ -55,11 +57,11 @@ describe FileUploadsController do
       }
     end
 
-    it_should_allow_managers_only :redirect do
+    it_should_allow_managers_and_senior_staff_only :redirect do
       assigns[:product].should == @service
       response.should redirect_to(upload_product_file_path(@authable, @service.parameterize, @service, :file_type => 'info'))
-      @service.reload.file_uploads.size.should == 1
-      @service.reload.file_uploads.collect(&:name).should == ['File 1']
+      @service.reload.stored_files.size.should == 1
+      @service.reload.stored_files.collect(&:name).should == ['File 1']
     end
 
     it "should render upload template when no file specified" do
@@ -89,7 +91,19 @@ describe FileUploadsController do
       }
     end
 
-    it_should_allow_managers_only
+    context "product info" do
+      it_should_allow_managers_and_senior_staff_only
+    end
+
+    context "sample_result" do
+      before :each do
+        @params.merge!(:file_type => 'sample_result')
+      end
+
+      it_should_allow_all(facility_operators) do
+        should respond_with :success
+      end
+    end
 
   end
 
@@ -102,9 +116,9 @@ describe FileUploadsController do
       @params={ :facility_id => @authable.url_name, :product => @service.id, :product_id => @service.url_name }
     end
 
-    it_should_allow_managers_only do
+    it_should_allow_managers_and_senior_staff_only do
       assigns[:product].should == @service
-      assigns[:file].should be_kind_of FileUpload
+      assigns[:file].should be_kind_of StoredFile
       assigns[:file].should be_new_record
       assigns[:survey].should be_kind_of ExternalService
       assigns[:survey].should be_new_record
@@ -140,7 +154,7 @@ describe FileUploadsController do
       assigns[:survey].errors[:base].should_not be_empty
     end
 
-    it_should_allow_managers_only :redirect do
+    it_should_allow_managers_and_senior_staff_only :redirect do
       assigns[:product].should == @service
       @service.reload.external_services.size.should == 1
       @service.external_services[0].location.should == @ext_service_location
@@ -158,7 +172,7 @@ describe FileUploadsController do
       @action=:destroy
 
       create_order_detail
-      @file_upload=Factory.create(:file_upload,
+      @file_upload=FactoryGirl.create(:stored_file,
         :order_detail_id => @order_detail.id,
         :created_by => @admin.id,
         :product => @service
@@ -172,27 +186,45 @@ describe FileUploadsController do
       }
     end
 
-    it_should_allow_managers_only :redirect
+    context 'info' do
+      it_should_allow_managers_and_senior_staff_only :redirect
+    end
 
+    context 'sample_result' do
+      before :each do
+        @sample_result=FactoryGirl.create(:stored_file,
+          :order_detail_id => @order_detail.id,
+          :created_by => @staff.id,
+          :product => @service,
+          :file_type => 'sample_result'
+        )
+        @params.merge!(:id => @sample_result.id)
+      end
+
+      it_should_allow_all(facility_operators) do
+        should respond_with :redirect
+      end
+        
+    end
   end
 
 
   def create_order_detail
-    @facility_account=Factory.create(:facility_account, :facility => @authable)
-    @product=Factory.create(:item,
+    @facility_account=FactoryGirl.create(:facility_account, :facility => @authable)
+    @product=FactoryGirl.create(:item,
       :facility_account => @facility_account,
       :facility => @authable
     )
     @account=create_nufs_account_with_owner
-    @order=Factory.create(:order,
+    @order=FactoryGirl.create(:order,
       :facility => @authable,
       :user => @director,
       :created_by => @director.id,
       :account => @account,
       :ordered_at => Time.zone.now
     )
-    @price_group=Factory.create(:price_group, :facility => @authable)
-    @price_policy=Factory.create(:item_price_policy, :item => @product, :price_group => @price_group)
-    @order_detail=Factory.create(:order_detail, :order => @order, :product => @product, :price_policy => @price_policy)
+    @price_group=FactoryGirl.create(:price_group, :facility => @authable)
+    @price_policy=FactoryGirl.create(:item_price_policy, :product => @product, :price_group => @price_group)
+    @order_detail=FactoryGirl.create(:order_detail, :order => @order, :product => @product, :price_policy => @price_policy)
   end
 end

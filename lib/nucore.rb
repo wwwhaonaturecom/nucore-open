@@ -12,6 +12,8 @@ module NUCore
   class NotPermittedWhileActingAs < Exception
   end
 
+  class PurchaseException < Exception; end
+
   def self.portal
     return 'nucore'
   end
@@ -20,6 +22,15 @@ module NUCore
 
     def self.oracle?
       @@is_oracle ||= ActiveRecord::Base.connection.adapter_name == 'OracleEnhanced'
+    end
+
+    def self.boolean(value)
+      # Oracle doesn't always properly handle boolean values correctly
+      if self.oracle?
+        value ? 1 : 0
+      else
+        value ? true : false
+      end
     end
 
 

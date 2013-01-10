@@ -1,4 +1,6 @@
 class FacilityReservationsController < ApplicationController
+  include TabCountHelper
+
   admin_tab     :all
   before_filter :authenticate_user!
   before_filter :check_acting_as
@@ -7,7 +9,6 @@ class FacilityReservationsController < ApplicationController
   load_and_authorize_resource :class => Reservation
 
   helper_method :sort_column, :sort_direction
-  helper_method :new_or_in_process_orders, :problem_orders, :disputed_orders
 
   ORDER_BY_CLAUSE_OVERRIDES_BY_SORTABLE_COLUMN = {
       'date'          => 'reservations.reserve_start_at',
@@ -82,12 +83,7 @@ class FacilityReservationsController < ApplicationController
 
     if @order_detail.price_policy
       if can_edit_reserve && @reservation.changes.any? { |k,v| k == 'reserve_start_at' || k == 'reserve_end_at' }
-        costs = @order_detail.price_policy.estimate_cost_and_subsidy(@reservation.reserve_start_at, @reservation.reserve_end_at)
-        if costs
-          @order_detail.estimated_cost    = costs[:cost]
-          @order_detail.estimated_subsidy = costs[:subsidy]
-          additional_notice = '  Order detail cost estimate has been updated as well.'
-        end
+        @order_detail.assign_estimated_price_from_policy(@order_detail.price_policy)
       elsif can_edit_actuals && @reservation.changes.any? { |k,v| k == 'actual_start_at' || k == 'actual_end_at' }
         costs = @order_detail.price_policy.calculate_cost_and_subsidy(@reservation)
         if costs
@@ -96,17 +92,23 @@ class FacilityReservationsController < ApplicationController
           additional_notice = '  Order detail actual cost has been updated as well.'
         end
       end
+    else
+      # We're updating a reservation before it's been completed
+      if can_edit_reserve && @reservation.changes.any? { |k,v| k == 'reserve_start_at' || k == 'reserve_end_at' }
+        @order_detail.assign_estimated_price
+        additional_notice = ' Estimated cost has been updated as well.'
+      end
     end
 
     Reservation.transaction do
       begin
-        @reservation.save!
+        @reservation.save_as_user!(session_user)
 
         unless @order_detail.price_policy
+          old_pp = @order_detail.price_policy
           @order_detail.assign_price_policy
-          additional_notice = '  Order detail price policy and actual cost has been updated as well.'
+          additional_notice = '  Order detail price policy and actual cost have been updated as well.' unless old_pp == @order_detail.price_policy
         end
-
         @order_detail.save!
         flash.now[:notice] = "The reservation has been updated successfully.#{additional_notice}"
       rescue
@@ -203,7 +205,7 @@ class FacilityReservationsController < ApplicationController
 
   # GET /facilities/:facility_id/orders/disputed
   def disputed
-    @details = disputed_orders.
+    @order_details = disputed_orders.
       paginate(:page => params[:page])
   end
 
@@ -218,6 +220,13 @@ class FacilityReservationsController < ApplicationController
     redirect_to facility_instrument_schedule_url
   end
 
+  def timeline
+    @display_date = parse_usa_date(params[:date]) if params[:date]
+    @display_date ||= Time.zone.now
+
+    @instruments = current_facility.instruments.active_plus_hidden.order(:name)
+  end
+
   private
 
   def new_or_in_process_orders(order_by_clause = 'reservations.reserve_start_at')
@@ -228,13 +237,15 @@ class FacilityReservationsController < ApplicationController
         :reservation,
         :assigned_user
       ).
-      order(order_by_clause).
-      delete_if{|od| od.reservation.nil? }
+      where("reservations.id IS NOT NULL").
+      order(order_by_clause)
   end
   
+  #TODO make problem_order an SQL relation to speet things up
   def problem_orders
     current_facility.order_details.
       reservations.
+      complete.
       reject{|od| !od.problem_order?}
   end
   def disputed_orders

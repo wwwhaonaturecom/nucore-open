@@ -1,3 +1,5 @@
+- content_for :head_content do
+  = javascript_include_tag 'pick_accessories'
 %table
   %tr
     %th.centered Order #
@@ -10,12 +12,12 @@
     - order = od.order
     - res = od.reservation
     %tr
-      %td.centered= link_to od, order_order_detail_path(order, od)
+      %td.centered= link_to od, current_facility ? edit_facility_order_order_detail_path(current_facility, order, od) : order_order_detail_path(order, od)
       %td.centered
         - if res.can_switch_instrument_on?
-          = link_to "Begin Reservation", order_order_detail_reservation_switch_instrument_path(order, od, res, :switch => 'on')
+          = link_to t('reservations.switch.start'), order_order_detail_reservation_switch_instrument_path(order, od, res, :switch => 'on')
         - elsif res.can_switch_instrument_off?
-          = link_to "End Reservation", order_order_detail_reservation_switch_instrument_path(order, od, res, :switch => 'off')
+          = link_to t('reservations.switch.end'), order_order_detail_reservation_switch_instrument_path(order, od, res, :switch => 'off'), :class => end_reservation_class(res) 
         - else
           - if res.can_cancel?
             - fee = od.cancellation_fee
@@ -27,17 +29,17 @@
             - if res.can_cancel?
               = ' | '
             = render :partial => 'shared/move_reservation', :locals => { :reservation => res }
-            = link_to 'Move', order_order_detail_reservation_move_reservation_path(order, od, res), :class => 'move-res', :id => res.id
+            = link_to 'Begin Now', order_order_detail_reservation_move_reservation_path(order, od, res), :class => 'move-res', :id => res.id
       %td
         - if res.can_edit?
-          = link_to res, edit_order_order_detail_reservation_path(order, od, res)
+          = link_to res, current_facility ? edit_facility_order_order_detail_reservation_path(current_facility, order, od, res) : edit_order_order_detail_reservation_path(order, od, res)
         - else
-          = link_to res, order_order_detail_reservation_path(order, od, res)
+          = link_to res, current_facility ? facility_order_order_detail_reservation_path(current_facility, order, od, res) : order_order_detail_reservation_path(order, od, res)
       %td
         %ul
           %li
             - product_name = (od.bundle ? "#{h od.bundle} &mdash; " : '') + h(od.product)
-            = link_to  "#{h od.product.facility.abbreviation} / #{product_name}".html_safe, facility_instrument_path(od.product.facility, od.product)
+            = link_to "#{h od.product.facility.abbreviation} / #{product_name}".html_safe, facility_instrument_path(od.product.facility, od.product)
           - unless od.note.blank?
             %li
               %i=h "Note: #{od.note}"

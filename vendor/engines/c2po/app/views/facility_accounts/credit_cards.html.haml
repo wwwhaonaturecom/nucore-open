@@ -1,0 +1,51 @@
+= javascript_include_tag 'account_mgmt'
+
+= content_for :h1 do
+  =h current_facility
+
+= content_for :sidebar do
+  = render :partial => 'admin/shared/sidenav_billing', :locals => { :sidenav_tab => 'credit_cards' }
+
+%h2= t(".head")
+
+- if @accounts.empty?
+  %p.notice= t(".none")
+- else
+  = form_tag(credit_cards_facility_accounts_path, :method => :get) do
+    %p
+      -#= select_tag :selected_account, @accounts.collect{|a| "<option value=\"#{a.id}\"#{a == @selected ? ' selected="selected"' : ''}>#{a.to_s}</option>" }.join('')
+      = select_tag :selected_account, options_from_collection_for_select(@accounts, :id, :to_s, @selected.id)
+
+  - if @selected.owner_user
+    %h3= "Owner: #{@selected.owner_user.full_name}"
+  %h3= "Balance: #{number_to_currency(@selected.unreconciled_total(current_facility))}"
+
+  %p= t(".instructions")
+
+  = form_tag(update_credit_cards_facility_accounts_path, :method => :post) do
+    %table
+      %tr.borderless
+        %td{:colspan => 2}= link_to('Select None', 'JavaScript:void(0);', :class => 'select_all')
+        %td.currency{:colspan => 2}= submit_tag "Reconcile Orders"
+      %tr
+        %th
+        %th Order
+        %th Total
+        %th Reconcile Note
+      - @unreconciled_details.each do |od|
+        %tr
+          %td.centered= check_box_tag "order_detail[#{od.id}][reconciled]", '1', true, {:class => 'toggle'}
+          %td
+            %ul
+              %li== #{link_to "##{od}", edit_facility_order_order_detail_path(current_facility, od.order_id, od)}: #{od.product}
+              - if od.note
+                %li.indented
+                  %i=h od.note
+
+          %td= show_actual_total(od)
+          %td= text_field_tag "order_detail[#{od.id}][notes]", begin params[:order_detail][od.id.to_s][:notes] rescue '' end
+      %tr.borderless
+        %td{:colspan => 2}= link_to('Select None', 'JavaScript:void(0);', :class => 'select_all')
+        %td.currency{:colspan => 2}= submit_tag "Reconcile Orders"
+
+  %p= will_paginate(@unreconciled_details)

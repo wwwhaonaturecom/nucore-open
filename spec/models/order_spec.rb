@@ -1,9 +1,19 @@
 require 'spec_helper'
 
+def define_purchasable_instrument
+  @instrument    = @facility.instruments.create(FactoryGirl.attributes_for(:instrument, :facility_account => @facility_account))
+  @instrument_pp = FactoryGirl.create(:instrument_price_policy, :product => @instrument, :price_group => @price_group)
+  FactoryGirl.create(:price_group_product, :product => @instrument, :price_group => @price_group)
+  # default rule, 9am - 5pm all days
+  @rule          = @instrument.schedule_rules.create(FactoryGirl.attributes_for(:schedule_rule))
+  define_open_account(@instrument.account, @account.account_number)
+end
+
+
 describe Order do
   it "should create using factory" do
-    @user  = Factory.create(:user)
-    @order = @user.orders.create(Factory.attributes_for(:order, :created_by => @user.id))
+    @user  = FactoryGirl.create(:user)
+    @order = @user.orders.create(FactoryGirl.attributes_for(:order, :created_by => @user.id))
     @order.should be_valid
   end
 
@@ -16,21 +26,22 @@ describe Order do
   end
 
   it "should create in new state" do
-    @user  = Factory.create(:user)
-    @order = @user.orders.create(Factory.attributes_for(:order, :created_by => @user.id))
+    @user  = FactoryGirl.create(:user)
+    @order = @user.orders.create(FactoryGirl.attributes_for(:order, :created_by => @user.id))
     @order.new?.should be true
   end
 
+  it { should belong_to :order_import }
 
   context 'total cost' do
 
     before :each do
-      @facility       = Factory.create(:facility)
-      @facility_account = @facility.facility_accounts.create(Factory.attributes_for(:facility_account))
-      @user           = Factory.create(:user)
-      @account        = Factory.create(:nufs_account, :account_users_attributes => [Hash[:user => @user, :created_by => @user, :user_role => 'Owner']])
-      @order          = @user.orders.create(Factory.attributes_for(:order, :created_by => @user.id))
-      @item           = @facility.items.create(Factory.attributes_for(:item, :facility_account_id => @facility_account.id))
+      @facility       = FactoryGirl.create(:facility)
+      @facility_account = @facility.facility_accounts.create(FactoryGirl.attributes_for(:facility_account))
+      @user           = FactoryGirl.create(:user)
+      @account        = FactoryGirl.create(:nufs_account, :account_users_attributes => [Hash[:user => @user, :created_by => @user, :user_role => 'Owner']])
+      @order          = @user.orders.create(FactoryGirl.attributes_for(:order, :created_by => @user.id))
+      @item           = @facility.items.create(FactoryGirl.attributes_for(:item, :facility_account_id => @facility_account.id))
     end
 
     context 'actual' do
@@ -42,7 +53,7 @@ describe Order do
           @cost += cost
           @subsidy += subsidy
           @order.order_details.create(
-            Factory.attributes_for(
+            FactoryGirl.attributes_for(
               :order_detail,
               :product_id => @item.id,
               :account_id => @account.id,
@@ -71,7 +82,7 @@ describe Order do
           @estimated_cost += cost
           @estimated_subsidy += subsidy
           @order.order_details.create(
-            Factory.attributes_for(
+            FactoryGirl.attributes_for(
               :order_detail,
               :product_id => @item.id,
               :account_id => @account.id,
@@ -98,31 +109,19 @@ describe Order do
 
   context 'validate_order state transition' do
     before(:each) do
-      @facility     = Factory.create(:facility)
-      @facility_account = @facility.facility_accounts.create(Factory.attributes_for(:facility_account))
-      @price_group  = @facility.price_groups.create(Factory.attributes_for(:price_group))
-      @order_status = Factory.create(:order_status)
-      @service      = @facility.services.create(Factory.attributes_for(:service, :initial_order_status_id => @order_status.id, :facility_account_id => @facility_account.id))
-      @service_pp   = Factory.create(:service_price_policy, :service => @service, :price_group => @price_group)
-      @user         = Factory.create(:user)
-      @pg_member    = Factory.create(:user_price_group_member, :user => @user, :price_group => @price_group)
-      @account      = Factory.create(:nufs_account, :account_users_attributes => [Hash[:user => @user, :created_by => @user, :user_role => 'Owner']])
-      @order        = @user.orders.create(Factory.attributes_for(:order, :created_by => @user.id, :account => @account, :facility => @facility))
+      @facility     = FactoryGirl.create(:facility)
+      @facility_account = @facility.facility_accounts.create(FactoryGirl.attributes_for(:facility_account))
+      @price_group  = @facility.price_groups.create(FactoryGirl.attributes_for(:price_group))
+      @order_status = FactoryGirl.create(:order_status)
+      @service      = @facility.services.create(FactoryGirl.attributes_for(:service, :initial_order_status_id => @order_status.id, :facility_account_id => @facility_account.id))
+      @service_pp   = FactoryGirl.create(:service_price_policy, :product => @service, :price_group => @price_group)
+      @user         = FactoryGirl.create(:user)
+      @pg_member    = FactoryGirl.create(:user_price_group_member, :user => @user, :price_group => @price_group)
+      @account      = FactoryGirl.create(:nufs_account, :account_users_attributes => [Hash[:user => @user, :created_by => @user, :user_role => 'Owner']])
+      @order        = @user.orders.create(FactoryGirl.attributes_for(:order, :created_by => @user.id, :account => @account, :facility => @facility))
     end
 
     it "should not validate_order if there are no order_details" do
-      @order.validate_order!.should be false
-    end
-
-    it "should not allow validate if the account type is not allowed by the facility" do
-      # facility does not accept credit card accounts
-      @facility.accepts_cc = false
-      @facility.save
-      # create credit card account and link to order
-      @cc_account = Factory.create(:credit_card_account, :account_users_attributes => [Hash[:user => @user, :created_by => @user, :user_role => 'Owner']])
-      @order = @user.orders.create(Factory.attributes_for(:order, :created_by => @user.id, :account => @cc_account, :facility => @facility))
-      @order.order_details.create(:product_id => @service.id, :quantity => 1)
-      # should not be allowed to purchase with a credit card account
       @order.validate_order!.should be false
     end
 
@@ -139,17 +138,17 @@ describe Order do
 
   context 'purchase state transition' do
     before(:each) do
-      @facility     = Factory.create(:facility)
-      @facility_account = @facility.facility_accounts.create(Factory.attributes_for(:facility_account))
-      @price_group  = Factory.create(:price_group, :facility => @facility)
-      @order_status = Factory.create(:order_status)
-      @service      = @facility.services.create(Factory.attributes_for(:service, :initial_order_status_id => @order_status.id, :facility_account_id => @facility_account.id))
-      Factory.create(:price_group_product, :product => @service, :price_group => @price_group, :reservation_window => nil)
-      @service_pp   = Factory.create(:service_price_policy, :service => @service, :price_group => @price_group)
-      @user         = Factory.create(:user)
-      @pg_member    = Factory.create(:user_price_group_member, :user => @user, :price_group => @price_group)
-      @account      = Factory.create(:nufs_account, :account_users_attributes => [Hash[:user => @user, :created_by => @user, :user_role => 'Owner']])
-      @order        = @user.orders.create(Factory.attributes_for(:order, :created_by => @user.id, :account => @account, :facility => @facility))
+      @facility     = FactoryGirl.create(:facility)
+      @facility_account = @facility.facility_accounts.create(FactoryGirl.attributes_for(:facility_account))
+      @price_group  = FactoryGirl.create(:price_group, :facility => @facility)
+      @order_status = FactoryGirl.create(:order_status)
+      @service      = @facility.services.create(FactoryGirl.attributes_for(:service, :initial_order_status_id => @order_status.id, :facility_account_id => @facility_account.id))
+      FactoryGirl.create(:price_group_product, :product => @service, :price_group => @price_group, :reservation_window => nil)
+      @service_pp   = FactoryGirl.create(:service_price_policy, :product => @service, :price_group => @price_group)
+      @user         = FactoryGirl.create(:user)
+      @pg_member    = FactoryGirl.create(:user_price_group_member, :user => @user, :price_group => @price_group)
+      @account      = FactoryGirl.create(:nufs_account, :account_users_attributes => [Hash[:user => @user, :created_by => @user, :user_role => 'Owner']])
+      @order        = @user.orders.create(FactoryGirl.attributes_for(:order, :created_by => @user.id, :account => @account, :facility => @facility))
     end
 
     it "should not allow purchase if the state is not :validated" do
@@ -159,20 +158,34 @@ describe Order do
       lambda {@order.purchase!}.should raise_exception AASM::InvalidTransition
     end
 
-    it "place_order should mark the order with ordered_at date, purchased status, add to facility.orders collection" do
-      @order.order_details.create(:product_id => @service.id, :quantity => 1, :price_policy_id => @service_pp.id, :account_id => @account.id, :actual_cost => 10, :actual_subsidy => 5)
-      define_open_account(@service.account, @account.account_number)
-      @order.validate_order!.should be true
-      @order.purchase!.should be true
-      @order.ordered_at.should_not be_nil
-
-      # should add account to facility orders, accounts (through order_details) collections
-      @facility.orders.should == [@order]
-      @facility.order_details.accounts.should == [@account]
+    context 'successfully moving to purchase' do
+      before :each do
+        order_attrs=FactoryGirl.attributes_for(:order_detail, :product_id => @service.id, :quantity => 1, :price_policy_id => @service_pp.id, :account_id => @account.id, :actual_cost => 10, :actual_subsidy => 5)
+        @order.order_details.create(order_attrs)
+        define_open_account(@service.account, @account.account_number)
+        @order.validate_order!.should be true
+      end
+      it 'should start off with an empty order status' do
+        @order.order_details.all? { |od| od.order_status.should be_nil }
+      end
+      it 'should set the ordered_at' do
+        @order.purchase!.should be_true
+        @order.ordered_at.should_not be_nil
+      end
+      it 'should add to facility.orders collection' do
+        @order.purchase!.should be_true
+        @facility.orders.should == [@order]
+        @facility.order_details.accounts.should == [@account]
+      end
+      it 'purchase should mark the initial state to the products default' do
+        @order.purchase!.should be_true
+        @order.order_details.all? { |od| od.order_status.should == @order_status }
+      end
     end
 
     it "should check for facility active/inactive changes before purchase" do
-      @order.order_details.create(:product_id => @service.id, :quantity => 1, :price_policy_id => @service_pp.id, :account_id => @account.id, :actual_cost => 10, :actual_subsidy => 5)
+      order_attrs=FactoryGirl.attributes_for(:order_detail, :product_id => @service.id, :quantity => 1, :price_policy_id => @service_pp.id, :account_id => @account.id, :actual_cost => 10, :actual_subsidy => 5)
+      @order.order_details.create(order_attrs)
       define_open_account(@service.account, @account.account_number)
       @order.validate_order!.should be true
 
@@ -184,7 +197,8 @@ describe Order do
     end
 
     it "should check for product active/inactive changes before purchase" do
-      @order.order_details.create(:product_id => @service.id, :quantity => 1, :price_policy_id => @service_pp.id, :account_id => @account.id, :actual_cost => 10, :actual_subsidy => 5)
+      order_attrs=FactoryGirl.attributes_for(:order_detail, :product_id => @service.id, :quantity => 1, :price_policy_id => @service_pp.id, :account_id => @account.id, :actual_cost => 10, :actual_subsidy => 5)
+      @order.order_details.create(order_attrs)
       define_open_account(@service.account, @account.account_number)
       @order.validate_order!.should be true
 
@@ -196,15 +210,15 @@ describe Order do
     end
 
     it "should check for schedule rule changes before purchase" do
-      @instrument    = @facility.instruments.create(Factory.attributes_for(:instrument, :facility_account => @facility_account))
-      @instrument_pp = Factory.create(:instrument_price_policy, :instrument => @instrument, :price_group => @price_group)
-      Factory.create(:price_group_product, :product => @instrument, :price_group => @price_group)
+      @instrument    = @facility.instruments.create(FactoryGirl.attributes_for(:instrument, :facility_account => @facility_account))
+      @instrument_pp = FactoryGirl.create(:instrument_price_policy, :product => @instrument, :price_group => @price_group)
+      FactoryGirl.create(:price_group_product, :product => @instrument, :price_group => @price_group)
       # default rule, 9am - 5pm all days
-      @rule          = @instrument.schedule_rules.create(Factory.attributes_for(:schedule_rule))
+      @rule          = @instrument.schedule_rules.create(FactoryGirl.attributes_for(:schedule_rule))
+      define_open_account(@instrument.account, @account.account_number)
       @order_detail  = @order.order_details.create(:product_id      => @instrument.id,    :quantity => 1,
                                                    :price_policy_id => @instrument_pp.id, :account_id => @account.id,
-                                                   :estimated_cost  => 10,                :estimated_subsidy => 5)
-      define_open_account(@instrument.account, @account.account_number)
+                                                   :estimated_cost  => 10, :estimated_subsidy => 5, :created_by => 0)
       @reservation   = @instrument.reservations.create(:reserve_start_date => Date.today+1.day, :reserve_start_hour     => 9,
                                                        :reserve_start_min  => 00,               :reserve_start_meridian => 'am',
                                                        :duration_value     => 60,               :duration_unit          => 'minutes',
@@ -224,30 +238,108 @@ describe Order do
     it "should check for chart string account being open before purchase"
   end
 
-  context 'add, clear, adjust' do
+  context do #'add, clear, adjust' do
     before(:each) do
-      @facility         = Factory.create(:facility)
-      @facility_account = @facility.facility_accounts.create(Factory.attributes_for(:facility_account))
-      @price_group      = Factory.create(:price_group, :facility => @facility)
-      @order_status     = Factory.create(:order_status)
-      @service          = @facility.services.create(Factory.attributes_for(:service, :initial_order_status_id => @order_status.id, :facility_account_id => @facility_account.id))
-      @service_pp       = Factory.create(:service_price_policy, :service => @service, :price_group => @price_group)
-      @service_same     = @facility.services.create(Factory.attributes_for(:service, :initial_order_status_id => @order_status.id, :facility_account_id => @facility_account.id))
-      @service_same_pp  = Factory.create(:service_price_policy, :service => @service_same, :price_group => @price_group)
+      @facility         = FactoryGirl.create(:facility)
+      @facility_account = @facility.facility_accounts.create(FactoryGirl.attributes_for(:facility_account))
+      @price_group      = FactoryGirl.create(:price_group, :facility => @facility)
+      @order_status     = FactoryGirl.create(:order_status)
+      @service          = @facility.services.create(FactoryGirl.attributes_for(:service, :initial_order_status_id => @order_status.id, :facility_account_id => @facility_account.id))
+      @service_pp       = FactoryGirl.create(:service_price_policy, :product => @service, :price_group => @price_group)
+      @service_same     = @facility.services.create(FactoryGirl.attributes_for(:service, :initial_order_status_id => @order_status.id, :facility_account_id => @facility_account.id))
+      @service_same_pp  = FactoryGirl.create(:service_price_policy, :product => @service_same, :price_group => @price_group)
 
-      @facility2         = Factory.create(:facility)
-      @facility_account2 = @facility2.facility_accounts.create(Factory.attributes_for(:facility_account))
-      @price_group2      = Factory.create(:price_group, :facility => @facility2)
-      @service2          = @facility2.services.create(Factory.attributes_for(:service, :initial_order_status_id => @order_status.id, :facility_account_id => @facility_account2.id))
-      @service2_pp       = Factory.create(:service_price_policy, :service => @service2, :price_group => @price_group2)
+      @facility2         = FactoryGirl.create(:facility)
+      @facility_account2 = @facility2.facility_accounts.create(FactoryGirl.attributes_for(:facility_account))
+      @price_group2      = FactoryGirl.create(:price_group, :facility => @facility2)
+      @service2          = @facility2.services.create(FactoryGirl.attributes_for(:service, :initial_order_status_id => @order_status.id, :facility_account_id => @facility_account2.id))
+      @service2_pp       = FactoryGirl.create(:service_price_policy, :product => @service2, :price_group => @price_group2)
 
-      @user            = Factory.create(:user)
-      @pg_member       = Factory.create(:user_price_group_member, :user => @user, :price_group => @price_group)
-      @account         = Factory.create(:nufs_account, :account_users_attributes => [Hash[:user => @user, :created_by => @user, :user_role => 'Owner']])
-      @cart            = @user.orders.create(Factory.attributes_for(:order, :created_by => @user.id, :account => @account))
+      @user            = FactoryGirl.create(:user)
+      @pg_member       = FactoryGirl.create(:user_price_group_member, :user => @user, :price_group => @price_group)
+      @account         = FactoryGirl.create(:nufs_account, :account_users_attributes => [Hash[:user => @user, :created_by => @user, :user_role => 'Owner']])
+      @cart            = @user.orders.create(FactoryGirl.attributes_for(:order, :created_by => @user.id, :account => @account))
+
+      @item           = @facility.items.create(FactoryGirl.attributes_for(:item, :facility_account_id => @facility_account.id))
     end
 
-    context 'add' do
+    context '#add' do
+
+      context "bundle" do
+        before :each do
+          # make a bundle
+          @bundle = @facility.bundles.create(FactoryGirl.attributes_for(:bundle, :facility_account_id => @facility_account.id))
+          @bundle.bundle_products.create!(:product => @item, :quantity => 4)
+          @bundle.bundle_products.create!(:product => @service, :quantity => 2)
+
+          # add two of them to the cart
+          @ods = @cart.add(@bundle, 2)
+        end
+
+        it "should add one order_detail per product in the bundle" do
+          # should only have as many ods as (# of products in bundle * quantity)
+          @ods.size.should == @bundle.products.count * 2
+
+          # shouldn't be missing any products
+          (@ods.collect(&:product_id) - @bundle.product_ids).should == []
+        end
+
+        it "should have quantity of each = quantity specified in the bundle * passed in quantity" do
+          # check quantities
+          @ods.each do |od|
+            od.quantity.should == @bundle.bundle_products.find_by_product_id(od.product_id).quantity
+          end
+        end
+      end
+
+      it "should add a single order_detail for an item w/ quantity of 2" do
+        ods = @cart.add(@item, 2)
+        ods.size.should == 1
+        ods.first.should be_a_kind_of OrderDetail
+      end
+
+      context "service" do
+        it "should add two order_details when has an active survey and a quantity of 2" do
+          # setup
+          @service_w_active_survey = @facility.services.create!(FactoryGirl.attributes_for(:service, :initial_order_status_id => @order_status.id, :facility_account_id => @facility_account.id))
+          @service_w_active_survey.stubs(:active_survey?).returns(true)
+
+          # doit
+          @ods = @cart.add(@service_w_active_survey, 2)
+
+          # asserts
+          @ods.should respond_to :each
+          @ods.size.should == 2
+        end
+
+        it "should add two order_details when has an active template and a quantity of 2" do
+          # setup
+          @service_w_active_template = @facility.services.create(FactoryGirl.attributes_for(:service, :initial_order_status_id => @order_status.id, :facility_account_id => @facility_account.id))
+          @service_w_active_template.stored_files.create! FactoryGirl.attributes_for(:stored_file, :file_type => 'template', :created_by => @user.id)
+
+          # doit
+          @ods = @cart.add(@service_w_active_template, 2)
+          
+          #asserts
+          @ods.should respond_to :each
+          @ods.size.should == 2
+        end
+
+        it "should add one order_detail when has a quantity of 2 and service doesn't have a template or survey" do 
+          @ods = @cart.add(@service, 2)
+          @ods.size.should == 1
+        end
+      end
+
+      
+      it "should add two order_details when product responds to :reservations and quantity = 2" do
+        define_purchasable_instrument
+        
+        @ods = @cart.add(@instrument, 2)
+        @ods.collect(&:product).should == [@instrument, @instrument]
+        @ods.size.should == 2
+      end
+
       it "should have a facility after adding a product to the cart" do
         @cart.add(@service, 1)
         @cart.reload.facility.should == @facility
@@ -299,6 +391,28 @@ describe Order do
         @order_detail.note.should == 'new note value' 
       end
 
+      it "should update the child order_details' account on self's account change" do
+        @cart.account = @account
+        @cart.add(@service, 1)
+        @cart.add(@service_same, 1)
+        @cart.reload.order_details[0].account_id = @account.id
+        @cart.order_details[1].account_id = @account.id
+        @account2 = FactoryGirl.create(:nufs_account, :account_users_attributes => [Hash[:user => @user, :created_by => @user, :user_role => 'Owner']])
+        @cart.account = @account2
+        @cart.save        
+        @cart.reload.order_details[0].account.should == @account2
+        @cart.order_details[1].account.should == @account2
+        @cart.account.should == @account2
+      end
+
+      it "should return an error for invalid quantities" do
+        @order_detail = @cart.add(@service, 1).first
+        result = @cart.update_details(@order_detail.id => {:quantity => "1.5"})
+        result.should be_false
+        @cart.errors.should_not be_empty
+        @cart.errors.to_a.should be_include 'Quantity must be an integer'
+      end
+
       it "should clear the facility and the account when destroying the last order_detail from the cart" do
         pending
 #        @cart.add(@service, 1)
@@ -312,60 +426,37 @@ describe Order do
 #        @cart.account.should be_nil
       end
     end
+  end
+  context "ordered_on_behalf_of?" do
+    before :each do
+      @user = FactoryGirl.create(:user)
+      @user2 = FactoryGirl.create(:user)
+    end
+    it "should be false if it was ordered by the same person" do
+      @user.orders.create(FactoryGirl.attributes_for(:order, :created_by => @user.id))
+      @user.orders.first.should_not be_ordered_on_behalf_of
+    end
+    it "should be true if it was created by someone else" do
+      @user.orders.create(FactoryGirl.attributes_for(:order, :created_by => @user2.id))
+      @user.orders.first.should be_ordered_on_behalf_of
+    end
+  end
 
-    context 'auto_assign_account!' do
-      before :each do
-        @facility=Factory.create(:facility)
-        place_and_complete_item_order(@user, @facility)
-      end
-
-      it 'should assign payment source' do
-        @order1=@order
-        @nufs=Factory.create(:nufs_account, :account_users_attributes => [{:user => @user, :created_by => @user, :user_role => 'Owner'}])
-        place_and_complete_item_order(@user, @facility, @nufs)
-        define_open_account(@item.account, @nufs.account_number)
-        @user.reload
-
-        @order1.account.should be_nil
-        @order1.auto_assign_account!(@item)
-        @order1.account.should == @nufs
-      end
-
-      it 'should assign payment source if user has a valid account and has never placed an order' do
-        @nufs=Factory.create(:nufs_account, :account_users_attributes => [{:user => @user, :created_by => @user, :user_role => 'Owner'}])
-        define_open_account(@item.account, @nufs.account_number)
-        @user.reload
-
-        @order.account.should be_nil
-        @order.auto_assign_account!(@item)
-        @order.account.should == @nufs
-      end
-      
-      it 'should assign payment source if user has an old account that has orders, but a new one that does not' do
-        @nufs_inactive=Factory.create(:nufs_account, :account_users_attributes => [{:user => @user, :created_by => @user, :user_role => 'Owner'}], :suspended_at => 1.day.ago)
-        place_and_complete_item_order(@user, @facility, @nufs_inactive)
-        @order2 = @order
-        
-        @nufs=Factory.create(:nufs_account, :account_users_attributes => [{:user => @user, :created_by => @user, :user_role => 'Owner'}])
-        define_open_account(@item.account, @nufs.account_number)
-        
-        place_and_complete_item_order(@user, @facility)
-        @order3 = @order
-        
-        @user.reload
-        
-        @order3.account.should be_nil
-        @order3.auto_assign_account!(@item)
-        @order3.account.should == @nufs
-      end
-
-      it 'should raise if an account cannot be found' do
-        assert_raise RuntimeError do
-          @order.auto_assign_account!(@item)
-        end
-      end
-
+  context 'merge orders' do
+    before :each do
+      @user  = FactoryGirl.create(:user)
+      @order = @user.orders.create(FactoryGirl.attributes_for(:order, :created_by => @user.id))
     end
 
+    it 'should not be mergeable' do
+      @order.should_not be_to_be_merged
+      @order.merge_order.should be_nil
+    end
+
+    it 'should be mergeable' do
+      @order2 = @user.orders.create(FactoryGirl.attributes_for(:order, :created_by => @user.id, :merge_with_order_id => @order.id))
+      @order2.should be_to_be_merged
+      @order2.merge_order.should == @order
+    end
   end
 end

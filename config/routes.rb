@@ -1,11 +1,15 @@
 Nucore::Application.routes.draw do |map|
-  
+
+  match '/users/sign_in.pdf' => redirect('/users/sign_in')
   devise_for :users, :skip => :passwords
-  
-  match '/users/password/edit_current' => 'user_password#edit_current', :as => 'edit_current_password'  
-  match '/users/password/reset' => 'user_password#reset', :as => 'reset_password'
-  match '/users/password/edit' => 'user_password#edit', :as => 'edit_password'
-  match '/users/password/update' => 'user_password#update', :as => 'update_password'
+
+  if SettingsHelper.feature_on? :password_update
+    match '/users/password/edit_current' => 'user_password#edit_current', :as => 'edit_current_password'
+    match '/users/password/reset' => 'user_password#reset', :as => 'reset_password'
+    match '/users/password/edit' => 'user_password#edit', :as => 'edit_password'
+    match '/users/password/update' => 'user_password#update', :as => 'update_password'
+  end
+
   # The priority is based upon order of creation: first created -> highest priority.
 
   # authentication
@@ -22,27 +26,32 @@ Nucore::Application.routes.draw do |map|
 
   # front-end accounts
   map.resources :accounts, :only => [:index, :show], :member => {:user_search => :get, :transactions => :get, :transactions_in_review => :get} do |account|
-    
+
     account.resources :account_users, :only => [:new, :destroy, :create, :index], :collection => {:user_search => :get}
     account.resources :statements, :only => [:index]
     account.resources :facilities, :only => [] do |facility|
       facility.resources :statements, :only => [:show]
     end
   end
-  
+
   # transaction searches
   #match "/accounts/:account_id/transactions" => 'transaction_history#account_history', :as => "account_transaction_history"
   match "/transactions" => 'transaction_history#my_history', :as => "transaction_history"
-  
+
   # global settings
   resources :affiliates, :except => :show
 
   map.resources :facilities, :collection => {:list => :get}, :member => {:manage => :get}, :except => [:delete] do |facility|
-    facility.resources :products, :only => [:index]
-    
+    facility.resources :products, :only => [:index] do |product|
+      product.resources :product_accessories, :as => 'accessories', :only => [:index, :create, :destroy]
+    end
+
+
     #facility.transactions '/transactions', :controller => 'transaction_history', :action => 'facility_history'
-    
+    facility.instrument_statuses 'instrument_statuses', :controller => 'instruments', :action => 'instrument_statuses'
     facility.resources :instruments, :member => {:manage => :get} do |instrument|
+      instrument.public_schedule 'public_schedule', :controller => 'instruments', :action => 'public_schedule'
+
       instrument.schedule 'schedule', :controller => 'instruments', :action => 'schedule'
       instrument.agenda   'agenda',   :controller => 'instruments', :action => 'agenda'
       instrument.status   'status',   :controller => 'instruments', :action => 'instrument_status'
@@ -111,7 +120,15 @@ Nucore::Application.routes.draw do |map|
       user.map_user '/map_user', :controller => 'facility_users', :action => 'map_user'
     end
 
-    facility.resources :users, :except => [:edit, :update], :collection => {:username_search => :post, :new_search => :get} do |user|
+    except=[ :edit, :update ]
+    collection={:username_search => :post, :new_search => :get}
+
+    unless SettingsHelper.feature_on?(:create_users)
+      except += [ :new, :create ]
+      collection.clear
+    end
+
+    facility.resources :users, :except => except, :collection => collection do |user|
       user.switch_to   '/switch_to',  :controller => 'users', :action => 'switch_to', :conditions => {:method => :get}
       user.orders       'orders',      :controller => 'users', :action => 'orders'
       user.reservations 'reservations',      :controller => 'users', :action => 'reservations'
@@ -119,32 +136,48 @@ Nucore::Application.routes.draw do |map|
       user.instruments  'instruments', :controller => 'users', :action => 'instruments'
     end
 
-    facility.resources :facility_accounts, :controller => 'facility_facility_accounts', :only => [:index, :new, :create, :edit, :update]
+    facility.resources :facility_accounts, :controller => 'facility_facility_accounts', :only => [:index, :new, :create, :edit, :update] if SettingsHelper.feature_on? :recharge_accounts
 
-    facility.resources :orders, :controller => 'facility_orders', :only => [:index, :show], :collection => {:batch_update => :post, :show_problems => :get, :disputed => :get} do |order|
-      order.resources :order_details, :controller => 'facility_order_details', :only => [:edit, :update ], :member => {:remove_from_journal => :get} do |order_detail|
+    facility.resources :orders, :controller => 'facility_orders', :only => [:index, :edit, :update], :member => { :send_receipt => :post }, :collection => {:batch_update => :post, :show_problems => :get, :disputed => :get, :tab_counts => :get } do |order|
+      order.resources :order_details, :controller => 'facility_order_details', :only => [:edit, :update, :destroy], :member => {:remove_from_journal => :get} do |order_detail|
         order_detail.new_price '/new_price', :controller => 'facility_order_details', :action => 'new_price', :conditions => {:method => :get}
         order_detail.resolve_dispute '/resolve_dispute', :controller => 'facility_order_details', :action => 'resolve_dispute', :conditions => {:method => :put}
         order_detail.resources :reservations, :controller => 'facility_reservations', :only => [:edit, :update, :show]
       end
     end
 
-    facility.resources :reservations, :controller => 'facility_reservations', :only => :index, :collection => {:batch_update => :post, :show_problems => :get, :disputed => :get}
+    facility.resources :order_imports, :only => [ :new, :create ]
+
+    facility.resources :reservations, :controller => 'facility_reservations', :only => :index, :collection => {:batch_update => :post, :show_problems => :get, :disputed => :get, :timeline => :get, :tab_counts => :get}
 
     facility.accounts_receivable '/accounts_receivable', :controller => 'facility_accounts', :action => 'accounts_receivable', :conditions => {:method => :get}
-    
-    facility.resources :accounts, :controller => 'facility_accounts', :only => [:index, :new, :create, :show, :edit, :update], :collection => {:credit_cards => :get, :update_credit_cards => :post, :purchase_orders => :get, :update_purchase_orders => :post, :user_search => :get, :search => :get, :search_results => [:get, :post], :new_account_user_search => :get} do |account|
-      account.suspend '/suspend', :controller => 'facility_accounts', :action => 'suspend'
-      account.unsuspend '/unsuspend', :controller => 'facility_accounts', :action => 'unsuspend'
-      account.resources :account_users, :controller => 'facility_account_users', :only => [:new, :destroy, :create, :update], :collection => {:user_search => :get}
-      account.statement  '/statements/:statement_id.:format', :controller => 'facility_accounts', :action => 'show_statement', :conditions => {:method => :get}
+
+    only=[ :index,  :show, ]
+    collection={ :search => :get, :search_results => [:get, :post] }
+    can_edit_accounts=SettingsHelper.feature_on? :edit_accounts
+
+    if can_edit_accounts
+      only += [:new, :create, :edit, :update ]
+      collection.merge!(:new_account_user_search => :get, :user_search => :get)
+    end
+
+    facility.resources :accounts, :controller => 'facility_accounts', :only => only, :collection => collection do |account|
       account.members '/members', :controller => 'facility_accounts', :action => 'members', :conditions => {:method => :get}
-      
+      account.resources :account_users, :controller => 'facility_account_users', :only => [:new, :destroy, :create, :update], :collection => {:user_search => :get} if can_edit_accounts
+      account.statement  '/statements/:statement_id.:format', :controller => 'facility_accounts', :action => 'show_statement', :conditions => {:method => :get} if AccountManager.using_statements?
+
+      if SettingsHelper.feature_on? :suspend_accounts
+        account.suspend '/suspend', :controller => 'facility_accounts', :action => 'suspend'
+        account.unsuspend '/unsuspend', :controller => 'facility_accounts', :action => 'unsuspend'
+      end
     end
 
     facility.resources :journals, :controller => 'facility_journals', :only => [:index, :new, :create, :update, :show] do |journal|
       journal.reconcile '/reconcile', :controller => 'facility_journals', :action => 'reconcile', :conditions => {:method => :post}
     end
+
+    facility.bulk_email '/bulk_email', :controller => 'bulk_email', :action => 'search', :conditions => {:method => :get}
+    #resources :bulk_email, :member => { :search => [:get, :post]}, :only => [:search]
 
     facility.resources :price_groups, :member => {:users => :get, :accounts => :get} do |price_group|
       price_group.resources :user_price_group_members,    :only => [:new, :destroy, :create], :collection => {:create => :get}
@@ -156,13 +189,13 @@ Nucore::Application.routes.draw do |map|
     facility.transactions '/transactions', :controller => 'facilities', :action => 'transactions', :conditions => {:method => :get}
     facility.notifications_in_review '/in_review', :controller => 'facility_notifications', :action => 'in_review', :conditions => {:method => [:get]}
     facility.notifications_mark_as_reviewed '/in_review/mark', :controller => 'facility_notifications', :action => 'mark_as_reviewed', :conditions => {:method => [:post]}
-    
+
     facility.resources :statements, :controller => 'facility_statements', :only => [:index, :new, :show, :send_statements], :collection => {:send_statements => :post }
   end
 
   # order process
   map.cart '/orders/cart', :controller => 'orders', :action => 'cart'
-  
+
   match "/orders(/:status)" => "orders#index", :status => /pending|all/, :as => "orders_status"
   #match "/orders/all" => "orders#index", :status => "all", :as => "orders_all"
   map.remove_order '/orders/:id/remove/:order_detail_id', :controller => 'orders', :action => 'remove', :conditions => {:method => :put}
@@ -175,14 +208,20 @@ Nucore::Application.routes.draw do |map|
       order_detail.resources :reservations, :except => [:index] do |reservation|
         reservation.move_reservation '/move', :controller => 'reservations', :action => 'move', :conditions => {:method => :get}
         reservation.switch_instrument '/switch_instrument', :controller => 'reservations', :action => 'switch_instrument', :conditions => {:method => :get}
+        reservation.pick_accessories '/pick_accessories', :controller => 'reservations', :action => 'pick_accessories', :conditions => {:method => [:get, :post]}
       end
     end
+  end
+
+  #notifications
+  resources :notifications, :only => [ :index ] do
+    collection { get :count }
   end
 
   # reservations
   match 'reservations' => 'reservations#list', :as => 'reservations'
   match "reservations(/:status)" => 'reservations#list', :as => 'reservations_status'
-  
+
   # file upload routes
   map.upload_product_file '/facilities/:facility_id/:product/:product_id/files/upload',
                           :controller => 'file_uploads', :action => 'upload', :conditions => {:method => :get}

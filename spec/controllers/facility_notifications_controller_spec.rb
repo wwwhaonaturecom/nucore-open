@@ -5,27 +5,43 @@ require 'transaction_search_spec_helper'
 describe FacilityNotificationsController do
   
   before(:all) { create_users }
+  render_views
   
   before :each do
-    @authable=Factory.create(:facility)
-    @user=Factory.create(:user)
-    @account=Factory.create(:credit_card_account, :account_users_attributes => [Hash[:user => @user, :created_by => @user, :user_role => 'Owner']])
-    @authable_account = @authable.facility_accounts.create(Factory.attributes_for(:facility_account))
+    Settings.billing.review_period = 7.days
+    @authable=FactoryGirl.create(:facility)
+    @user=FactoryGirl.create(:user)
+    @account=FactoryGirl.create(:nufs_account, :account_users_attributes => [Hash[:user => @user, :created_by => @user, :user_role => 'Owner']])
+    @authable_account = @authable.facility_accounts.create(FactoryGirl.attributes_for(:facility_account))
     @params={ :facility_id => @authable.url_name }
     
     @order_detail1 = place_and_complete_item_order(@user, @authable, @account)
     @order_detail2 = place_and_complete_item_order(@user, @authable, @account)
     
-    @account2=Factory.create(:credit_card_account, :account_users_attributes => [Hash[:user => @user, :created_by => @user, :user_role => 'Owner']])
-    @authable_account2 = @authable.facility_accounts.create(Factory.attributes_for(:facility_account))
+    @account2=FactoryGirl.create(:nufs_account, :account_users_attributes => [Hash[:user => @user, :created_by => @user, :user_role => 'Owner']])
+    @authable_account2 = @authable.facility_accounts.create(FactoryGirl.attributes_for(:facility_account))
     @order_detail3 = place_and_complete_item_order(@user, @authable, @account2)
   end
+  after :each do
+    Settings.reload!
+  end
+  def self.it_should_404_for_zero_day_review
+    it 'should 404 for zero day review' do
+      Settings.billing.review_period = 0.days
+      sign_in @admin
+      do_request
+      response.code.should == "404"
+    end
+  end
+
   
   context "index" do
     before :each do
       @method=:get
       @action=:index
     end
+    it_should_deny_all [:staff, :senior_staff]
+    it_should_404_for_zero_day_review
 
     it_should_allow_managers_only do
       (assigns(:order_details) - [@order_detail1, @order_detail2, @order_detail3]).should be_empty
@@ -39,6 +55,7 @@ describe FacilityNotificationsController do
       end
       it_should_support_searching
     end
+
   end
   
   context "send_notifications" do
@@ -47,10 +64,14 @@ describe FacilityNotificationsController do
       @action=:send_notifications
       @params.merge!({ :order_detail_ids => [@order_detail1.id, @order_detail2.id] })
     end
+
+    it_should_404_for_zero_day_review
     
+    it_should_deny_all [:staff, :senior_staff]
+
     it_should_allow_managers_only :redirect do
       assigns(:errors).should be_empty
-      assigns(:accounts_to_notify).should == [@account]
+      assigns(:accounts_to_notify).should == [[@account, @authable]]
       assigns(:orders_notified).should == [@order_detail1, @order_detail2]
       @order_detail1.reload.reviewed_at.should_not be_nil
       @order_detail1.reviewed_at.should > 6.days.from_now
@@ -64,7 +85,7 @@ describe FacilityNotificationsController do
       it_should_allow_managers_only :redirect do
         assigns(:errors).should be_empty
         assigns(:orders_notified).should == [@order_detail1, @order_detail2, @order_detail3]
-        assigns(:accounts_to_notify).should == [@account, @account2]
+        assigns(:accounts_to_notify).should == [[@account, @authable], [@account2, @authable]]
       end
     end
     
@@ -79,8 +100,8 @@ describe FacilityNotificationsController do
     end
   end
   
-  context "in review" do
-     before :each do
+  context "in review" do   
+    before :each do
       @method=:get
       @action=:in_review
       @order_detail1.reviewed_at = 7.days.from_now
@@ -88,6 +109,9 @@ describe FacilityNotificationsController do
       @order_detail3.reviewed_at = 7.days.from_now
       @order_detail3.save!
     end
+
+    it_should_deny_all [:staff, :senior_staff]
+    it_should_404_for_zero_day_review
 
     it_should_allow_managers_only do
       (assigns(:order_details) - [@order_detail1, @order_detail3]).should be_empty
@@ -103,12 +127,15 @@ describe FacilityNotificationsController do
     end
   end
   
-  context "mark as reviewed" do
+  context "mark as reviewed" do    
     before :each do
       @method = :post
       @action = :mark_as_reviewed
       maybe_grant_always_sign_in(:admin)
     end
+
+    it_should_deny_all [:staff, :senior_staff]
+    it_should_404_for_zero_day_review
     
     it "should update" do
       Timecop.freeze do

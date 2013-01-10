@@ -2,12 +2,13 @@ namespace :order_details  do
   desc "mark order_details with past reservations as complete"
   task :expire_reservations => :environment do
     complete    = OrderStatus.find_by_name!('Complete')
-    order_details = OrderDetail.where("(state = 'new' OR state = 'inprocess') AND reservations.reserve_end_at < ? AND canceled_at IS NULL", Time.zone.now - 12.hours).
+    order_details = OrderDetail.where("(state = 'new' OR state = 'inprocess') AND order_status_id IS NOT NULL AND reservations.reserve_end_at < ? AND canceled_at IS NULL", Time.zone.now - 12.hours).
                                joins(:reservation).readonly(false).all
     order_details.each do |od|
       od.transaction do
         begin
           od.change_status!(complete)
+          od.fulfilled_at = od.reservation.reserve_end_at
           next unless od.price_policy
           costs = od.price_policy.calculate_cost_and_subsidy(od.reservation)
           next if costs.blank?
@@ -27,7 +28,7 @@ namespace :order_details  do
     complete    = OrderStatus.find_by_name!('Complete')
     order_details = OrderDetail.where("(state = 'new' OR state = 'inprocess') AND reservations.actual_end_at IS NULL AND canceled_at IS NULL AND reserve_end_at < ?", Time.zone.now - 1.hour).
                                joins(:reservation).
-                               include(:product).
+                               includes(:product).
                                readonly(false).all
     order_details.each do |od|
       next unless od.product.relay.try(:auto_logout) == true
@@ -48,5 +49,11 @@ namespace :order_details  do
         end
       end
     end
+  end
+
+  desc "task to remove merge orders that have been abandoned. See Task #48377"
+  task :remove_merge_orders => :environment do
+    stale_merge_orders=Order.where("merge_with_order_id IS NOT NULL AND created_at <= ?", Time.zone.now - 4.weeks).all
+    stale_merge_orders.each{|order| order.destroy }
   end
 end
