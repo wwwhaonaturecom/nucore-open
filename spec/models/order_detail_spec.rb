@@ -88,7 +88,7 @@ describe OrderDetail do
         @order_detail.reservation = FactoryGirl.create(:reservation,
                 :reserve_start_at => Time.now,
                 :reserve_end_at => Time.now+1.hour,
-                :instrument=> @instrument
+                :product=> @instrument
               )
         @order_detail.product = @instrument
         @order_detail.save
@@ -300,14 +300,13 @@ describe OrderDetail do
       @both_od        = FactoryGirl.create(:order_detail, :order => @order, :product => @both_instrument)
       @no_pp_od       = FactoryGirl.create(:order_detail, :order => @order, :product => @instrument_wo_pp)
 
-
-      @no_actuals_od.reservation = FactoryGirl.build(:reservation, :instrument => @no_actuals_instrument)
+      @no_actuals_od.reservation = FactoryGirl.build(:reservation, :product => @no_actuals_instrument)
       @no_actuals_od.save!
-      @actuals_od.reservation = FactoryGirl.build(:reservation, :instrument => @actuals_instrument)
+      @actuals_od.reservation = FactoryGirl.build(:reservation, :product => @actuals_instrument)
       @actuals_od.save!
-      @both_od.reservation = FactoryGirl.build(:reservation, :instrument => @both_instrument)
+      @both_od.reservation = FactoryGirl.build(:reservation, :product => @both_instrument)
       @both_od.save!
-      @no_pp_od.reservation = FactoryGirl.build(:reservation, :instrument => @both_instrument)
+      @no_pp_od.reservation = FactoryGirl.build(:reservation, :product => @both_instrument)
       @no_pp_od.save!
       
       # travel to the future to complete the order_details
