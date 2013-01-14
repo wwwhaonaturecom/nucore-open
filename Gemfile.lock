@@ -22,9 +22,9 @@ PATH
     nucs (1.0.0)
 
 PATH
-  remote: vendor/engines/nupmu
+  remote: vendor/engines/pmu
   specs:
-    nupmu (1.0.0)
+    pmu (1.0.0)
 
 GEM
   remote: http://rubygems.org/
@@ -258,9 +258,9 @@ DEPENDENCIES
   nokogiri (= 1.4.4)
   nu (~> 1.0.0)!
   nucs (~> 1.0.0)!
-  nupmu (~> 1.0.0)!
   paperclip (= 2.3.12)
   pdf-reader (= 0.10.1)
+  pmu (~> 1.0.0)!
   prawn (= 0.12.0)
   prawn_rails (= 0.0.5)
   rails (= 3.0.19)

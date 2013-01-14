@@ -54,7 +54,7 @@ gem 'daemons',          '1.1.6'
 gem 'c2po',             '~> 1.0.0', :path => 'vendor/engines/c2po'
 gem 'nu',               '~> 1.0.0', :path => 'vendor/engines/nu'
 gem 'nucs',             '~> 1.0.0', :path => 'vendor/engines/nucs'
-gem 'nupmu',            '~> 1.0.0', :path => 'vendor/engines/nupmu'
+gem 'pmu',              '~> 1.0.0', :path => 'vendor/engines/pmu'
 
 source 'http://download.bioinformatics.northwestern.edu/gems/'
 gem 'bcsec',             '2.1.1', :require => 'pers'

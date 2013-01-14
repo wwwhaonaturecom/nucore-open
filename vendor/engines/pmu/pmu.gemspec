@@ -1,5 +1,5 @@
 Gem::Specification.new do |gem|
-  gem.name    = 'nupmu'
+  gem.name    = 'pmu'
   gem.version = '1.0.0'
   gem.summary = "Provides Northwestern-specific information about their Primary Management Unit"
   gem.authors  = ['Table XI']

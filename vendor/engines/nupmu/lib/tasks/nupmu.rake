@@ -1,3 +1,0 @@
-namespace :nupmu do
-
-end
