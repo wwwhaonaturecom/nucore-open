@@ -4,7 +4,7 @@ class PmuDocument < Nokogiri::XML::SAX::Document
     super
     @value = nil
     @attrs = nil
-    @value_count = -1
+    @sequence_ndx = -1
     @value_sequence = [
       :unit_id,
       :pmu,
@@ -23,10 +23,10 @@ class PmuDocument < Nokogiri::XML::SAX::Document
     case name
       when 'value'
         @value = ''
-        @value_count += 1
+        @sequence_ndx += 1
       when 'row'
         @attrs = {}
-        @value_count = -1
+        @sequence_ndx = -1
     end
   end
 
@@ -39,7 +39,7 @@ class PmuDocument < Nokogiri::XML::SAX::Document
   def end_element(name)
     case name
       when 'value'
-        @attrs[ @value_sequence[@value_count] ] = @value
+        @attrs[ @value_sequence[@sequence_ndx] ] = @value
       when 'row'
         if @attrs[:nufin_id].present?
           dept = PmuDepartment.find_or_create_by_nufin_id @attrs[:nufin_id]
