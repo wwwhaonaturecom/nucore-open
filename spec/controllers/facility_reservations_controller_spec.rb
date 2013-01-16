@@ -240,7 +240,11 @@ describe FacilityReservationsController do
       end
 
       context 'fails validations' do
-        it 'should not allow a conflict with an existing reservation' do
+
+        it 'should not allow an invalid reservation' do
+          # Used to fail by overlapping existing reservation, but now admin reservations are
+          # allowed to per ticket 38975
+          Reservation.any_instance.stubs(:valid?).returns(false)
           @params[:reservation] = Factory.attributes_for(:reservation)
           parametrize_dates(@params[:reservation], :reserve)
           do_request
@@ -289,62 +293,42 @@ describe FacilityReservationsController do
   end
 
   context 'timeline' do
-    context 'instrument listing' do
-      before :each do
-        @instrument2 = Factory.create(:instrument,
-                      :facility_account => @facility_account,
-                      :facility => @authable,
-                      :is_hidden => true)
-        maybe_grant_always_sign_in :director
-        @method = :get
-        @action = :timeline
-        @params={ :facility_id => @authable.url_name }
-        do_request
-      end
+    before :each do
+      # create unpurchased reservation
+      @order2=Factory.create(:order,
+      :facility => @authable,
+      :user => @director,
+      :created_by => @director.id,
+      :account => @account,
+      :ordered_at => nil,
+      :state => 'new'
+      )
+      # make sure the reservations are happening today
+      @reservation.update_attributes!(:reserve_start_at => Time.zone.now, :reserve_end_at => 1.hour.from_now)
+      @unpurchased_reservation=Factory.create(:reservation, :instrument => @product, :reserve_start_at => 1.hour.from_now, :reserve_end_at => 2.hours.from_now)
+      @order_detail2=Factory.create(:order_detail, :order => @order2, :product => @product, :reservation => @unpurchased_reservation)
 
-      it 'should show hidden instruments' do
-        assigns(:instruments).should =~ [@product, @instrument2]
-      end
-
+      maybe_grant_always_sign_in :director
+      @method = :get
+      @action = :timeline
+      @params={ :facility_id => @authable.url_name }
+      do_request
     end
-    context 'orders' do
-      before :each do
-        # create unpurchased reservation
-        @order2=Factory.create(:order,
-        :facility => @authable,
-        :user => @director,
-        :created_by => @director.id,
-        :account => @account,
-        :ordered_at => nil,
-        :state => 'new'
-        )
-        # make sure the reservations are happening today
-        @reservation.update_attributes!(:reserve_start_at => Time.zone.now, :reserve_end_at => 1.hour.from_now)
-        @unpurchased_reservation=Factory.create(:reservation, :instrument => @product, :reserve_start_at => 1.hour.from_now, :reserve_end_at => 2.hours.from_now)
-        @order_detail2=Factory.create(:order_detail, :order => @order2, :product => @product, :reservation => @unpurchased_reservation)
 
-        maybe_grant_always_sign_in :director
-        @method = :get
-        @action = :timeline
-        @params={ :facility_id => @authable.url_name }
-        do_request
-      end
+    it 'should not be admin reservations' do
+      @reservation.should_not be_admin
+      @unpurchased_reservation.should_not be_admin
+    end
 
-      it 'should not be admin reservations' do
-        @reservation.should_not be_admin
-        @unpurchased_reservation.should_not be_admin
-      end
+    it 'should show reservation' do
+      # puts "paid: #{@reservation.id}"
+      # puts "unpaid: #{@unpurchased_reservation.id}"
+      # puts response.body
+      response.body.should include "id='tooltip_reservation_#{@reservation.id}'"
+    end
 
-      it 'should show reservation' do
-        # puts "paid: #{@reservation.id}"
-        # puts "unpaid: #{@unpurchased_reservation.id}"
-        # puts response.body
-        response.body.should include "id='tooltip_reservation_#{@reservation.id}'"
-      end
-
-      it 'should not show unpaid reservation' do
-        response.body.should_not include "id='tooltip_reservation_#{@unpurchased_reservation.id}'"
-      end
+    it 'should not show unpaid reservation' do
+      response.body.should_not include "id='tooltip_reservation_#{@unpurchased_reservation.id}'"
     end
   end
 
