@@ -5,6 +5,7 @@ module Pmu
     config.to_prepare do
       NufsAccount.send :include, Pmu::NufsAccountExtension
       GeneralReportsController.send :include, Pmu::GeneralReportsControllerExtension
+      InstrumentReportsController.send :include, Pmu::InstrumentReportsControllerExtension
 
       # make this engine's views override the main app's views
       paths=ActionController::Base.view_paths.dup
