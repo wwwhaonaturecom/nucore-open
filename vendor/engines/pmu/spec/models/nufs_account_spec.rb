@@ -11,6 +11,10 @@ describe NufsAccount do
     PmuDepartment.stubs(:find_by_nufin_id).returns @pmu_dept
   end
 
+  it 'should return pmu description' do
+    @nufs_account.pmu_description.should == @pmu_dept.pmu
+  end
+
   it 'should include pmu in description' do
     @nufs_account.to_s.should include(@pmu_dept.pmu)
   end
