@@ -35,7 +35,7 @@ namespace :deploy do
     run "ln -s #{deploy_to}/database.yml #{release_path}/vendor/engines/nucs/config/database.yml"
   end
   task :bundle_install do
-    run "cd #{release_path} && /opt/ruby-enterprise/bin/./bundle install ../../shared/bundle --without development test"
+    run "cd #{release_path} && /opt/ruby-enterprise/bin/./bundle install --path ../../shared/bundle --without development test"
   end
   task :chmod_project do
     run "chmod -R g+w #{release_path}"
