@@ -9,7 +9,9 @@ namespace :pmu do
     pmu_xml = pmu_file.read
     pmu_file.close
 
+    p "Parsing XML in #{pmu_path}..."
     parse_xml pmu_xml
+    p "Done!"
   end
 
 
