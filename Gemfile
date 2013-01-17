@@ -51,9 +51,10 @@ gem 'fastercsv',        '1.5.4'
 gem 'daemons',          '1.1.6'
 
 ## custom
-gem 'nucs',             '~> 1.0.0', :path => 'vendor/engines/nucs'
 gem 'c2po',             '~> 1.0.0', :path => 'vendor/engines/c2po'
 gem 'nu',               '~> 1.0.0', :path => 'vendor/engines/nu'
+gem 'nucs',             '~> 1.0.0', :path => 'vendor/engines/nucs'
+gem 'pmu',              '~> 1.0.0', :path => 'vendor/engines/pmu'
 
 source 'http://download.bioinformatics.northwestern.edu/gems/'
 gem 'bcsec',             '2.1.1', :require => 'pers'
@@ -61,15 +62,17 @@ gem 'bcdatabase',        '1.0.6'
 gem 'schema_qualified_tables', '1.0.0'
 
 group :development, :test do
-  gem 'rspec-rails', '2.9'
-  gem 'spork', '0.9.0.rc9'
-  gem 'mocha', '0.9.7'
-  gem 'factory_girl_rails', '1.0.1'
-  gem 'shoulda', '2.11.3'
-  gem 'ruby-debug', '0.10.3'
-  gem 'single_test', '0.4.0'
   gem 'ci_reporter'
+  gem 'factory_girl_rails', '1.0.1'
+  gem 'mocha', '0.9.7'
+  gem 'rspec-rails', '2.9'
+  gem 'ruby-debug', '0.10.3'
+  gem 'shoulda', '2.11.3'
+  gem 'single_test', '0.4.0'
+  gem 'spork', '0.9.0.rc9'
   gem 'timecop', '0.3.5'
+  
+  # NU specific
   gem 'rcov'
   gem 'silent-oracle'
 end
