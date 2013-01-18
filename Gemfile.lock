@@ -21,6 +21,11 @@ PATH
   specs:
     nucs (1.0.0)
 
+PATH
+  remote: vendor/engines/pmu
+  specs:
+    pmu (1.0.0)
+
 GEM
   remote: http://rubygems.org/
   remote: http://download.bioinformatics.northwestern.edu/gems/
@@ -256,6 +261,7 @@ DEPENDENCIES
   nucs (~> 1.0.0)!
   paperclip (= 2.3.12)
   pdf-reader (= 0.10.1)
+  pmu (~> 1.0.0)!
   prawn (= 0.12.0)
   prawn_rails (= 0.0.5)
   rails (= 3.0.19)
