@@ -150,9 +150,11 @@ describe Reservation do
 
       @reservation2.should_not be_does_not_conflict_with_other_reservation
 
-      @instrument2 = @facility.instruments.create(FactoryGirl.attributes_for(:instrument, :facility_account_id => @facility_account.id))
+      @instrument2 = FactoryGirl.create(:instrument,
+                                        :facility => @facility,
+                                        :facility_account => @facility_account)
 
-      @reservation2.instrument=@instrument2
+      @reservation2.product=@instrument2
       @reservation2.should be_does_not_conflict_with_other_reservation
     end
 
@@ -186,17 +188,19 @@ describe Reservation do
 
       it 'should not be moveable if there is not a time slot earlier than this one' do
         @reservation1.should be_can_move
-        @reservation1.move_to!(@reservation1.earliest_possible)
+        @reservation1.move_to_earliest.should be_true
         @reservation1.should_not be_can_move
+        @reservation1.move_to_earliest.should be_false
+        @reservation1.errors.should == { :base => ['Sorry, but your reservation can no longer be moved.'] }
       end
 
       it 'should update the reservation to the earliest available' do
         earliest=@reservation1.earliest_possible
         @reservation1.reserve_start_at.should_not == earliest.reserve_start_at
         @reservation1.reserve_end_at.should_not == earliest.reserve_end_at
-        @reservation1.move_to!(earliest)
-        @reservation1.reserve_start_at.should == earliest.reserve_start_at
-        @reservation1.reserve_end_at.should == earliest.reserve_end_at
+        @reservation1.move_to_earliest.should be_true
+        @reservation1.reserve_start_at.to_i.should == earliest.reserve_start_at.to_i
+        @reservation1.reserve_end_at.to_i.should == earliest.reserve_end_at.to_i
       end
     end
 
@@ -286,7 +290,7 @@ describe Reservation do
         @reservation1.reload.should_not be_ordered_on_behalf_of
       end
       it 'should return false for admin reservations' do
-        @admin_reservation = FactoryGirl.create(:reservation, :instrument => @instrument)
+        @admin_reservation = FactoryGirl.create(:reservation, :product => @instrument)
         @admin_reservation.should_not be_ordered_on_behalf_of
       end
       
@@ -507,7 +511,7 @@ describe Reservation do
                                                       :duration_value => 1, 
                                                       :duration_unit => 'hours', 
                                                       :order_detail => @order_detail,
-                                                      :instrument => @instrument)          
+                                                      :product => @instrument)          
         end
         it "should allow a user to reserve if it doesn't require approval" do
           @instrument.update_attributes(:requires_approval => false)
@@ -648,6 +652,10 @@ describe Reservation do
     end
     it "should have end set to actual_end_at timestamp" do
       @cal_obj_w_actual_end['end'].should == @actual_end_at_timestamp
+    end
+
+    it 'should include the instrument name' do
+      @cal_obj_w_actual_end['product'].should == @instrument.name
     end
   end
 

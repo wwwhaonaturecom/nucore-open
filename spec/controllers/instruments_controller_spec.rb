@@ -13,7 +13,10 @@ describe InstrumentsController do
   before(:each) do
     @authable         = FactoryGirl.create(:facility)
     @facility_account = @authable.facility_accounts.create(FactoryGirl.attributes_for(:facility_account))
-    @instrument       = @authable.instruments.create(FactoryGirl.attributes_for(:instrument, :facility_account_id => @facility_account.id))
+    @instrument       = FactoryGirl.create(:instrument,
+                                              :facility => @authable,
+                                              :facility_account => @facility_account,
+                                              :no_relay => true)
     @params={ :id => @instrument.url_name, :facility_id => @authable.url_name }
     @instrument_pp    = @instrument.instrument_price_policies.create(FactoryGirl.attributes_for(:instrument_price_policy, :price_group => @nupg))
   end
@@ -270,6 +273,39 @@ describe InstrumentsController do
       end
     end
 
+    describe 'shared schedule' do
+      before :each do
+        @schedule = FactoryGirl.create(:schedule, :facility => @authable)
+        sign_in @admin
+      end
+
+      context 'when wanting a new schedule' do
+        before :each do
+          @params[:instrument][:schedule_id] = ''
+        end
+
+        it 'should create a new schedule' do
+          expect { do_request }.to change{ Schedule.count }.by(1)
+        end
+          
+        it 'should be the newest schedule' do
+          do_request
+          assigns(:instrument).schedule.should == Schedule.last
+        end
+      end
+
+      context 'when selecting an existing schedule' do
+        before :each do
+          @params[:instrument][:schedule_id] = @schedule.id.to_s
+        end
+
+        it 'should use the existing schedule' do
+          do_request
+          assigns(:instrument).schedule.should == @schedule
+        end
+      end
+    end
+
     context 'fail' do
 
       before :each do
@@ -427,6 +463,24 @@ describe InstrumentsController do
         should render_template 'schedule'
       end
 
+      describe 'schedule sharing' do
+        before :each do
+          @admin_reservation = FactoryGirl.create(:reservation, :product => @instrument)
+          @instrument2 = FactoryGirl.create(:setup_instrument, :facility => @authable, :schedule => @instrument.schedule)
+          @admin_reservation2 = FactoryGirl.create(:reservation, :product => @instrument2)
+          sign_in @admin
+          do_request
+        end
+
+        it "should show the primary instrument's admin reservation" do
+          assigns(:admin_reservations).should include @admin_reservation
+        end
+
+        it "should show the second instrument's admin reservation" do
+          assigns(:admin_reservations).should include @admin_reservation2
+        end
+      end
+
     end
 
     context "status" do
@@ -447,15 +501,25 @@ describe InstrumentsController do
 
         @method=:get
         @action=:instrument_statuses
-        @instrument_with_relay = @authable.instruments.create(FactoryGirl.attributes_for(:instrument, :facility_account_id => @facility_account.id))
-        @instrument_with_relay.update_attributes(:relay => FactoryGirl.create(:relay_syna))
-        @instrument_with_dummy_relay = @authable.instruments.create(FactoryGirl.attributes_for(:instrument, :facility_account_id => @facility_account.id))
-        @instrument_with_dummy_relay.update_attributes(:relay => FactoryGirl.create(:relay_dummy))
-        @instrument_with_dummy_relay.instrument_statuses.create(:is_on => true)
-        @instrument_with_bad_relay = @authable.instruments.create(FactoryGirl.attributes_for(:instrument, :facility_account_id => @facility_account.id))
+        @instrument_with_relay = FactoryGirl.create(:instrument,
+                                              :facility => @authable,
+                                              :facility_account => @facility_account,
+                                              :no_relay => true)
+        @instrument_with_relay.update_attributes(:relay => FactoryGirl.create(:relay_syna, :instrument => @instrument_with_relay))
+        
+        @instrument_with_dummy_relay = FactoryGirl.create(:instrument,
+                                              :facility => @authable,
+                                              :facility_account => @facility_account,
+                                              :no_relay => true)
+        @instrument_with_dummy_relay.update_attributes(:relay => FactoryGirl.create(:relay_dummy, :instrument => @instrument_with_dummy_relay))
 
+        @instrument_with_dummy_relay.instrument_statuses.create(:is_on => true)
+        @instrument_with_bad_relay = FactoryGirl.create(:instrument,
+                                              :facility => @authable,
+                                              :facility_account => @facility_account,
+                                              :no_relay => true)
         # don't stub query status since this SynAcceesRevB will fail due to a bad IP address
-        @instrument_with_bad_relay.update_attributes(:relay => FactoryGirl.create(:relay_synb))
+        @instrument_with_bad_relay.update_attributes(:relay => FactoryGirl.create(:relay_synb, :instrument => @instrument_with_bad_relay))
         @instrument_with_bad_relay.relay.update_attribute(:ip, '')
       end
 

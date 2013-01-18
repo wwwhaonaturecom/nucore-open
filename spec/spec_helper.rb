@@ -278,14 +278,13 @@ Spork.each_run do
   #   Custom attributes for the +Reservation+, if any
   def place_reservation(facility, order_detail, reserve_start, extra_reservation_attrs=nil)
     # create instrument, min reserve time is 60 minutes, max is 60 minutes
-    @instrument ||= facility.instruments.create!(
-        FactoryGirl.attributes_for(
+    @instrument ||= FactoryGirl.create(
           :instrument,
+          :facility => facility,
           :facility_account => facility.facility_accounts.create(FactoryGirl.attributes_for(:facility_account)),
           :min_reserve_mins => 60,
-          :max_reserve_mins => 60
-        )
-    )
+          :max_reserve_mins => 60)
+    
 
     assert @instrument.valid?
     @instrument.schedule_rules.create!(FactoryGirl.attributes_for(:schedule_rule, :start_hour => 0, :end_hour => 24)) if @instrument.schedule_rules.empty?
@@ -327,8 +326,11 @@ Spork.each_run do
   #   The +User+ that creates the @order
   def setup_reservation(facility, facility_account, account, user)
     # create instrument, min reserve time is 60 minutes, max is 60 minutes
-    options          = FactoryGirl.attributes_for(:instrument, :facility_account => facility_account, :min_reserve_mins => 60, :max_reserve_mins => 60)
-    @instrument       = facility.instruments.create(options)
+    @instrument       = FactoryGirl.create(:instrument, 
+                                             :facility => facility, 
+                                             :facility_account => facility_account,
+                                             :min_reserve_mins => 60,
+                                             :max_reserve_mins => 60)
     assert @instrument.valid?
     @price_group      = facility.price_groups.create(FactoryGirl.attributes_for(:price_group))
     FactoryGirl.create(:price_group_product, :product => @instrument, :price_group => @price_group)
@@ -341,6 +343,38 @@ Spork.each_run do
     @order.add(@instrument, 1)
     @order_detail     = @order.order_details.first
   end
+
+  #
+  # Sets up an instrument and all the necessary environment to be ready for
+  # placing reservations. Assigns the following variables:
+  # - @instrument
+  # - @authable (aka facility)
+  # - @facility_account
+  # - @price_group
+  # - @rule (schedule rule)
+  # - @price_group_product
+  #
+  def setup_instrument(instrument_options = {})
+    @instrument = FactoryGirl.create(:setup_instrument, instrument_options)
+    @facility = @authable = @instrument.facility
+    @facility_account = @instrument.facility.facility_accounts.first
+    @price_group = @instrument.price_groups.last
+    @price_policy = @instrument.price_policies.last
+    @rule = @instrument.schedule_rules.first
+    @price_group_product = @instrument.price_group_products.first
+    @instrument
+  end
+
+  #
+  # Sets up a user with an account and as part of a price group
+  # Sets the following instance variables
+  # - @account
+  # - @pg_member
+  def setup_user_for_purchase(user, price_group)
+    @account          = FactoryGirl.create(:nufs_account, :account_users_attributes => [Hash[:user => user, :created_by => user, :user_role => 'Owner']])
+    @pg_member        = FactoryGirl.create(:user_price_group_member, :user => user, :price_group => price_group)
+  end
+
 
   # If you changed Settings anywhere in your spec, include this as
   # in after :all to reset to the normal settings.

@@ -8,3 +8,12 @@ overridable_factory :nufs_account do
   created_by 0
 end
 
+FactoryGirl.define do
+  factory :setup_account, :class => NufsAccount, :parent => :nufs_account do
+    ignore do
+      owner { FactoryGirl.create(:user) }
+    end
+
+    account_users_attributes { [Hash[:user => owner, :created_by => owner, :user_role => 'Owner']] }
+  end
+end
