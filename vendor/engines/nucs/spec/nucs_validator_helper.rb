@@ -7,6 +7,7 @@ module NucsValidatorHelper
   #   Overrides for the +NucsGl066+ Factory, if any
   def define_gl066(chart_string, attrs={})
     components=chart_string.match(NucsValidator.pattern)
+    raise Exception.new("#{chart_string} does not match #{NucsValidator.pattern}") unless components
     attrs.merge!(:fund => components[1]) unless attrs.has_key?(:fund)
     attrs.merge!(:department => components[2]) unless attrs.has_key?(:department)
     attrs.merge!(:project => components[3]) if components[3] and not attrs.has_key?(:project)

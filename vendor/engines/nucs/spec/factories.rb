@@ -3,17 +3,19 @@
 # are running the engine stand alone
 unless Rails.root.to_s.include?('/vendor/engines/nucs')
   FactoryGirl.define do
-    factory :nufs_account, :class => NufsAccount do
+    factory :nufs_account do
       sequence(:account_number) do |n|
-        "9#{'%02d' % n}-7777777" # fund3-dept7
+        # 9XX-7777777
+        account = "9#{'%02d' % (n%100)}-7777777" # fund3-dept7
+        # Defined here as opposed to in an after_build hook
+        # since some tests rely on it being defined on attributes_for
+        define_gl066 account
+        account
       end
       description 'nufs account description'
       expires_at { Time.zone.now + 1.month }
       created_by 0
       
-      after_build do |model|
-        define_gl066(model.account_number)
-      end
     end
   end
 end
