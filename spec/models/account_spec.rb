@@ -1,4 +1,4 @@
->>require 'spec_helper'
+require 'spec_helper'
 require 'active_support/secure_random'
 
 describe Account do

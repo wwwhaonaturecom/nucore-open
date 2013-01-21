@@ -10,10 +10,7 @@ FactoryGirl.define do
     factory :instrument, :class => Instrument do
       ignore do
         no_relay false
-      end
-
-      schedule { Factory.create(:schedule, :facility => facility) if facility }
-      
+      end    
 
       sequence(:name) { |n| "Instrument #{n}" }
       sequence(:url_name) { |n| "instrument#{n}"  }
