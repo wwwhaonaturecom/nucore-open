@@ -33,7 +33,7 @@ class ScheduleRule < ActiveRecord::Base
     reservations = []
     rules.each do |rule|
       res = Reservation.new({
-        :instrument => instrument,
+        :product => instrument,
         :reserve_start_at => day.dup.change(:hour => rule.start_hour, :min => rule.start_min),
         :reserve_end_at => day.dup.change(:hour => rule.end_hour, :min => rule.end_min),
         :blackout => true
@@ -99,6 +99,16 @@ class ScheduleRule < ActiveRecord::Base
 
   def end_time_int
     end_hour*100+end_min
+  end
+
+  # Compare the start time of this with another schedule rule's
+  def cmp_start(other)
+    self.start_time_int <=> other.start_time_int
+  end
+
+  # Compare the end time of this with another schedule rule's
+  def cmp_end(other)
+    self.end_time_int <=> other.end_time_int
   end
 
   def start_time
@@ -224,5 +234,11 @@ class ScheduleRule < ActiveRecord::Base
     today = Time.zone.now
     (today - today.wday.days).to_date
   end
+
+  # If we're at, say, 4:00, return 3. If we're at 4:01, return 4.
+  def hour_floor
+    end_min == 0 ? end_hour - 1 : end_hour
+  end
+  
 
 end

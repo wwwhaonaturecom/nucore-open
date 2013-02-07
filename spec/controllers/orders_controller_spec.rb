@@ -26,17 +26,17 @@ describe OrdersController do
   end
 
   before :each do
-    @authable         = Factory.create(:facility)
-    @facility_account = @authable.facility_accounts.create(Factory.attributes_for(:facility_account))
-    @price_group      = @authable.price_groups.create(Factory.attributes_for(:price_group))
-    @account          = Factory.create(:nufs_account, :account_users_attributes => [Hash[:user => @staff, :created_by => @staff, :user_role => AccountUser::ACCOUNT_OWNER]])
-    @order            = @staff.orders.create(Factory.attributes_for(:order, :created_by => @staff.id, :account => @account))
-    @item             = @authable.items.create(Factory.attributes_for(:item, :facility_account_id => @facility_account.id))
+    @authable         = FactoryGirl.create(:facility)
+    @facility_account = @authable.facility_accounts.create(FactoryGirl.attributes_for(:facility_account))
+    @price_group      = @authable.price_groups.create(FactoryGirl.attributes_for(:price_group))
+    @account          = FactoryGirl.create(:nufs_account, :account_users_attributes => [Hash[:user => @staff, :created_by => @staff, :user_role => AccountUser::ACCOUNT_OWNER]])
+    @order            = @staff.orders.create(FactoryGirl.attributes_for(:order, :created_by => @staff.id, :account => @account))
+    @item             = @authable.items.create(FactoryGirl.attributes_for(:item, :facility_account_id => @facility_account.id))
     define_open_account(@item.account, @account.account_number)
 
-    Factory.create(:user_price_group_member, :user => @staff, :price_group => @price_group)
+    FactoryGirl.create(:user_price_group_member, :user => @staff, :price_group => @price_group)
     
-    @item_pp=@item.item_price_policies.create!(Factory.attributes_for(:item_price_policy, :price_group_id => @price_group.id, :start_date => 1.hour.ago))
+    @item_pp=@item.item_price_policies.create!(FactoryGirl.attributes_for(:item_price_policy, :price_group_id => @price_group.id, :start_date => 1.hour.ago))
 
     @params={ :id => @order.id, :order_id => @order.id }
   end
@@ -83,7 +83,7 @@ describe OrdersController do
         sign_in @staff
       end
       it 'should redirect to cart url if the cart is empty' do
-        @order2 = @staff.orders.create(Factory.attributes_for(:order, :created_by => @staff.id, :account => @account))
+        @order2 = @staff.orders.create(FactoryGirl.attributes_for(:order, :created_by => @staff.id, :account => @account))
         @order2.order_details.should be_empty
         @params = { :id => @order2.id }
         do_request
@@ -206,8 +206,11 @@ describe OrdersController do
 
     context 'success' do
       before :each do
-        @instrument = @authable.instruments.create(Factory.attributes_for(:instrument, :facility_account_id => @facility_account.id))
-        @instrument_pp = @instrument.instrument_price_policies.create!(Factory.attributes_for(:instrument_price_policy, :price_group => @nupg))
+        @instrument = FactoryGirl.create(:instrument,
+                                            :facility => @authable,
+                                            :facility_account => @facility_account,
+                                            :no_relay => true)
+        @instrument_pp = @instrument.instrument_price_policies.create!(FactoryGirl.attributes_for(:instrument_price_policy, :price_group => @nupg))
         define_open_account(@instrument.account, @account.account_number)
         @reservation = place_reservation_for_instrument(@staff, @instrument, @account, Time.zone.now)
         @order = @reservation.order_detail.order
@@ -229,7 +232,7 @@ describe OrdersController do
       end
 
       it 'should set the status of the order detail to the products default status' do
-        @order_status = Factory.create(:order_status, :parent => OrderStatus.inprocess.first)
+        @order_status = FactoryGirl.create(:order_status, :parent => OrderStatus.inprocess.first)
         @instrument.update_attributes!(:initial_order_status_id => @order_status.id)
         sign_in @staff
         do_request
@@ -243,10 +246,24 @@ describe OrdersController do
         flash[:notice].should == 'Reservation completed successfully'
         response.should redirect_to reservations_path
       end
+
+      it 'should redirect to switch on if the instrument has a relay' do
+        @instrument.update_attributes(:relay => FactoryGirl.create(:relay_dummy, :instrument => @instrument))
+        sign_in @staff
+        do_request
+        response.should redirect_to order_order_detail_reservation_switch_instrument_path(
+          @order,
+          @order_detail,
+          @reservation,
+          :switch => 'on',
+          :redirect_to => reservations_path
+          )       
+      end
+
       it 'should redirect to receipt when purchasing multiple reservations' do
         @order.add(@instrument, 1)
         @order.order_details.size.should == 2
-        @reservation2 = Factory.create(:reservation, :order_detail => @order.order_details[1], :instrument => @instrument)
+        @reservation2 = FactoryGirl.create(:reservation, :order_detail => @order.order_details[1], :product => @instrument)
         Reservation.all.size.should == 2
 
         sign_in @staff
@@ -360,7 +377,7 @@ describe OrdersController do
             Settings.reload!
           end
           it 'should set the fulfilled date to the order time' do
-            @item_pp = @item.item_price_policies.create!(Factory.attributes_for(:item_price_policy, :price_group_id => @price_group.id, :start_date => 1.day.ago, :expire_date => 1.day.from_now))
+            @item_pp = @item.item_price_policies.create!(FactoryGirl.attributes_for(:item_price_policy, :price_group_id => @price_group.id, :start_date => 1.day.ago, :expire_date => 1.day.from_now))
             @params.merge!({:order_date => format_usa_date(1.day.ago), :order_time => {:hour => '10', :minute => '13', :ampm => 'AM'}})
             do_request
             assigns[:order].reload.order_details.all? { |od| od.fulfilled_at.should match_date 1.day.ago.change(:hour => 10, :min => 13) }
@@ -368,8 +385,8 @@ describe OrdersController do
           context 'price policies' do
             before :each do
               @item.item_price_policies.clear
-              @item_pp = @item.item_price_policies.create!(Factory.attributes_for(:item_price_policy, :price_group_id => @price_group.id, :start_date => 1.day.ago, :expire_date => 1.day.from_now))
-              @item_past_pp=@item.item_price_policies.create!(Factory.attributes_for(:item_price_policy, :price_group_id => @price_group.id, :start_date => 7.days.ago, :expire_date => 1.day.ago))
+              @item_pp = @item.item_price_policies.create!(FactoryGirl.attributes_for(:item_price_policy, :price_group_id => @price_group.id, :start_date => 1.day.ago, :expire_date => 1.day.from_now))
+              @item_past_pp=@item.item_price_policies.create!(FactoryGirl.attributes_for(:item_price_policy, :price_group_id => @price_group.id, :start_date => 7.days.ago, :expire_date => 1.day.ago))
               @params.merge!(:order_time => {:hour => '10', :minute => '00', :ampm => 'AM'})
             end
             it 'should use the current price policy for dates in that policy' do
@@ -403,8 +420,10 @@ describe OrdersController do
 
       context 'backdating a reservation' do
         before :each do
-          @instrument = @authable.instruments.create(Factory.attributes_for(:instrument, :facility_account_id => @facility_account.id))
-          @instrument_pp = @instrument.instrument_price_policies.create!(Factory.attributes_for(:instrument_price_policy, :price_group => @price_group, :start_date => 7.day.ago, :expire_date => 1.day.from_now))
+          @instrument = FactoryGirl.create(:instrument,
+                                              :facility => @authable,
+                                              :facility_account => @facility_account)
+          @instrument_pp = @instrument.instrument_price_policies.create!(FactoryGirl.attributes_for(:instrument_price_policy, :price_group => @price_group, :start_date => 7.day.ago, :expire_date => 1.day.from_now))
           define_open_account(@instrument.account, @account.account_number)
           @reservation = place_reservation_for_instrument(@staff, @instrument, @account, 3.days.ago)
           @reservation.should_not be_nil
@@ -529,9 +548,12 @@ describe OrdersController do
 
     context 'instrument' do
       before :each do
-        @options=Factory.attributes_for(:instrument, :facility_account => @facility_account, :min_reserve_mins => 60, :max_reserve_mins => 60)
         @order.clear_cart?
-        @instrument=@authable.instruments.create(@options)
+        @instrument=FactoryGirl.create(:instrument,
+                                          :facility => @authable,
+                                          :facility_account => @facility_account,
+                                          :min_reserve_mins => 60,
+                                          :max_reserve_mins => 60)
         @params[:id]=@order.id
         @params[:order][:order_details].first[:product_id] = @instrument.id
       end
@@ -597,10 +619,10 @@ describe OrdersController do
 
       context "mixed facility" do
         it "should flash error message containing another" do
-          @facility2          = Factory.create(:facility)
-          @facility_account2  = @facility2.facility_accounts.create!(Factory.attributes_for(:facility_account))
-          @account2           = Factory.create(:nufs_account, :account_users_attributes => [Hash[:user => @staff, :created_by => @staff, :user_role => AccountUser::ACCOUNT_OWNER]])
-          @item2              = @facility2.items.create!(Factory.attributes_for(:item, :facility_account_id => @facility_account2.id))
+          @facility2          = FactoryGirl.create(:facility)
+          @facility_account2  = @facility2.facility_accounts.create!(FactoryGirl.attributes_for(:facility_account))
+          @account2           = FactoryGirl.create(:nufs_account, :account_users_attributes => [Hash[:user => @staff, :created_by => @staff, :user_role => AccountUser::ACCOUNT_OWNER]])
+          @item2              = @facility2.items.create!(FactoryGirl.attributes_for(:item, :facility_account_id => @facility_account2.id))
           # add first item to cart 
           maybe_grant_always_sign_in :staff
           do_request
@@ -620,10 +642,10 @@ describe OrdersController do
       before :each do
         @order.account = @account
         @order.save!
-        @facility2          = Factory.create(:facility)
-        @facility_account2  = @facility2.facility_accounts.create!(Factory.attributes_for(:facility_account))
-        @account2           = Factory.create(:nufs_account, :account_users_attributes => [Hash[:user => @staff, :created_by => @staff, :user_role => AccountUser::ACCOUNT_OWNER]])
-        @item2              = @facility2.items.create!(Factory.attributes_for(:item, :facility_account_id => @facility_account2.id))
+        @facility2          = FactoryGirl.create(:facility)
+        @facility_account2  = @facility2.facility_accounts.create!(FactoryGirl.attributes_for(:facility_account))
+        @account2           = FactoryGirl.create(:nufs_account, :account_users_attributes => [Hash[:user => @staff, :created_by => @staff, :user_role => AccountUser::ACCOUNT_OWNER]])
+        @item2              = @facility2.items.create!(FactoryGirl.attributes_for(:item, :facility_account_id => @facility_account2.id))
       end
       context "in the right facility" do
         before :each do
@@ -641,7 +663,7 @@ describe OrdersController do
         end
         it "should not allow guest" do
           maybe_grant_always_sign_in :guest
-          @guest2 = Factory.create(:user)
+          @guest2 = FactoryGirl.create(:user)
           switch_to @guest2
           do_request
           should set_the_flash
@@ -684,8 +706,8 @@ describe OrdersController do
     end
 
     it "should 404 it the order_detail to be removed is not in the current cart" do
-      @account2 = Factory.create(:nufs_account, :account_users_attributes => [Hash[:user => @director, :created_by => @director, :user_role => 'Owner']])
-      @order2   = @director.orders.create(Factory.attributes_for(:order, :user => @director, :created_by => @director, :account => @account2))
+      @account2 = FactoryGirl.create(:nufs_account, :account_users_attributes => [Hash[:user => @director, :created_by => @director, :user_role => 'Owner']])
+      @order2   = @director.orders.create(FactoryGirl.attributes_for(:order, :user => @director, :created_by => @director, :account => @account2))
       @order2.add(@item)
       @order_detail2 = @order2.order_details[0]
       @params[:order_detail_id]=@order_detail2.id
@@ -771,12 +793,15 @@ describe OrdersController do
 
   context "cart meta data" do
     before(:each) do
-      @instrument       = @authable.instruments.create(Factory.attributes_for(:instrument, :facility_account_id => @facility_account.id))
-      @instrument.schedule_rules.create(Factory.attributes_for(:schedule_rule, :start_hour => 0, :end_hour => 24))
-      @instrument_pp = @instrument.instrument_price_policies.create(Factory.attributes_for(:instrument_price_policy, :price_group_id => @price_group.id))
+      @instrument   = FactoryGirl.create(:instrument,
+                                          :facility => @authable,
+                                          :facility_account => @facility_account)
+                    
+      @instrument.schedule_rules.create(FactoryGirl.attributes_for(:schedule_rule, :start_hour => 0, :end_hour => 24))
+      @instrument_pp = @instrument.instrument_price_policies.create(FactoryGirl.attributes_for(:instrument_price_policy, :price_group_id => @price_group.id))
       @instrument_pp.restrict_purchase = false
       define_open_account(@instrument.account, @account.account_number)
-      @service          = @authable.services.create(Factory.attributes_for(:service, :facility_account_id => @facility_account.id))
+      @service          = @authable.services.create(FactoryGirl.attributes_for(:service, :facility_account_id => @facility_account.id))
       @method=:get
       @action=:show
     end
@@ -856,8 +881,8 @@ describe OrdersController do
 
   context "checkout" do
     before(:each) do
-      #@item_pp          = Factory.create(:item_price_policy, :item => @item, :price_group => @price_group)
-      #@pg_member        = Factory.create(:user_price_group_member, :user => @staff, :price_group => @price_group)
+      #@item_pp          = FactoryGirl.create(:item_price_policy, :item => @item, :price_group => @price_group)
+      #@pg_member        = FactoryGirl.create(:user_price_group_member, :user => @staff, :price_group => @price_group)
       @order.add(@item, 10)
       @method=:get
       @action=:show
@@ -866,7 +891,7 @@ describe OrdersController do
     it_should_require_login
 
     it "should disallow viewing of cart that is purchased" do
-      Factory.create(:price_group_product, :product => @item, :price_group =>@price_group, :reservation_window => nil)
+      FactoryGirl.create(:price_group_product, :product => @item, :price_group =>@price_group, :reservation_window => nil)
       define_open_account(@item.account, @account.account_number)
       @order.validate_order!
       @order.purchase!
@@ -888,9 +913,9 @@ describe OrdersController do
 
     it 'should set the potential order_statuses from this facility and only this facility' do
       maybe_grant_always_sign_in :staff
-      @facility2 = Factory.create(:facility)
-      @order_status = Factory.create(:order_status, :facility => @authable, :parent => OrderStatus.new_os.first)
-      @order_status_other = Factory.create(:order_status, :facility => @facility2, :parent => OrderStatus.new_os.first)
+      @facility2 = FactoryGirl.create(:facility)
+      @order_status = FactoryGirl.create(:order_status, :facility => @authable, :parent => OrderStatus.new_os.first)
+      @order_status_other = FactoryGirl.create(:order_status, :facility => @facility2, :parent => OrderStatus.new_os.first)
       do_request
       assigns[:order_statuses].should be_include @order_status
       assigns[:order_statuses].should_not be_include @order_status_other

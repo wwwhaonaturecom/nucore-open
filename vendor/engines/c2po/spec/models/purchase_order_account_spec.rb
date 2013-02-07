@@ -5,7 +5,7 @@ describe PurchaseOrderAccount do
   include AffiliateAccountHelper
 
   before(:each) do
-    @user=Factory.create(:user)
+    @user=FactoryGirl.create(:user)
 
     @owner={
         :user => @user,
@@ -27,7 +27,13 @@ describe PurchaseOrderAccount do
     account1 = PurchaseOrderAccount.create(@account_attrs)
     account1.should respond_to(:facility)
   end
-
+  
+  it "should take a facility" do
+    facility = FactoryGirl.create(:facility)
+    @account_attrs[:facility] = facility
+    account = PurchaseOrderAccount.create(@account_attrs)
+    account.facility.should == facility
+  end
   
   it "should be limited to a single facility" do
     PurchaseOrderAccount.limited_to_single_facility?.should be_true
@@ -35,7 +41,7 @@ describe PurchaseOrderAccount do
 
 
   context 'with facility' do
-    let(:facility) { Factory.create :facility }
+    let(:facility) { FactoryGirl.create :facility }
     let(:account) do
       @account_attrs[:facility] = facility
       PurchaseOrderAccount.create @account_attrs
