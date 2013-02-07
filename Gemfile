@@ -71,6 +71,8 @@ group :development, :test do
   gem 'single_test', '0.4.0'
   gem 'spork', '0.9.0.rc9'
   gem 'timecop', '0.3.5'
+  gem "pry-rails",         '0.2.2'
+  gem "awesome_print",     '1.1.0'
   
   # NU specific
   gem 'rcov'
