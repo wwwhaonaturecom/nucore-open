@@ -10,6 +10,7 @@
             product=od.product
             bundle_desc=product.is_a?(Bundle) ? product.products.collect(&:name).join(' & ') : nil
             reservation = od.reservation
+            pmu_description = account.respond_to?(:pmu_description) ? account.pmu_description : nil
 
             row=[
                 # basic info
@@ -22,7 +23,7 @@
                 product.url_name, product.type.underscore.humanize, product.name, od.quantity, bundle_desc,
 
                 # what account this order detail is for
-                account.type.underscore.humanize, account.affiliate.try(:name), account.account_number, account.description, account.pmu_description, human_datetime(account.expires_at),
+                account.type.underscore.humanize, account.affiliate.try(:name), account.account_number, account.description, pmu_description, human_datetime(account.expires_at),
                 owner.username, owner.first_name, owner.last_name, owner.email,
 
                 # pricing info
@@ -52,7 +53,7 @@
             row += journal ? [ human_datetime(journal.journal_date), od.reconciled_note ] : [nil, nil]
 
         rescue => e
-            row=[ "*** ERROR WHEN REPORTING ON ORDER DETAIL #{od.to_s}: #{e.message} ***" ]
+            row=[ "*** ERROR WHEN REPORTING ON ORDER DETAIL #{od.to_s}: #{e.message}#{e.backtrace.join("\n")} ***" ]
         end
 
         csv << row
