@@ -91,4 +91,16 @@ namespace :order_details  do
     stale_merge_orders=Order.where("merge_with_order_id IS NOT NULL AND created_at <= ?", Time.zone.now - 4.weeks).all
     stale_merge_orders.each{|order| order.destroy }
   end
+
+  desc "Retouch all complete order details and recalculate pricing"
+  task :recalculate_prices, [:facility_slug] => :environment do |t, args|
+    Facility.find_by_url_name(args[:facility_slug]).order_details.where(:state => 'complete').each do |od|
+      old_cost = od.actual_cost
+      old_subsidy = od.actual_subsidy
+      old_total = od.actual_total
+      od.assign_price_policy(od.fulfilled_at)
+      puts "#{od}|#{od.order_status}|#{od.user}|#{od.product}|#{od.fulfilled_at}|#{old_cost}|#{old_subsidy}|#{old_total}|#{od.actual_cost}|#{od.actual_subsidy}|#{od.actual_total}|#{od.actual_total == old_total}"
+    end
+
+  end
 end

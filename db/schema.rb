@@ -10,7 +10,11 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
+<<<<<<< HEAD
 ActiveRecord::Schema.define(:version => 20120824185714) do
+=======
+ActiveRecord::Schema.define(:version => 20130108221731) do
+>>>>>>> upstream/shared_calendar
 
   create_table "account_users", :force => true do |t|
     t.integer  "account_id",               :precision => 38, :scale => 0, :null => false
@@ -411,6 +415,7 @@ ActiveRecord::Schema.define(:version => 20120824185714) do
     t.string   "name",                    :limit => 200,                                                   :null => false
     t.string   "url_name",                :limit => 50,                                                    :null => false
     t.text     "description"
+<<<<<<< HEAD
     t.boolean  "requires_approval",                      :precision => 1,  :scale => 0,                    :null => false
     t.integer  "initial_order_status_id",                :precision => 38, :scale => 0
     t.boolean  "is_archived",                            :precision => 1,  :scale => 0,                    :null => false
@@ -421,12 +426,31 @@ ActiveRecord::Schema.define(:version => 20120824185714) do
     t.integer  "max_reserve_mins",                       :precision => 38, :scale => 0
     t.integer  "min_cancel_hours",                       :precision => 38, :scale => 0
     t.integer  "facility_account_id",                    :precision => 38, :scale => 0
+=======
+    t.integer  "schedule_id"
+    t.boolean  "requires_approval",                                         :null => false
+    t.integer  "initial_order_status_id"
+    t.boolean  "is_archived",                                               :null => false
+    t.boolean  "is_hidden",                                                 :null => false
+    t.datetime "created_at",                                                :null => false
+    t.datetime "updated_at",                                                :null => false
+    t.integer  "min_reserve_mins"
+    t.integer  "max_reserve_mins"
+    t.integer  "min_cancel_hours"
+    t.integer  "facility_account_id"
+>>>>>>> upstream/shared_calendar
     t.string   "account",                 :limit => 5
     t.boolean  "show_details",                           :precision => 1,  :scale => 0, :default => false, :null => false
     t.integer  "auto_cancel_mins",                       :precision => 38, :scale => 0
     t.string   "contact_email"
   end
 
+<<<<<<< HEAD
+=======
+  add_index "products", ["facility_account_id"], :name => "fk_facility_accounts"
+  add_index "products", ["facility_id"], :name => "sys_c008556"
+  add_index "products", ["schedule_id"], :name => "i_instruments_schedule_id"
+>>>>>>> upstream/shared_calendar
 
   create_table "relays", :force => true do |t|
     t.integer  "instrument_id",               :precision => 38, :scale => 0
@@ -443,10 +467,17 @@ ActiveRecord::Schema.define(:version => 20120824185714) do
   add_index "relays", ["instrument_id"], :name => "index_relays_on_instrument_id", :tablespace => "bc_nucore"
 
   create_table "reservations", :force => true do |t|
+<<<<<<< HEAD
     t.integer  "order_detail_id",                :precision => 38, :scale => 0
     t.integer  "instrument_id",                  :precision => 38, :scale => 0, :null => false
     t.datetime "reserve_start_at",                                              :null => false
     t.datetime "reserve_end_at",                                                :null => false
+=======
+    t.integer  "order_detail_id"
+    t.integer  "product_id",                     :null => false
+    t.datetime "reserve_start_at",               :null => false
+    t.datetime "reserve_end_at",                 :null => false
+>>>>>>> upstream/shared_calendar
     t.datetime "actual_start_at"
     t.datetime "actual_end_at"
     t.datetime "canceled_at"
@@ -454,6 +485,15 @@ ActiveRecord::Schema.define(:version => 20120824185714) do
     t.string   "canceled_reason",  :limit => 50
   end
 
+<<<<<<< HEAD
+=======
+  add_index "reservations", ["order_detail_id"], :name => "res_ord_det_id_fk"
+  add_index "reservations", ["product_id"], :name => "reservations_instrument_id_fk"
+
+  create_table "roles", :force => true do |t|
+    t.string "name"
+  end
+>>>>>>> upstream/shared_calendar
 
   create_table "schedule_rules", :force => true do |t|
     t.integer "instrument_id",    :precision => 38, :scale => 0,                  :null => false
@@ -472,6 +512,15 @@ ActiveRecord::Schema.define(:version => 20120824185714) do
     t.boolean "on_sat",           :precision => 1,  :scale => 0,                  :null => false
   end
 
+
+  create_table "schedules", :force => true do |t|
+    t.string   "name"
+    t.integer  "facility_id"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  add_index "schedules", ["facility_id"], :name => "i_schedules_facility_id"
 
   create_table "statement_rows", :force => true do |t|
     t.integer  "statement_id",    :precision => 38, :scale => 0, :null => false
@@ -563,11 +612,27 @@ ActiveRecord::Schema.define(:version => 20120824185714) do
   add_foreign_key "price_group_members", "price_groups", :name => "sys_c008583"
   add_foreign_key "price_groups", "facilities", :name => "sys_c008578"
   add_foreign_key "price_policies", "price_groups", :name => "sys_c008589"
+<<<<<<< HEAD
+=======
+
+>>>>>>> upstream/shared_calendar
   add_foreign_key "product_users", "products", :name => "fk_products"
   add_foreign_key "products", "facilities", :name => "sys_c008556"
   add_foreign_key "products", "facility_accounts", :name => "fk_facility_accounts"
+<<<<<<< HEAD
   add_foreign_key "reservations", "order_details", :name => "res_ord_det_id_fk"
   add_foreign_key "reservations", "products", :name => "reservations_instrument_id_fk", :column => "instrument_id"
   add_foreign_key "schedule_rules", "products", :name => "sys_c008573", :column => "instrument_id"
+=======
+  add_foreign_key "products", "schedules", :name => "fk_instruments_schedule"
+
+  add_foreign_key "reservations", "order_details", :name => "res_ord_det_id_fk"
+  add_foreign_key "reservations", "products", :name => "reservations_product_id_fk"
+
+  add_foreign_key "schedule_rules", "products", :name => "sys_c008573", :column => "instrument_id"
+
+  add_foreign_key "schedules", "facilities", :name => "fk_schedules_facility"
+
+>>>>>>> upstream/shared_calendar
   add_foreign_key "statements", "facilities", :name => "fk_statement_facilities"
 end

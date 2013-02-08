@@ -63,15 +63,20 @@ gem 'schema_qualified_tables', '1.0.0'
 
 group :development, :test do
   gem 'ci_reporter'
-  gem 'factory_girl_rails', '1.0.1'
-  gem 'mocha', '0.9.7'
-  gem 'rspec-rails', '2.9'
-  gem 'ruby-debug', '0.10.3'
-  gem 'shoulda', '2.11.3'
-  gem 'single_test', '0.4.0'
-  gem 'spork', '0.9.0.rc9'
-  gem 'timecop', '0.3.5'
-  
+
+  # TODO upgrade factory girl to 4.1 once we no longer need to support
+  # ruby 1.8.7. FactoryGirl 3 only supports 1.9.2
+  gem 'factory_girl_rails','1.7.0'
+  gem 'mocha',             '0.9.7'
+  gem 'rspec-rails',       '2.9'
+  gem 'ruby-debug',        '0.10.3'
+  gem 'shoulda',           '2.11.3'
+  gem 'single_test',       '0.4.0'
+  gem 'spork',             '0.9.0.rc9'
+  gem 'timecop'
+  gem "pry-rails",         '0.2.2'
+  gem "awesome_print",     '1.1.0'
+
   # NU specific
   gem 'rcov'
   gem 'silent-oracle'

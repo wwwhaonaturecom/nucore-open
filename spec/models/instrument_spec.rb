@@ -6,9 +6,11 @@ describe Instrument do
   
   context "factory" do
     it "should create using factory" do
-      @facility         = Factory.create(:facility)
-      @facility_account = @facility.facility_accounts.create(Factory.attributes_for(:facility_account))
-      @instrument       = @facility.instruments.create(Factory.attributes_for(:instrument, :facility_account_id => @facility_account.id))
+      @facility         = FactoryGirl.create(:facility)
+      @facility_account = @facility.facility_accounts.create(FactoryGirl.attributes_for(:facility_account))
+      @instrument       = FactoryGirl.create(:instrument,
+                                      :facility => @facility,
+                                      :facility_account => @facility_account)
       @instrument.should be_valid
       @instrument.type.should == 'Instrument'
     end
@@ -22,16 +24,96 @@ describe Instrument do
     end
   end
 
+  describe 'shared schedules' do
+    context 'default schedule' do
+      before :each do
+        @facility = FactoryGirl.create(:facility)
+        @facility_account = @facility.facility_accounts.create(FactoryGirl.attributes_for(:facility_account))
+      end
+      
+      it 'should create a default schedule' do
+        @instrument = FactoryGirl.build(:instrument,
+                                          :facility => @facility,
+                                          :facility_account => @facility_account,
+                                          :schedule => nil)
+        @instrument.schedule.should be_nil
+        @instrument.save.should be_true
+        @instrument.schedule.should be
+      end
+
+      it 'should not create a new schedule when defined' do
+        @schedule = FactoryGirl.create(:schedule, :facility => @facility)
+        @instrument = FactoryGirl.build(:instrument,
+                                          :facility => @facility,
+                                          :facility_account => @facility_account,
+                                          :schedule => @schedule)
+        @instrument.schedule.should be
+        @instrument.save.should be_true
+        @instrument.schedule.should == @schedule
+      end
+    end
+
+    describe 'schedule_sharing?' do
+      context 'one instrument' do
+        before :each do
+          @facility = FactoryGirl.create(:setup_facility)
+          @instrument = FactoryGirl.create(:setup_instrument, :facility => @facility)  
+        end
+
+        it 'should not be sharing' do
+          @instrument.should_not be_schedule_sharing
+        end
+
+        context 'two instruments' do
+          before :each do
+            @instrument2 = FactoryGirl.create(:setup_instrument, :facility => @facility, :schedule => @instrument.schedule)
+          end
+
+          it 'should be sharing' do
+            @instrument.should be_schedule_sharing
+          end
+        end
+      end
+    end
+
+    describe 'name updating' do
+      before :each do
+        @instrument = setup_instrument(:schedule => nil)
+        @instrument2 = FactoryGirl.create(:setup_instrument, :schedule => @instrument.schedule)
+        assert @instrument.schedule == @instrument2.schedule
+      end
+
+      it "should update the schedule's name when updating the primary instrument's name" do
+        @instrument.update_attributes(:name => 'New Name')
+        @instrument.schedule.reload.name.should == 'New Name Schedule'
+      end
+
+      it 'should not call update_schedule_name if name did not change' do
+        @instrument.expects(:update_schedule_name).never
+        @instrument.update_attributes(:description => 'a description')
+      end
+
+      it "should not update the schedule's name when updating the secondary instrument" do
+        @instrument2.update_attributes(:name => 'New Name')
+        @instrument2.schedule.reload.name.should == "#{@instrument.name} Schedule"
+      end
+    end
+  end
+
+
   context "updating nested relay" do
     before :each do
-      @facility         = Factory.create(:facility)
-      @facility_account = @facility.facility_accounts.create(Factory.attributes_for(:facility_account))
-      @instrument       = @facility.instruments.create(Factory.attributes_for(:instrument, :facility_account_id => @facility_account.id))
+      @facility         = FactoryGirl.create(:facility)
+      @facility_account = @facility.facility_accounts.create(FactoryGirl.attributes_for(:facility_account))
+      @instrument       = FactoryGirl.create(:instrument,
+                                              :facility => @facility,
+                                              :facility_account => @facility_account,
+                                              :no_relay => true)
     end
 
     context "existing type: 'timer' (Timer without relay)" do
       before :each do
-        @instrument.relay = RelayDummy.new
+        @instrument.relay = RelayDummy.new(:instrument => @instrument)
         @instrument.relay.save!
         @instrument.control_mechanism.should == 'timer'
       end
@@ -53,7 +135,7 @@ describe Instrument do
 
         context "when validations met" do
           before :each do
-            @updated = @instrument.update_attributes(:control_mechanism => "relay", :relay_attributes => Factory.attributes_for(:relay)) 
+            @updated = @instrument.update_attributes(:control_mechanism => "relay", :relay_attributes => FactoryGirl.attributes_for(:relay)) 
           end
 
           it "should succeed" do
@@ -91,7 +173,7 @@ describe Instrument do
 
     context "existing type: RelaySynaccessA" do
       before :each do
-        Factory.create(:relay, :instrument_id => @instrument.id)
+        FactoryGirl.create(:relay, :instrument_id => @instrument.id)
         @instrument.reload.control_mechanism.should == 'relay'
       end
 
@@ -151,7 +233,7 @@ describe Instrument do
 
         context "when validations met" do
           before :each do
-            @updated = @instrument.update_attributes(:control_mechanism => "relay", :relay_attributes => Factory.attributes_for(:relay)) 
+            @updated = @instrument.update_attributes(:control_mechanism => "relay", :relay_attributes => FactoryGirl.attributes_for(:relay)) 
           end
           it "should succeed" do
             @updated.should be_true
@@ -185,15 +267,17 @@ describe Instrument do
   
   context "reservations with schedule rules from 9 am to 5 pm every day, with 60 minute durations" do
     before(:each) do
-      @facility         = Factory.create(:facility)
-      @facility_account = @facility.facility_accounts.create(Factory.attributes_for(:facility_account))
+      @facility         = FactoryGirl.create(:facility)
+      @facility_account = @facility.facility_accounts.create(FactoryGirl.attributes_for(:facility_account))
       # create instrument, min reserve time is 60 minutes, max is 60 minutes
-      @options          = Factory.attributes_for(:instrument, :facility_account_id => @facility_account.id,
-                                                 :min_reserve_mins => 60, :max_reserve_mins => 60)
-      @instrument       = @facility.instruments.create(@options)
+      @instrument       = FactoryGirl.create(:instrument,
+                                      :facility => @facility,
+                                      :facility_account => @facility_account,
+                                      :min_reserve_mins => 60,
+                                      :max_reserve_mins => 60)
       assert @instrument.valid?
       # add rule, available every day from 9 to 5, 60 minutes duration
-      @rule             = @instrument.schedule_rules.create(Factory.attributes_for(:schedule_rule))
+      @rule             = @instrument.schedule_rules.create(FactoryGirl.attributes_for(:schedule_rule))
       assert @rule.valid?
       Reservation.any_instance.stubs(:admin?).returns(false)
     end
@@ -284,18 +368,20 @@ describe Instrument do
 
   context "next available reservation based on schedule rules" do
     before(:each) do
-      @facility         = Factory.create(:facility)
-      @facility_account = @facility.facility_accounts.create(Factory.attributes_for(:facility_account))
+      @facility         = FactoryGirl.create(:facility)
+      @facility_account = @facility.facility_accounts.create(FactoryGirl.attributes_for(:facility_account))
       # create instrument, min reserve time is 60 minutes, max is 60 minutes
-      @options          = Factory.attributes_for(:instrument, :facility_account_id => @facility_account.id,
-                                                 :min_reserve_mins => 60, :max_reserve_mins => 60)
-      @instrument       = @facility.instruments.create(@options)
+      @instrument       = FactoryGirl.create(:instrument,
+                                      :facility => @facility,
+                                      :facility_account => @facility_account,
+                                      :min_reserve_mins => 60,
+                                      :max_reserve_mins => 60)
       assert @instrument.valid?
     end
     
     it "should find next available reservation with 60 minute interval rule, without any pending reservations" do
       # add rule, available every day from 9 to 5, 60 minutes duration/interval
-      @rule = @instrument.schedule_rules.create(Factory.attributes_for(:schedule_rule))
+      @rule = @instrument.schedule_rules.create(FactoryGirl.attributes_for(:schedule_rule))
       assert @rule.valid?
       # stub so today at 9 am is not in the future
       Reservation.any_instance.stubs(:in_the_future).returns(true)
@@ -317,7 +403,7 @@ describe Instrument do
 
     it "should find next available reservation with 5 minute interval rule, without any pending reservations" do
       # add rule, available every day from 9 to 5, 5 minute duration/interval
-      @rule = @instrument.schedule_rules.create(Factory.attributes_for(:schedule_rule, :duration_mins => 5))
+      @rule = @instrument.schedule_rules.create(FactoryGirl.attributes_for(:schedule_rule, :duration_mins => 5))
       assert @rule.valid?
       # stub so today at 9 am is not in the future
       Reservation.any_instance.stubs(:in_the_future).returns(true)
@@ -340,7 +426,7 @@ describe Instrument do
 
     it "should find next available reservation with pending reservations" do
       # add rule, available every day from 9 to 5, 60 minutes duration
-      @rule = @instrument.schedule_rules.create(Factory.attributes_for(:schedule_rule))
+      @rule = @instrument.schedule_rules.create(FactoryGirl.attributes_for(:schedule_rule))
       assert @rule.valid?
       # add reservation for tomorrow morning at 9 am
       @start        = Time.zone.now.end_of_day + 1.second + 9.hours
@@ -355,38 +441,66 @@ describe Instrument do
 
   context "available hours based on schedule rules" do
     before(:each) do
-      @facility         = Factory.create(:facility)
-      @facility_account = @facility.facility_accounts.create(Factory.attributes_for(:facility_account))
+      @facility         = FactoryGirl.create(:facility)
+      @facility_account = @facility.facility_accounts.create(FactoryGirl.attributes_for(:facility_account))
       # create instrument, min reserve time is 60 minutes, max is 60 minutes
-      @options          = Factory.attributes_for(:instrument, :facility_account_id => @facility_account.id,
-                                                 :min_reserve_mins => 60, :max_reserve_mins => 60)
-      @instrument       = @facility.instruments.create(@options)
+      @instrument       = FactoryGirl.create(:instrument,
+                                      :facility => @facility,
+                                      :facility_account => @facility_account,
+                                      :min_reserve_mins => 60,
+                                      :max_reserve_mins => 60)
       assert @instrument.valid?
     end
     
-    it "should have first avail hour at 9 am, last avail hour at 4 pm, with every day rule from 9 to 5" do
-      # add rule, available every day from 9 to 5, 60 minutes duration
-      @rule = @instrument.schedule_rules.create(Factory.attributes_for(:schedule_rule))
-      assert @rule.valid?
-      @instrument.first_available_hour.should == 9
-      @instrument.last_available_hour.should == 16
+    it 'should default to 0 and 23 if no schedule rules' do
+      @instrument.first_available_hour.should == 0
+      @instrument.last_available_hour.should == 23
+    end
+
+    context 'with a mon-friday rule from 9-5' do
+      before :each do
+        # add rule, monday-friday from 9 to 5, 60 minutes duration
+        @rule = @instrument.schedule_rules.create(FactoryGirl.attributes_for(:schedule_rule, :on_sun => false, :on_sat => false))
+        assert @rule.valid?
+      end
+
+      it "should have first avail hour at 9 am, last avail hour at 4 pm" do
+        @instrument.first_available_hour.should == 9
+        @instrument.last_available_hour.should == 16
+      end
+
+      context 'with a weekend reservation going from 8-6' do
+        before :each do
+          @rule2 = @instrument.schedule_rules.create(FactoryGirl.attributes_for(:weekend_schedule_rule, 
+                                                                  :start_hour => 8,
+                                                                  :end_hour => 18))
+          assert @rule2.valid?
+        end
+
+        it "should have first avail hour at 8 am, last avail hour at 6 pm" do
+          @instrument.first_available_hour.should == 8
+          @instrument.last_available_hour.should == 17
+        end
+      end
     end
   end
 
   context "last reserve dates, days from now" do
     before(:each) do
-      @facility         = Factory.create(:facility)
-      @facility_account = @facility.facility_accounts.create(Factory.attributes_for(:facility_account))
-      @price_group      = @facility.price_groups.create(Factory.attributes_for(:price_group))
+      @facility         = FactoryGirl.create(:facility)
+      @facility_account = @facility.facility_accounts.create(FactoryGirl.attributes_for(:facility_account))
+      @price_group      = @facility.price_groups.create(FactoryGirl.attributes_for(:price_group))
       # create instrument, min reserve time is 60 minutes, max is 60 minutes
-      @options          = Factory.attributes_for(:instrument, :facility_account_id => @facility_account.id,
-                                                 :min_reserve_mins => 60, :max_reserve_mins => 60)
-      @instrument       = @facility.instruments.create(@options)
-      @price_group_product=Factory.create(:price_group_product, :product => @instrument, :price_group => @price_group)
+      @instrument       = FactoryGirl.create(:instrument,
+                                      :facility => @facility,
+                                      :facility_account => @facility_account,
+                                      :min_reserve_mins => 60,
+                                      :max_reserve_mins => 60)
+      @price_group_product=FactoryGirl.create(:price_group_product, :product => @instrument, :price_group => @price_group)
       assert @instrument.valid?
       
       # create price policy with default window of 1 day
-      @price_policy     = @instrument.instrument_price_policies.create(Factory.attributes_for(:instrument_price_policy).update(:price_group_id => @price_group.id))
+      @price_policy     = @instrument.instrument_price_policies.create(FactoryGirl.attributes_for(:instrument_price_policy).update(:price_group_id => @price_group.id))
     end
 
     it "should have last_reserve_date == tomorrow, last_reserve_days_from_now == 1 when window is 1" do
@@ -399,7 +513,7 @@ describe Instrument do
       # create price policy with window of 15 days
       @price_group_product.reservation_window=15
       assert @price_group_product.save
-      @options       = Factory.attributes_for(:instrument_price_policy).update(:price_group_id => @price_group.id)
+      @options       = FactoryGirl.attributes_for(:instrument_price_policy).update(:price_group_id => @price_group.id)
       @price_policy2 = @instrument.instrument_price_policies.new(@options)
       @price_policy2.save(:validate => false) # save without validations
       assert_equal 15, @instrument.max_reservation_window
@@ -409,20 +523,22 @@ describe Instrument do
 
   context 'can_purchase?' do
     before :each do
-      @facility         = Factory.create(:facility)
-      @facility_account = @facility.facility_accounts.create(Factory.attributes_for(:facility_account))
-      @instrument       = @facility.instruments.create(Factory.attributes_for(:instrument, :facility_account_id => @facility_account.id))
-      @price_group = Factory.create(:price_group, :facility => @facility)
-      @user = Factory.create(:user)
-      Factory.create(:user_price_group_member, :user => @user, :price_group => @price_group)
+      @facility         = FactoryGirl.create(:facility)
+      @facility_account = @facility.facility_accounts.create(FactoryGirl.attributes_for(:facility_account))
+      @instrument       = FactoryGirl.create(:instrument,
+                                      :facility => @facility,
+                                      :facility_account => @facility_account)
+      @price_group = FactoryGirl.create(:price_group, :facility => @facility)
+      @user = FactoryGirl.create(:user)
+      FactoryGirl.create(:user_price_group_member, :user => @user, :price_group => @price_group)
       @user.reload
       @user_price_policy_ids = @user.price_groups.map(&:id)
-      @price_policy = Factory.create(:instrument_price_policy, :product => @instrument, :price_group => @price_group)
+      @price_policy = FactoryGirl.create(:instrument_price_policy, :product => @instrument, :price_group => @price_group)
       #TODO remove this line
-      Factory.create(:price_group_product, :price_group => @price_group, :product => @instrument)
+      FactoryGirl.create(:price_group_product, :price_group => @price_group, :product => @instrument)
     end
     it 'should be purchasable if there are schedule rules' do
-      @schedule_rule = Factory.create(:schedule_rule, :instrument => @instrument)
+      @schedule_rule = FactoryGirl.create(:schedule_rule, :instrument => @instrument)
       @instrument.reload
       @instrument.should be_can_purchase(@user_price_policy_ids)
     end

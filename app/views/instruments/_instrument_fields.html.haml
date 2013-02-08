@@ -4,11 +4,20 @@
 %li
   = f.check_box :show_details
   %b= t 'instruments.instrument_fields.show_details'
+
+%li
+  = f.label :schedule_id
+  - if f.object.new_record?
+    %p.instruction= t 'instruments.instrument_fields.schedule.hint'
+    = f.select :schedule_id, options_from_collection_for_select(current_facility.schedules.active.ordered, :id, :name, f.object.schedule_id), :include_blank => t('instruments.instrument_fields.schedule.unshared')
+  - else
+    = f.object.schedule.display_name
+
 %li
   = label_tag :control_mechanism
   %p.instruction= t 'instruments.instrument_fields.control_mechanism'
-  - selection = @instrument.control_mechanism
-  = f.select :control_mechanism, options_for_select({ 'Reservation only' =>  'manual', 'Timer without relay' => 'timer', 'Timer with relay' => 'relay' }, selection)
+  - selection = @instrument.control_mechanism || :manual
+  = f.select :control_mechanism, options_for_select(options_for_control_mechanism, selection)
 %li#power-relay{:class => "box#{selection == 'relay' ? '' : ' hidden'}"}
   = f.label t('instruments.instrument_fields.relay.label.relay')
   %p= t 'instruments.instrument_fields.relay.intro'
@@ -17,7 +26,7 @@
     %ul
       %li.left
         = rf.label :type, t('instruments.instrument_fields.relay.label.type')
-        = rf.select :type, options_for_select({RelaySynaccessRevA => RelaySynaccessRevA.name, RelaySynaccessRevB => RelaySynaccessRevB.name}, rf.object.type)
+        = rf.select :type, options_for_select(options_for_relay, rf.object.type)
       %li.clear
       %li.left
         = rf.label :ip, t('instruments.instrument_fields.relay.label.ip')

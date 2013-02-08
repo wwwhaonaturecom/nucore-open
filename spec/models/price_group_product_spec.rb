@@ -3,10 +3,12 @@ require 'spec_helper'
 describe PriceGroupProduct do
 
   before :each do
-    @facility=Factory.create(:facility)
-    @facility_account=@facility.facility_accounts.create(Factory.attributes_for(:facility_account))
-    @instrument=@facility.instruments.create(Factory.attributes_for(:instrument, :facility_account_id => @facility_account.id))
-    @price_group=Factory.create(:price_group, :facility => @facility)
+    @facility=FactoryGirl.create(:facility)
+    @facility_account=@facility.facility_accounts.create(FactoryGirl.attributes_for(:facility_account))
+    @instrument = FactoryGirl.create(:instrument,
+                                       :facility => @facility,
+                                       :facility_account_id => @facility_account.id)
+    @price_group=FactoryGirl.create(:price_group, :facility => @facility)
   end
 
 
@@ -23,7 +25,7 @@ describe PriceGroupProduct do
   end
 
   it 'should not require reservation window' do
-    item=@facility.items.create(Factory.attributes_for(:item, :facility_account_id => @facility_account.id))
+    item=@facility.items.create(FactoryGirl.attributes_for(:item, :facility_account_id => @facility_account.id))
     PriceGroupProduct.new(:product => item, :price_group => @price_group).should_not validate_presence_of :reservation_window
   end
 

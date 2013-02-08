@@ -713,8 +713,6 @@ en:
 
   instruments:
     manage:
-      res_only: "Reservation only"
-      control_mech: "Timer without relay"
       label:
         control_mech: "Control mechanism"
         min_res: "Minimum Reservation Minutes"
@@ -736,6 +734,10 @@ en:
       show_details: "Show reservation details (name, email, etc) on schedule"
       control_mechanism: "How the instrument and its time is managed. Please be aware that if 'Reservation only' is selected the actual and overage rates of this instrument's pricing rules should be zero."
       relay:
+        control_mechanisms:
+          manual: Reservation only
+          timer: Timer without relay
+          relay: Timer with relay
         intro: "(Optional) If the instrument is connected to an approved power relay, please enter the information below. Power relays must be purchased separately."
         label:
           relay: "Power Relay Information"
@@ -756,11 +758,22 @@ en:
           max_reserve: "Maximum (minutes)"
           cancel_hours: "Cancelation Minimum (hours)"
           auto_cancel: "Automatic Cancelation (minutes)"
+      schedule:
+        hint: You may share a schedule with other products. Choose an exisiting schedule or use an unshared schedule.
+        unshared: Unshared schedule
+        shared: Shared schedule
 
   notifications:
     index:
       head:
         h1: "Notices"
+
+  activerecord:
+    errors:
+      models:
+        reservation:
+          cannot_move: Sorry, but your reservation can no longer be moved.
+          move_failed: Sorry, but your reservation could not be moved. Please try again later.
 
   devise:
     failure:
