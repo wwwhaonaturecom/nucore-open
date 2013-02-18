@@ -196,12 +196,10 @@ namespace :nu do
         end
 
         detail = []
-        purchaser_changed = false
 
         if od.order.user == old_purchaser
           od.order.user = new_purchaser
           od.order.save!
-          purchaser_changed = true
         end
 
         pg = od.price_policy.price_group.name
@@ -224,6 +222,7 @@ namespace :nu do
 
         od.price_policy = nil
         od.assign_price_policy
+        od.save!
 
         new_pg = od.price_policy.price_group.name
         new_cost = od.actual_cost
@@ -233,11 +232,6 @@ namespace :nu do
 
         detail += [ new_pg, new_cost, new_subsidy, new_total, od_changed ]
         csv << detail.join(',') + "\n"
-
-        if purchaser_changed
-          od.order.user = old_purchaser
-          od.order.save!
-        end
       end
     end
   end
