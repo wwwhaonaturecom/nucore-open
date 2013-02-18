@@ -179,6 +179,64 @@ namespace :nu do
   end
 
 
+  desc 'fix for task #59917'
+  task :update_pathcore_orders => :environment do
+    old_purchaser = User.find_by_email 'l-esker@northwestern.edu'
+    new_purchaser = User.find_by_email 'pathology.core@gmail.com'
+    facility = Facility.find_by_url_name 'path'
+    order_details = facility.order_details.where("state = 'complete'").all
+
+    File.open(File.join(Rails.root, 'tmp', 'pathcore.csv'), 'w+') do |csv|
+      csv << "Order #,Status,Account,User,Product,Fulfilled at,Old price group,Old cost,Old subsidy,Old total,New price group,New cost,New subsidy,New total,Changed?\n"
+
+      order_details.each do |od|
+        if od.price_policy.nil?
+          puts "Order detail ##{od.to_s} does not have a price policy"
+          next
+        end
+
+        detail = []
+
+        if od.order.user == old_purchaser
+          od.order.user = new_purchaser
+          od.order.save!
+        end
+
+        pg = od.price_policy.price_group.name
+        cost = od.actual_cost
+        subsidy = od.actual_subsidy
+        total = od.actual_total
+
+        detail += [
+          od.to_s,
+          od.state,
+          od.account.account_number,
+          "\"#{od.order.user.to_s}\"",
+          "\"#{od.product.name}\"",
+          od.fulfilled_at,
+          pg,
+          cost,
+          subsidy,
+          total
+        ]
+
+        od.price_policy = nil
+        od.assign_price_policy
+        od.save!
+
+        new_pg = od.price_policy.price_group.name
+        new_cost = od.actual_cost
+        new_subsidy = od.actual_subsidy
+        new_total = od.actual_total
+        od_changed = (pg != new_pg || cost != new_cost || subsidy != new_subsidy || total != new_total)
+
+        detail += [ new_pg, new_cost, new_subsidy, new_total, od_changed ]
+        csv << detail.join(',') + "\n"
+      end
+    end
+  end
+
+
   namespace :journal do
 
     desc 'meets needs of Task #32337'
