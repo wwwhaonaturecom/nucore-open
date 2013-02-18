@@ -222,6 +222,7 @@ namespace :nu do
           total
         ]
 
+        od.price_policy = nil
         od.assign_price_policy
 
         new_pg = od.price_policy.price_group.name
