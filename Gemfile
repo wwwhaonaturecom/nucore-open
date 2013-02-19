@@ -77,7 +77,7 @@ group :development, :test do
 
   # http://devnet.jetbrains.com/message/5479367
   # don't require in RubyMine since ruby-debug interferes with ruby-debug-ide gem
-  gem 'ruby-debug',        '0.10.3', :require => ENV['RM_INFO'].nil?
+  gem 'ruby-debug',        '0.10.3', ENV['RM_INFO'] ? { :require => false } : {}
 
   # NU specific
   gem 'rcov'
