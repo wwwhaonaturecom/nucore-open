@@ -68,13 +68,16 @@ group :development, :test do
   # ruby 1.8.7. FactoryGirl 3 only supports 1.9.2
   gem 'factory_girl_rails','1.7.0'
   gem 'rspec-rails',       '2.9'
-  gem 'ruby-debug',        '0.10.3'
   gem 'shoulda-matchers',  '1.4.2'
   gem 'single_test',       '0.4.0'
   gem 'spork',             '0.9.0.rc9'
   gem 'timecop'
   gem "pry-rails",         '0.2.2'
   gem "awesome_print",     '1.1.0'
+
+  # http://devnet.jetbrains.com/message/5479367
+  # don't require in RubyMine since ruby-debug interferes with ruby-debug-ide gem
+  gem 'ruby-debug',        '0.10.3', :require => ENV['RM_INFO'].nil?
 
   # NU specific
   gem 'rcov'
