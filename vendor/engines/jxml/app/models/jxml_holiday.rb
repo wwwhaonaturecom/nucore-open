@@ -3,10 +3,14 @@ class JxmlHoliday < ActiveRecord::Base
   validates_presence_of :date
 
 
+  def self.is?(date)
+    day_of_week = date.cwday
+    day_of_week == 6 || day_of_week == 7 || find_by_date(date.to_time).present?
+  end
+
+
   def self.today?
-    today = Date.today
-    day_of_week = today.cwday
-    day_of_week == 6 || day_of_week == 7 || find_by_date(today.to_time).present?
+    is? Date.today
   end
 
 
