@@ -5,9 +5,14 @@ class JxmlRenderer
     return if JxmlHoliday.today?
     raise 'Must specify a directory to render in' unless from_dir
 
-    today=Date.today.to_s
-    window_date=Time.zone.parse("#{today} 17:00:00")
-    journals=Journal.where('created_at >= ? AND created_at < ? AND is_successful IS NULL', window_date-1.day, window_date).all
+    today = Date.today.to_s
+    window_start = window_end = Time.zone.parse("#{today} 17:00:00")
+
+    begin
+      window_start = window_start - 1.day
+    end while JxmlHoliday.is? window_start.to_date
+
+    journals=Journal.where('created_at >= ? AND created_at < ? AND is_successful IS NULL', window_start, window_end).all
 
     return if journals.empty?
 

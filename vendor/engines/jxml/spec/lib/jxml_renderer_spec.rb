@@ -7,7 +7,6 @@ describe JxmlRenderer do
 
 
   describe "rendering with respect to today's date" do
-
     it 'should not render on weekends' do
       Date.stub(:today).and_return weekend
       Journal.should_not_receive :where
@@ -32,7 +31,6 @@ describe JxmlRenderer do
       Journal.should_receive :where
       JxmlRenderer.render '/tmp'
     end
-
   end
 
 
@@ -66,7 +64,6 @@ describe JxmlRenderer do
 
 
     describe 'argument effects' do
-
       it 'should not move a file when to_dir param is nil' do
         FileUtils.should_not_receive :mv
         JxmlRenderer.render '/tmp'
@@ -76,19 +73,37 @@ describe JxmlRenderer do
         FileUtils.should_receive :mv
         JxmlRenderer.render '/tmp', '/tmp'
       end
+    end
 
+
+    describe 'query window' do
+      it 'should make Friday the start day when running after the weekend' do
+        JxmlHoliday.create! :date => weekend
+        JxmlHoliday.create! :date => weekend + 1.day
+        friday = weekend - 1.day
+        monday = weekend + 2.day
+        it_should_create_the_window friday, monday
+      end
+
+      it 'should make 2 days ago the start day when running day after a holiday' do
+        JxmlHoliday.create! :date => weekday
+        before_holiday = weekday - 1.day
+        after_holiday = weekday + 1.day
+        it_should_create_the_window before_holiday, after_holiday
+      end
+
+      def it_should_create_the_window(window_start, window_end)
+        Date.stub(:today).and_return window_end
+        start_date = Time.zone.parse("#{window_start.to_s} 17:00:00")
+        end_date = Time.zone.parse("#{window_end.to_s} 17:00:00")
+        Journal.should_receive(:where).with 'created_at >= ? AND created_at < ? AND is_successful IS NULL', start_date, end_date
+        JxmlRenderer.render '/tmp'
+      end
     end
 
 
     it 'should raise an error if no from_dir is specified' do
       lambda { JxmlRenderer.render }.should raise_error
-    end
-
-    it 'should query for journals with a set window' do
-      today = Date.today.to_s
-      window_date = Time.zone.parse("#{today} 17:00:00")
-      Journal.should_receive(:where).with 'created_at >= ? AND created_at < ? AND is_successful IS NULL', window_date-1.day, window_date
-      JxmlRenderer.render '/tmp'
     end
 
     it "should create an ActionView with this engine's template" do
