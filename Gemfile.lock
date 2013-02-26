@@ -12,6 +12,11 @@ PATH
     c2po (1.0.0)
 
 PATH
+  remote: vendor/engines/jxml
+  specs:
+    jxml (1.0.0)
+
+PATH
   remote: vendor/engines/nu
   specs:
     nu (1.0.0)
@@ -270,6 +275,7 @@ DEPENDENCIES
   foreigner (= 1.1.1)
   haml (= 3.1.2)
   jquery-rails (= 1.0.12)
+  jxml (~> 1.0.0)!
   newrelic_rpm (~> 3.4.1)
   nokogiri (= 1.4.4)
   nu (~> 1.0.0)!

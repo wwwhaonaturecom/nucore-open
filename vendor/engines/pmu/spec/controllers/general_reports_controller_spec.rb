@@ -11,7 +11,7 @@ describe GeneralReportsController do
 
   it 'should render a PMU report' do
     maybe_grant_always_sign_in :director
-    @controller.expects(:render_report).with(6, 'Name')
+    @controller.should_receive(:render_report).with(6, 'Name')
 
     begin
       get :department, :facility_id => @authable.url_name

@@ -237,40 +237,6 @@ namespace :nu do
   end
 
 
-  namespace :journal do
-
-    desc 'meets needs of Task #32337'
-    task :render_and_move, [:render_dir, :move_dir] => :environment do |t, args|
-      # needed to humanize dates/datetimes
-      include ApplicationHelper
-      from_dir, to_dir=args.render_dir, args.move_dir
-      raise 'Must specify a directory to render in and a directory to move to' unless from_dir && to_dir
-
-      today=Date.today.to_s
-      window_date=Time.zone.parse("#{today} 17:00:00")
-      journals=Journal.where('created_at >= ? AND created_at < ? AND is_successful IS NULL', window_date-1.day, window_date).all
-
-      next if journals.empty? # break out the task
-      xml_name="#{today.gsub(/-/,'')}_CCC_UPLOAD.XML"
-      xml_src=File.join(from_dir, xml_name)
-      xml_dest=File.join(to_dir, xml_name)
-
-      av=ActionView::Base.new(Rails.application.config.view_path)
-      File.open(xml_src, 'w') do |xml|
-        journals.each do |journal|
-          # props to http://www.omninerd.com/articles/render_to_string_in_Rails_Models_or_Rake_Tasks
-          xml << av.render(:partial => 'facility_journals/rake_show.xml.haml', :locals => { :journal => journal, :journal_rows => journal.journal_rows })
-          puts av.render(:partial => 'facility_journals/rake_show.text.haml', :locals => {:journal => journal})
-          puts
-        end
-      end
-
-      FileUtils.mv(xml_src, xml_dest)
-    end
-
-  end
-
-
   #
   # bcsec's ensuring to satisfy bcaudit on save is
   # handled in nucore by Bcaudit::Middleware which is

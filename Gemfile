@@ -55,6 +55,7 @@ gem 'c2po',             '~> 1.0.0', :path => 'vendor/engines/c2po'
 gem 'nu',               '~> 1.0.0', :path => 'vendor/engines/nu'
 gem 'nucs',             '~> 1.0.0', :path => 'vendor/engines/nucs'
 gem 'pmu',              '~> 1.0.0', :path => 'vendor/engines/pmu'
+gem 'jxml',             '~> 1.0.0', :path => 'vendor/engines/jxml'
 
 source 'http://download.bioinformatics.northwestern.edu/gems/'
 gem 'bcsec',             '2.1.1', :require => 'pers'

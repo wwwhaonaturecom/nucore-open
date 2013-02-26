@@ -7,8 +7,8 @@ describe NufsAccount do
     @nufs_account      = Factory.create(:nufs_account, :account_users_attributes => [{:user => @user, :created_by => @user, :user_role => 'Owner'}])
 
     @pmu_dept = stub 'pmu'
-    @pmu_dept.stubs(:pmu).returns 'Best Department Ever'
-    PmuDepartment.stubs(:find_by_nufin_id).returns @pmu_dept
+    @pmu_dept.stub(:pmu).and_return 'Best Department Ever'
+    PmuDepartment.stub(:find_by_nufin_id).and_return @pmu_dept
   end
 
   it 'should return pmu description' do
