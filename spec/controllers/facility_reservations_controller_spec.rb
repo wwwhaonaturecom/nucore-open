@@ -167,7 +167,7 @@ describe FacilityReservationsController do
           assigns(:order_detail).price_policy.should == @instrument_pp
           assigns(:order_detail).actual_cost.should_not be_nil
           assigns(:order_detail).actual_subsidy.should_not be_nil
-          should set_the_flash
+          flash[:notice].should be_present
           should render_template 'edit'
         end
       end
@@ -245,7 +245,7 @@ describe FacilityReservationsController do
         it 'should not allow an invalid reservation' do
           # Used to fail by overlapping existing reservation, but now admin reservations are
           # allowed to per ticket 38975
-          Reservation.any_instance.stubs(:valid?).returns(false)
+          Reservation.any_instance.stub(:valid?).and_return(false)
           @params[:reservation] = FactoryGirl.attributes_for(:reservation)
           parametrize_dates(@params[:reservation], :reserve)
           do_request

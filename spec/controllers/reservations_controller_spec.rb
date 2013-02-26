@@ -24,8 +24,8 @@ describe ReservationsController do
   context 'index' do
 
     before :each do
-      @order.stubs(:cart_valid?).returns(true)
-      @order.stubs(:place_order?).returns(true)
+      @order.stub(:cart_valid?).and_return(true)
+      @order.stub(:place_order?).and_return(true)
       @order.validate_order!
       @order.purchase!
 
@@ -286,7 +286,7 @@ describe ReservationsController do
       context 'extra order details' do
         before :each do
           @service=@authable.services.create(FactoryGirl.attributes_for(:service, :facility_account_id => @facility_account.id))
-          Service.any_instance.stubs(:active_survey?).returns(true)
+          Service.any_instance.stub(:active_survey?).and_return(true)
           @service_order_detail=@order.order_details.create(FactoryGirl.attributes_for(:order_detail, :product_id => @service.id, :account_id => @account.id))
         end
 
@@ -326,13 +326,12 @@ describe ReservationsController do
 
     context 'without account' do
       before :each do
-
         @params.delete :order_account
         sign_in @guest
         do_request
       end
       it 'should have a flash message and render :new' do
-        should set_the_flash
+        flash[:error].should be_present
         response.should render_template :new
       end
       it 'should maintain duration value and units' do
@@ -349,7 +348,7 @@ describe ReservationsController do
         assigns[:order].should == @order
         assigns[:order_detail].should == @order_detail
         assigns[:instrument].should == @instrument
-        should set_the_flash
+        flash[:error].should be_present
         should render_template :new
       end
     end

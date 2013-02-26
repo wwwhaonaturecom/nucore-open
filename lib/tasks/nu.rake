@@ -179,37 +179,61 @@ namespace :nu do
   end
 
 
-  namespace :journal do
+  desc 'fix for task #59917'
+  task :update_pathcore_orders => :environment do
+    old_purchaser = User.find_by_email 'l-esker@northwestern.edu'
+    new_purchaser = User.find_by_email 'pathology.core@gmail.com'
+    facility = Facility.find_by_url_name 'path'
+    order_details = facility.order_details.where("state = 'complete'").all
 
-    desc 'meets needs of Task #32337'
-    task :render_and_move, [:render_dir, :move_dir] => :environment do |t, args|
-      # needed to humanize dates/datetimes
-      include ApplicationHelper
-      from_dir, to_dir=args.render_dir, args.move_dir
-      raise 'Must specify a directory to render in and a directory to move to' unless from_dir && to_dir
+    File.open(File.join(Rails.root, 'tmp', 'pathcore.csv'), 'w+') do |csv|
+      csv << "Order #,Status,Account,User,Product,Fulfilled at,Old price group,Old cost,Old subsidy,Old total,New price group,New cost,New subsidy,New total,Changed?\n"
 
-      today=Date.today.to_s
-      window_date=Time.zone.parse("#{today} 17:00:00")
-      journals=Journal.where('created_at >= ? AND created_at < ? AND is_successful IS NULL', window_date-1.day, window_date).all
-
-      next if journals.empty? # break out the task
-      xml_name="#{today.gsub(/-/,'')}_CCC_UPLOAD.XML"
-      xml_src=File.join(from_dir, xml_name)
-      xml_dest=File.join(to_dir, xml_name)
-
-      av=ActionView::Base.new(Rails.application.config.view_path)
-      File.open(xml_src, 'w') do |xml|
-        journals.each do |journal|
-          # props to http://www.omninerd.com/articles/render_to_string_in_Rails_Models_or_Rake_Tasks
-          xml << av.render(:partial => 'facility_journals/rake_show.xml.haml', :locals => { :journal => journal, :journal_rows => journal.journal_rows })
-          puts av.render(:partial => 'facility_journals/rake_show.text.haml', :locals => {:journal => journal})
-          puts
+      order_details.each do |od|
+        if od.price_policy.nil?
+          puts "Order detail ##{od.to_s} does not have a price policy"
+          next
         end
+
+        detail = []
+
+        if od.order.user == old_purchaser
+          od.order.user = new_purchaser
+          od.order.save!
+        end
+
+        pg = od.price_policy.price_group.name
+        cost = od.actual_cost
+        subsidy = od.actual_subsidy
+        total = od.actual_total
+
+        detail += [
+          od.to_s,
+          od.state,
+          od.account.account_number,
+          "\"#{od.order.user.to_s}\"",
+          "\"#{od.product.name}\"",
+          od.fulfilled_at,
+          pg,
+          cost,
+          subsidy,
+          total
+        ]
+
+        od.price_policy = nil
+        od.assign_price_policy
+        od.save!
+
+        new_pg = od.price_policy.price_group.name
+        new_cost = od.actual_cost
+        new_subsidy = od.actual_subsidy
+        new_total = od.actual_total
+        od_changed = (pg != new_pg || cost != new_cost || subsidy != new_subsidy || total != new_total)
+
+        detail += [ new_pg, new_cost, new_subsidy, new_total, od_changed ]
+        csv << detail.join(',') + "\n"
       end
-
-      FileUtils.mv(xml_src, xml_dest)
     end
-
   end
 
 
