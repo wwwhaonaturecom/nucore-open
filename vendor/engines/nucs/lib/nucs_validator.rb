@@ -206,7 +206,7 @@ class NucsValidator
     # * we are given an order fulfillment date and we are outside the 90 day grace period
     # * no fulfillment date was given and all chart string records are expired
     # for more background see http://pm.tablexi.com/issues/49243
-    if gls.all?{|gl| gl.expired? } && (fulfill_date.blank? || gls.all?{|gl| fulfill_date > gl.expires_at || gl.expires_at+90.days < Time.zone.now })
+    if gls.all?{|gl| gl.expired? } && (fulfill_date.blank? || gls.all?{|gl| fulfill_date.to_date > gl.expires_at.to_date || gl.expires_at.to_date+90.days < Date.today })
       raise DatedGL066Error.new('is expired or not yet active')
     end
 
