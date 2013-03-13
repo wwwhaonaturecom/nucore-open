@@ -94,12 +94,13 @@ namespace :order_details  do
 
   desc "Retouch all complete order details and recalculate pricing"
   task :recalculate_prices, [:facility_slug] => :environment do |t, args|
-    Facility.find_by_url_name(args[:facility_slug]).order_details.where(:state => 'complete').each do |od|
+    Facility.find_by_url_name('path').order_details.where(:state => 'complete').each do |od|
       old_cost = od.actual_cost
       old_subsidy = od.actual_subsidy
       old_total = od.actual_total
+      old_price_group = od.price_policy.try(:price_group)
       od.assign_price_policy(od.fulfilled_at)
-      puts "#{od}|#{od.order_status}|#{od.user}|#{od.product}|#{od.fulfilled_at}|#{old_cost}|#{old_subsidy}|#{old_total}|#{od.actual_cost}|#{od.actual_subsidy}|#{od.actual_total}|#{od.actual_total == old_total}"
+      puts "#{od}|#{od.order_status}|#{od.account}|#{od.user}|#{od.product}|#{od.fulfilled_at}|#{old_price_group}|#{old_cost}|#{old_subsidy}|#{old_total}|#{od.price_policy.try(:price_group)}|#{od.actual_cost}|#{od.actual_subsidy}|#{od.actual_total}|#{od.actual_total == old_total}"
     end
 
   end
