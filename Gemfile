@@ -62,6 +62,8 @@ gem 'bcsec',             '2.1.1', :require => 'pers'
 gem 'bcdatabase',        '1.0.6'
 gem 'schema_qualified_tables', '1.0.0'
 
+gem 'synaccess_connect', '0.1.0', :git => 'git://github.com/tablexi/synaccess.git'
+
 group :development, :test do
   gem 'ci_reporter'
 
