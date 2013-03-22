@@ -34,7 +34,7 @@ gem 'will_paginate',    '3.0.2'
 gem 'jquery-rails',     '1.0.12'
 
 ## controllers
-gem 'prawn',            '0.12.0'
+gem 'prawn',            '0.12'
 gem 'prawn_rails',      '0.0.5'
 
 ## monitoring
@@ -46,8 +46,8 @@ gem 'rake'
 gem 'ruby-ole',         '1.2.11.1'
 gem 'spreadsheet',      '0.6.5.5'
 gem 'fast-aes',         '0.1.1'
-gem 'pdf-reader',       '0.10.1'
 gem 'fastercsv',        '1.5.4'
+gem 'pdf-reader',       '1.3.2'
 gem 'daemons',          '1.1.6'
 
 ## custom
@@ -62,6 +62,8 @@ gem 'bcsec',             '2.1.1', :require => 'pers'
 gem 'bcdatabase',        '1.0.6'
 gem 'schema_qualified_tables', '1.0.0'
 
+gem 'synaccess_connect', '0.1.0', :git => 'git://github.com/tablexi/synaccess.git'
+
 group :development, :test do
   gem 'ci_reporter'
 
@@ -71,7 +73,7 @@ group :development, :test do
   gem 'rspec-rails',       '2.9'
   gem 'shoulda-matchers',  '1.4.2'
   gem 'single_test',       '0.4.0'
-  gem 'spork',             '0.9.0.rc9'
+  gem 'spork',             '0.9.2'
   gem 'timecop'
   gem "pry-rails",         '0.2.2'
   gem "awesome_print",     '1.1.0'
