@@ -1,4 +1,4 @@
 == Journal #: #{journal.id}
 == Facility: #{journal.facility.name}
-== Journal Date: #{human_date(journal.journal_date)}
-== Created At: #{human_datetime(journal.created_at)}
+== Journal Date: #{journal.journal_date.strftime '%B %-d, %Y'}
+== Created At: #{journal.created_at.strftime '%m/%d/%Y %l:%M %p' }
