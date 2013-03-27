@@ -1,6 +1,4 @@
 class JxmlRenderer
-  include ApplicationHelper # needed to humanize dates/datetimes
-
   def self.render(from_dir, to_dir = nil)
     return if JxmlHoliday.today?
     raise 'Must specify a directory to render in' unless from_dir
