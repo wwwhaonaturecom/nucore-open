@@ -51,13 +51,7 @@
         %td= order_detail.account
         %td= order_detail.account.owner_user
       %td.currency
-        - if order_detail.cost_estimated?
-          %span.estimated_cost
-            = show_estimated_total(order_detail)
-        - elsif order_detail.price_policy.nil?
-          Unassigned
-        - else
-          %span.actual_cost
-            = show_actual_total(order_detail)
+        - order_detail.send(:extend, PriceDisplayment)
+        = order_detail.wrapped_cost
       %td.nowrap= order_detail.order_status
 = will_paginate(@order_details) if @order_details.respond_to? :total_pages
