@@ -11,7 +11,7 @@ class Reservation < ActiveRecord::Base
   # Associations
   #####
   belongs_to :product
-  belongs_to :order_detail
+  belongs_to :order_detail, :inverse_of => :reservation
 
   ## Virtual attributes
   #####
@@ -20,14 +20,15 @@ class Reservation < ActiveRecord::Base
   # Used by timeline view
   attr_accessor     :blackout
   attr_writer       :note
-  
+
   # used for overriding certain restrictions
   attr_accessor :reserved_by_admin
 
   # Delegations
   #####
-  delegate :note,     :to => :order_detail, :allow_nil => true
+  delegate :note, :to => :order_detail, :allow_nil => true
   delegate :ordered_on_behalf_of?, :to => :order_detail, :allow_nil => true
+  delegate :complete?, :to => :order_detail, :allow_nil => true
   delegate :facility, :to => :product
 
   # TODO turn into actual delegation
@@ -92,11 +93,7 @@ class Reservation < ActiveRecord::Base
   end
 
   def self.for_date(date)
-    where("(reserve_start_at > :start and reserve_start_at < :end) OR (reserve_end_at > :start and reserve_end_at < :end)",
-      { :start => date.beginning_of_day,
-        :end => date.end_of_day
-      }
-    )
+    in_range(date.beginning_of_day, date.end_of_day)
   end
 
   def self.in_range(start_time, end_time)
@@ -116,7 +113,7 @@ class Reservation < ActiveRecord::Base
     # remove millisecond precision from time
     tstart_at = Time.zone.parse(start_at.to_s)
     tend_at   = Time.zone.parse(end_at.to_s)
-    
+
     where("((reserve_start_at <= :start AND reserve_end_at >= :end) OR
           (reserve_start_at >= :start AND reserve_end_at <= :end) OR
           (reserve_start_at <= :start AND reserve_end_at > :start) OR
@@ -182,7 +179,7 @@ class Reservation < ActiveRecord::Base
   # TODO does this need to be more robust?
   def can_edit_actuals?
     return false if order_detail.nil?
-    order_detail.complete?
+    complete?
   end
 
   def reservation_changed?

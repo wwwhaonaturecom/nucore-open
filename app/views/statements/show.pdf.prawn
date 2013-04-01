@@ -28,7 +28,7 @@ prawn_document pdf_config do |pdf|
   invoice_details_box_width = pdf.bounds.width / 2
 
   invoice_bounding_box = pdf.bounding_box [pdf.bounds.width / 2, pdf.bounds.top], :width => invoice_details_box_width do
-    invoice_details = [["Invoice:", "#{@account.id}-#{@statement.id}"],
+    invoice_details = [["Invoice:", "#{@statement.invoice_number}"],
                        ["Date:", @statement.created_at.strftime("%m/%d/%Y")]]
 
     invoice_details << ["Purchase Order:", @account.account_number] if @account.is_a?(PurchaseOrderAccount)
