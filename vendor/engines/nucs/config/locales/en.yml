@@ -1,0 +1,9 @@
+en:
+  activerecord:
+    errors:
+      facility_account:
+        revenue_account:
+          format: should be a five digit number beginning with 4 or 5
+      product:
+        account:
+          format: should begin with 7
