@@ -13,7 +13,7 @@ class NucsValidator
 
 
   def self.pattern
-    /^(\d{3})-(\d{7})(?:-(\d{8}))?(?:-(\d{2}))?(?:-(\d{4}))?(?:-(\d{4}))?$/
+    /^(\d{3})-(\d{7})(?:-(\d{8}))?(?:-(\d{2}))?(?:-(\d{4})?)?(?:-(\d{4})?)?$/
   end
 
 
@@ -91,7 +91,7 @@ class NucsValidator
   # return nil otherwise.
   def latest_expiration
     return Time.zone.now+3.years if Whitelist.includes?(@chart_string)
-    
+
     where={
       :fund => @fund,
       :department => @department,
@@ -183,7 +183,7 @@ class NucsValidator
 
 
   def validate_gl066_components!(account=nil)
-    where={ :fund => @fund, :department => @department }
+    where=ActiveSupport::OrderedHash[ :fund, @fund, :department, @department ]
     where.merge!(:activity => @activity) if @activity && grant?
     where.merge!(:project => @project) if @project
     where.merge!(:account => account) if account

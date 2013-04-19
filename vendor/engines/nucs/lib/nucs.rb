@@ -5,6 +5,7 @@ module Nucs
     config.to_prepare do
       FacilityAccount.send :include, NucsValidations::FacilityAccount
       Product.send :include, NucsValidations::Product
+      NufsAccount.send :include, Accounts::NucsAccountSections
     end
   end
 end
