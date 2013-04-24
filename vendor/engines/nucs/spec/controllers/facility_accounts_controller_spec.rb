@@ -9,6 +9,15 @@ describe FacilityAccountsController do
   end
 
   describe 'create' do
+    let(:base_account_fields) do
+      { :fund => "901",
+        :dept => "7777777",
+        :project => "50028814",
+        :activity => "01",
+        :program => '',
+        :chart_field1 => '' }
+    end
+
     let(:base_account_number) { "901-7777777-50028814-01" }
     before :each do
       sign_in @admin
@@ -26,11 +35,7 @@ describe FacilityAccountsController do
         define_gl066 base_account_number
         @params.merge!(:account => {
           :description => 'Description',
-          :account_number_parts => {
-            :account_number => base_account_number,
-            :program => '',
-            :chart_field1 => ''
-          }
+          :account_number_parts => base_account_fields
         })
         do_request
       end
@@ -54,11 +59,7 @@ describe FacilityAccountsController do
         define_gl066 base_account_number + "-1234"
         @params.merge!(:account => {
           :description => 'Description',
-          :account_number_parts => {
-            :account_number => base_account_number,
-            :program => '1234',
-            :chart_field1 => ''
-          }
+          :account_number_parts => base_account_fields.merge(:program => '1234')
         })
         do_request
       end
@@ -81,11 +82,7 @@ describe FacilityAccountsController do
         define_gl066 base_account_number + "--1234"
         @params.merge!(:account => {
           :description => 'Description',
-          :account_number_parts => {
-            :account_number => base_account_number,
-            :program => '',
-            :chart_field1 => '1234'
-          }
+          :account_number_parts => base_account_fields.merge(:chart_field1 => '1234')
         })
         do_request
       end
@@ -108,11 +105,7 @@ describe FacilityAccountsController do
         define_gl066 base_account_number + "-6543-1234"
         @params.merge!(:account => {
           :description => 'Description',
-          :account_number_parts => {
-            :account_number => base_account_number,
-            :program => '6543',
-            :chart_field1 => '1234'
-          }
+          :account_number_parts => base_account_fields.merge(:program => '6543', :chart_field1 => '1234')
         })
         do_request
       end

@@ -12,8 +12,7 @@ module Accounts::NucsAccountSections
   end
 
   def account_number_to_storage_format
-    a = account_number_parts # for brevity in string building
-    number = [a.fund, a.dept, a.project, a.activity].reject(&:blank?).join('-')
+    number = account_number_beginning
     if account_number_parts.program.present? || account_number_parts.chart_field1.present?
       number << "-#{account_number_parts.program}-#{account_number_parts.chart_field1}"
     end
@@ -22,7 +21,7 @@ module Accounts::NucsAccountSections
 
   def account_number_to_s
     build_parts unless account_number_parts
-    number = "#{account_number_parts.account_number}"
+    number = account_number_beginning
     if account_number_parts.program.present? || account_number_parts.chart_field1.present?
       number << " (#{account_number_parts.program}) (#{account_number_parts.chart_field1})"
     end
@@ -35,6 +34,11 @@ module Accounts::NucsAccountSections
   end
 
 private
+
+  def account_number_beginning
+    a = account_number_parts # for brevity in string building
+    number = [a.fund, a.dept, a.project, a.activity].reject(&:blank?).join('-')
+  end
 
   def build_parts
     parts = self.account_number.split('-')
