@@ -3,8 +3,12 @@ en:
     account_fields:
       label:
         account_number:
+          fund: Fund
+          dept: Department
+          project: Project
+          activity: Activity
           program: Program
-          chart_field1: Chart Field 1
+          chart_field1: ChartField1
   facility_account:
     account_fields:
       lael:

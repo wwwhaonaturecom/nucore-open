@@ -16,7 +16,6 @@ class NucsValidator
     /^(\d{3})-(\d{7})(?:-(\d{8}))?(?:-(\d{2}))?(?:-(\d{4})?)?(?:-(\d{4})?)?$/
   end
 
-
   #
   # [_chart_string_]
   #   A string that matches +#pattern+. Doesn't include +account+.
@@ -58,12 +57,14 @@ class NucsValidator
   # Returns a +Hash+ with keys :fund, :dept, :project, :activity,
   # :program, and :chart_field along with their corresponding values
   def components
-    { :fund => fund,
-      :dept => department,
-      :project => project,
-      :activity => activity,
-      :program => program,
-      :chart_field => chart_field1 }
+    ActiveSupport::OrderedHash[
+      :fund, fund,
+      :dept, department,
+      :project, project,
+      :activity, activity,
+      :program, program,
+      :chart_field1,  chart_field1
+    ]
   end
 
 
