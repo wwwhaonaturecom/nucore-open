@@ -1,7 +1,13 @@
 en:
-  facility_accounts:
+  nufs_account:
     account_fields:
       label:
+        account_number:
+          program: Program
+          chart_field1: Chart Field 1
+  facility_account:
+    account_fields:
+      lael:
         account_number:
           program: Program
           chart_field1: Chart Field 1
