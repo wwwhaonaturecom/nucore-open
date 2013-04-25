@@ -1,5 +1,6 @@
 class Account < ActiveRecord::Base
   include Accounts::AccountNumberSectionable
+  include DateHelper
 
   has_many   :account_users
   has_one    :owner, :class_name => 'AccountUser', :conditions => {:user_role => AccountUser::ACCOUNT_OWNER, :deleted_at => nil}
@@ -21,11 +22,6 @@ class Account < ActiveRecord::Base
     unless acct.account_users.any?{ |au| au.user_role == AccountUser::ACCOUNT_OWNER }
       acct.errors.add(:base, "Must have an account owner")
     end
-  end
-
-  def self.get_subclass(facility, type_string)
-    str_valid_types = facility.valid_account_types.inject({}) { |hash, type| hash.update type.to_s => type }
-    str_valid_types.fetch type_string, Account
   end
 
   def add_or_update_member(user, new_role, session_user)
@@ -134,6 +130,14 @@ class Account < ActiveRecord::Base
 
   def expired?
     expires_at && expires_at <= Time.zone.now
+  end
+
+  def formatted_expires_at
+    expires_at.try(:strftime, "%m/%d/%Y")
+  end
+
+  def formatted_expires_at=(str)
+    self.expires_at = parse_usa_date(str) if str
   end
 
   def account_pretty
