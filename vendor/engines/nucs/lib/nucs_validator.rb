@@ -13,9 +13,8 @@ class NucsValidator
 
 
   def self.pattern
-    /^(\d{3})-(\d{7})(?:-(\d{8}))?(?:-(\d{2}))?(?:-(\d{4}))?(?:-(\d{4}))?$/
+    /^(\d{3})-(\d{7})(?:-(\d{8}))?(?:-(\d{2}))?(?:-(\d{4})?)?(?:-(\d{4})?)?$/
   end
-
 
   #
   # [_chart_string_]
@@ -58,12 +57,14 @@ class NucsValidator
   # Returns a +Hash+ with keys :fund, :dept, :project, :activity,
   # :program, and :chart_field along with their corresponding values
   def components
-    { :fund => fund,
-      :dept => department,
-      :project => project,
-      :activity => activity,
-      :program => program,
-      :chart_field => chart_field1 }
+    ActiveSupport::OrderedHash[
+      :fund, fund,
+      :dept, department,
+      :project, project,
+      :activity, activity,
+      :program, program,
+      :chart_field1,  chart_field1
+    ]
   end
 
 
@@ -91,7 +92,7 @@ class NucsValidator
   # return nil otherwise.
   def latest_expiration
     return Time.zone.now+3.years if Whitelist.includes?(@chart_string)
-    
+
     where={
       :fund => @fund,
       :department => @department,
@@ -183,7 +184,7 @@ class NucsValidator
 
 
   def validate_gl066_components!(account=nil)
-    where={ :fund => @fund, :department => @department }
+    where=ActiveSupport::OrderedHash[ :fund, @fund, :department, @department ]
     where.merge!(:activity => @activity) if @activity && grant?
     where.merge!(:project => @project) if @project
     where.merge!(:account => account) if account
