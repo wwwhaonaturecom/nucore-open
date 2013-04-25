@@ -138,7 +138,6 @@ describe FacilityAccountsController do
         @acct_attrs[:account_number] += '-12345678-01' # add project & activity
         define_gl066 @acct_attrs[:account_number]
         @params={
-          :id => @account.id,
           :facility_id => @authable.url_name,
           :owner_user_id => @owner.id,
           :account => @acct_attrs,
