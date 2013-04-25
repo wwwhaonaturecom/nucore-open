@@ -2,8 +2,8 @@ module Accounts::NucsAccountSections
   def account_number_fields
     #TODO Replace with normal hash in Ruby 1.9
     ActiveSupport::OrderedHash[
-      :fund, { :required => true, :length => 3 },
-      :dept, { :required => true, :length => 7 },
+      :fund, { :length => 3 },
+      :dept, { :length => 7 },
       :project, { :length => 8 },
       :activity, { :length => 2 },
       :program, { :length => 4 },
