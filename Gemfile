@@ -32,6 +32,7 @@ gem 'vestal_versions',  '1.2.4.3', :git => 'git://github.com/elzoiddy/vestal_ver
 gem 'haml',             '3.1.2'
 gem 'will_paginate',    '3.0.2'
 gem 'jquery-rails',     '1.0.12'
+gem 'json',             '1.7.7'
 
 ## controllers
 gem 'prawn',            '0.12'
