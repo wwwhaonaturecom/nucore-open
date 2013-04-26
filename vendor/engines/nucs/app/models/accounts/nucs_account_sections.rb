@@ -41,14 +41,18 @@ private
   end
 
   def build_parts
-    parts = self.account_number.split('-')
-    self.account_number_parts = {
-      :fund => parts[0],
-      :dept => parts[1],
-      :project => parts[2],
-      :activity => parts[3],
-      :program => parts[4],
-      :chart_field1 => parts[5]
-    }
+    if self.account_number
+      parts = self.account_number.split('-')
+      self.account_number_parts = {
+        :fund => parts[0],
+        :dept => parts[1],
+        :project => parts[2],
+        :activity => parts[3],
+        :program => parts[4],
+        :chart_field1 => parts[5]
+      }
+    else
+      self.account_number_parts = {}
+    end
   end
 end
