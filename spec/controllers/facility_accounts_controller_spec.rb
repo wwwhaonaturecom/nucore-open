@@ -380,6 +380,7 @@ describe FacilityAccountsController do
       it_should_allow_all facility_managers do
         assigns(:account).should == @account
         should set_the_flash
+        assigns(:account).should be_suspended
         assert_redirected_to facility_account_path(@authable, @account)
       end
 
@@ -401,6 +402,7 @@ describe FacilityAccountsController do
       it_should_allow_all facility_managers do
         assigns(:account).should == @account
         should set_the_flash
+        assigns(:account).should_not be_suspended
         assert_redirected_to facility_account_path(@authable, @account)
       end
 

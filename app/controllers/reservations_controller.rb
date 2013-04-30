@@ -125,11 +125,16 @@ class ReservationsController < ApplicationController
         flash[:notice] = I18n.t 'controllers.reservations.create.success'
 
         if mergeable
+          # The purchase_order_path or cart_path will handle the backdating, but we need
+          # to do this here for merged reservations.
+          backdate_reservation_if_necessary
           redirect_to edit_facility_order_path(@order_detail.facility, @order_detail.order.merge_order || @order_detail.order)
         elsif @order_detail.product.is_a?(Instrument) && @order.order_details.count == 1
+          redirect_params = {}
+          redirect_params[:send_notification] = '1' if params[:send_notification] == '1'
           # only trigger purchase if instrument
           # and is only thing in cart (isn't bundled or on a multi-add order)
-          redirect_to purchase_order_path(@order)
+          redirect_to purchase_order_path(@order, redirect_params)
         else
           redirect_to cart_path
         end
@@ -361,6 +366,13 @@ class ReservationsController < ApplicationController
     @reservation.save_as_user!(session_user)
     @order_detail.reload.assign_estimated_price(nil, @reservation.reserve_end_at)
     @order_detail.save_as_user!(session_user)
+  end
+
+  def backdate_reservation_if_necessary
+    facility_ability = Ability.new(session_user, @order.facility, self)
+    if facility_ability.can?(:order_in_past, @order) && @reservation.reserve_end_at < Time.zone.now
+      @order_detail.backdate_to_complete!(@reservation.reserve_end_at)
+    end
   end
 
   def set_windows
