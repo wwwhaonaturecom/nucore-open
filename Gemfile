@@ -1,4 +1,4 @@
-source :gemcutter
+source 'https://rubygems.org'
 
 ## base
 gem 'rails',            '3.0.20'
@@ -75,7 +75,6 @@ group :development, :test do
   gem 'shoulda-matchers',  '1.4.2'
   gem 'single_test',       '0.4.0'
   gem 'spork',             '0.9.2'
-  gem 'timecop'
   gem "pry-rails",         '0.2.2'
   gem "awesome_print",     '1.1.0'
 
@@ -86,6 +85,11 @@ group :development, :test do
   # NU specific
   gem 'rcov'
   gem 'silent-oracle'
+end
+
+group :test do
+  # Newer versions of timecop don't support 1.8.7
+  gem 'timecop',           '0.3.5'
 end
 
 group :production, :staging do

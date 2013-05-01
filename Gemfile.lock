@@ -39,7 +39,7 @@ PATH
     pmu (1.0.0)
 
 GEM
-  remote: http://rubygems.org/
+  remote: https://rubygems.org/
   remote: http://download.bioinformatics.northwestern.edu/gems/
   specs:
     Ascii85 (1.0.2)
@@ -252,7 +252,7 @@ GEM
     spreadsheet (0.6.5.5)
       ruby-ole (>= 1.0)
     thor (0.14.6)
-    timecop (0.6.1)
+    timecop (0.3.5)
     treetop (1.4.12)
       polyglot
       polyglot (>= 0.3.1)
@@ -315,6 +315,6 @@ DEPENDENCIES
   spork (= 0.9.2)
   spreadsheet (= 0.6.5.5)
   synaccess_connect (= 0.2.0)!
-  timecop
+  timecop (= 0.3.5)
   vestal_versions (= 1.2.4.3)!
   will_paginate (= 3.0.2)
