@@ -23,7 +23,7 @@ gem 'capistrano-ext',   '1.2.1'
 
 ## models
 gem 'aasm',             '2.2.0'
-gem 'paperclip',        '2.3.12'
+gem 'paperclip',        '~> 2.3.12'
 gem 'awesome_nested_set', '2.0.1'
 gem 'nokogiri',         '1.4.4'
 gem 'vestal_versions',  '1.2.4.3', :git => 'git://github.com/elzoiddy/vestal_versions.git'
@@ -44,8 +44,7 @@ gem 'exception_notification', :require => 'exception_notifier'
 
 ## other
 gem 'rake'
-gem 'ruby-ole',         '1.2.11.1'
-gem 'spreadsheet',      '0.6.5.5'
+gem 'spreadsheet',      '~> 0.6.5.5'
 gem 'fast-aes',         '0.1.1'
 gem 'fastercsv',        '1.5.4'
 gem 'pdf-reader',       '1.3.2'
