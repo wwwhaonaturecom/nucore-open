@@ -7,10 +7,8 @@ gem 'rails_config',     '0.2.5'
 ## database
 gem 'foreigner',        '1.1.1'
 gem 'activerecord-oracle_enhanced-adapter', '1.3.0'
-# ruby-oci8 won't compile on lion
-unless (RUBY_PLATFORM =~ /x86_64-darwin11/)
-  gem 'ruby-oci8',        '2.0.4'
-end
+gem 'ruby-oci8',        '2.1.5'
+
 
 ## auth
 gem 'devise',           '1.3.4'
@@ -79,10 +77,10 @@ group :development, :test do
 
   # http://devnet.jetbrains.com/message/5479367
   # don't require in RubyMine since ruby-debug interferes with ruby-debug-ide gem
-  gem 'ruby-debug',        '0.10.3', ENV['RM_INFO'] ? { :require => false } : {}
+  gem 'ruby-debug19',        '0.11.6', ENV['RM_INFO'] ? { :require => false } : {}
 
   # NU specific
-  gem 'rcov'
+  gem 'simplecov'
   gem 'silent-oracle'
 end
 
