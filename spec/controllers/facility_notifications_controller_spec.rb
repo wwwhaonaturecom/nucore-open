@@ -174,7 +174,7 @@ describe FacilityNotificationsController do
     it_should_404_for_zero_day_review
 
     it "should update" do
-      Timecop.freeze do
+      Timecop.freeze(Time.zone.now) do
         @params.merge!({:order_detail_ids => [@order_detail1.id, @order_detail3.id]})
         do_request
         flash[:error].should be_nil
