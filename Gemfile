@@ -37,7 +37,7 @@ gem 'prawn',            '0.12'
 gem 'prawn_rails',      '0.0.5'
 
 ## monitoring
-gem 'newrelic_rpm',     '~> 3.4.1'
+gem 'newrelic_rpm',     '~> 3.6'
 gem 'exception_notification', :require => 'exception_notifier'
 
 ## other
