@@ -13,11 +13,11 @@
 = form_for resource, :as => resource_name, :url => session_path(resource_name) do |f|
   %ul.form
     %li
-      %label=User.human_attribute_name(:username)
-      = text_field_tag :username, params[:username], :size => 30
+      %label= User.human_attribute_name(:username)
+      = f.text_field :username, :size => 30
     %li
       %label= User.human_attribute_name(:password)
-      = password_field_tag :password, nil, :size => 15
+      = f.password_field :password, :size => 15
   %ul.horiz
     %li= submit_tag t('pages.login'), :class => 'btn'
 

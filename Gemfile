@@ -13,7 +13,7 @@ gem 'ruby-oci8',        '2.1.5'
 ## auth
 gem 'devise',           '1.3.4'
 gem 'cancan',           '1.6.8'
-gem 'devise_ldap_authenticatable', '0.4.3'
+gem 'devise_ldap_authenticatable', '0.4.4'
 
 ## deployment
 gem 'capistrano',       '2.6.0'
@@ -55,10 +55,10 @@ gem 'nucs',             '~> 1.0.0', :path => 'vendor/engines/nucs'
 gem 'pmu',              '~> 1.0.0', :path => 'vendor/engines/pmu'
 gem 'jxml',             '~> 1.0.0', :path => 'vendor/engines/jxml'
 
-source 'http://download.bioinformatics.northwestern.edu/gems/'
-gem 'bcsec',             '2.1.1', :require => 'pers'
-gem 'bcdatabase',        '1.0.6'
-gem 'schema_qualified_tables', '1.0.0'
+# source 'http://download.bioinformatics.northwestern.edu/gems/'
+# gem 'bcsec',             '2.1.1', :require => 'pers'
+# gem 'bcdatabase',        '1.0.6'
+# gem 'schema_qualified_tables', '1.0.0'
 
 gem 'synaccess_connect', '0.2.0', :git => 'git://github.com/tablexi/synaccess.git'
 

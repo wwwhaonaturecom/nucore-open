@@ -17,7 +17,7 @@ module Nucore
 
     # Only load the plugins named here, in the order given (default is alphabetical).
     # :all can be used as a placeholder for all plugins not explicitly named.
-    # config.plugins = [ :exception_notification, :ssl_requirement, :all ]
+    config.plugins = [ :dynamic_form ]
 
     # Activate observers that should always be running.
     config.active_record.observers = :order_detail_observer

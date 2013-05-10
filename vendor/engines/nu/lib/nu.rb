@@ -5,8 +5,6 @@ module Nu
     config.to_prepare do
       Journal.send :include, Nu::JournalExtension
       JournalRow.send :include, Nu::JournalRowExtension
-      User.send :include, Nu::UserExtension
-      UsersController.send :include, Nu::UsersControllerExtension
     end
   end
 end
