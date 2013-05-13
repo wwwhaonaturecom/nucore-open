@@ -1,5 +1,10 @@
 en:
   activerecord:
+    attributes:
+      product:
+        account: Expense account code
+      facility_account:
+        revenue_account: Revenue account code
     errors:
       facility_account:
         revenue_account:
