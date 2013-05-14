@@ -54,6 +54,7 @@ gem 'nu',               '~> 1.0.0', :path => 'vendor/engines/nu'
 gem 'nucs',             '~> 1.0.0', :path => 'vendor/engines/nucs'
 gem 'pmu',              '~> 1.0.0', :path => 'vendor/engines/pmu'
 gem 'jxml',             '~> 1.0.0', :path => 'vendor/engines/jxml'
+gem 'nu_cancer_center', '~> 1.0.0', :path => 'vendor/engines/nu_cancer_center'
 
 # source 'http://download.bioinformatics.northwestern.edu/gems/'
 # gem 'bcsec',             '2.1.1', :require => 'pers'
