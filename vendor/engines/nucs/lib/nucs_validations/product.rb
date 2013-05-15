@@ -4,7 +4,7 @@ module NucsValidations::Product
   included do
     validates_format_of :account,
                         :with => /^7/,
-                        :message => I18n.t('activerecord.errors.product.account.format'),
+                        :message => lambda { I18n.t('activerecord.errors.product.account.format') },
                         :if => lambda { SettingsHelper.feature_on? :expense_accounts }
   end
 end
