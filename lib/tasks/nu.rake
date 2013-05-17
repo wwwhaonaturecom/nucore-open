@@ -87,7 +87,6 @@ namespace :nu do
 
   desc 'fix related to Task #42921'
   task :strip_user_names => :environment do
-    appease_bcaudit
 
     usernames=%w(dhj204 ewr045 jfs928 jlu920 jnl186 kanwar kse320 pnl857 rgg981 rgramsey rka671 roy056 tjl939 tvo vge206)
 
@@ -108,7 +107,6 @@ namespace :nu do
 
   desc 'fix related to Task #36727'
   task :provision_users => :environment do |t, args|
-    appease_bcaudit
 
     User.all.each do |user|
       if Pers::Person.find_by_username(user.username).nil?
@@ -235,26 +233,4 @@ namespace :nu do
       end
     end
   end
-
-
-  #
-  # bcsec's ensuring to satisfy bcaudit on save is
-  # handled in nucore by Bcaudit::Middleware which is
-  # loaded at bcsec_authenticatable's initialization.
-  # Since it's rack middleware, and therefore depends
-  # on being a request-response cycle, it doesn't work
-  # for tasks. Ideally there would be a bcsec-provided
-  # mock to handle this, but there isn't, so overwrite
-  # the method that ensures bcaudit satisfaction so that
-  # this task can proceed.
-  def appease_bcaudit(username='csi597')
-    Pers::Base.class_eval %Q<
-      protected
-
-      def ensure_bcauditable
-        Bcaudit::AuditInfo.current_user = Pers::Person.find_by_username('#{username}')
-      end
-    >
-  end
-
 end
