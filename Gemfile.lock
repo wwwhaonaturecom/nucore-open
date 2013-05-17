@@ -134,10 +134,10 @@ GEM
       abstract (>= 1.0.0)
     exception_notification (3.0.1)
       actionmailer (>= 3.0.4)
-    factory_girl (2.6.4)
-      activesupport (>= 2.3.9)
-    factory_girl_rails (1.7.0)
-      factory_girl (~> 2.6.0)
+    factory_girl (4.2.0)
+      activesupport (>= 3.0.0)
+    factory_girl_rails (4.2.1)
+      factory_girl (~> 4.2.0)
       railties (>= 3.0.0)
     fast-aes (0.1.1)
     fastercsv (1.5.4)
@@ -305,7 +305,7 @@ DEPENDENCIES
   devise_ldap_authenticatable (= 0.4.3)
   dispatcher
   exception_notification
-  factory_girl_rails (= 1.7.0)
+  factory_girl_rails (= 4.2.1)
   fast-aes (= 0.1.1)
   fastercsv (= 1.5.4)
   foreigner (= 1.1.1)

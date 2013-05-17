@@ -66,10 +66,7 @@ gem 'synaccess_connect', '0.2.0', :git => 'git://github.com/tablexi/synaccess.gi
 
 group :development, :test do
   gem 'ci_reporter'
-
-  # TODO upgrade factory girl to 4.1 once we no longer need to support
-  # ruby 1.8.7. FactoryGirl 3 only supports 1.9.2
-  gem 'factory_girl_rails','1.7.0'
+  gem 'factory_girl_rails','4.2.1'
   gem 'rspec-rails',       '2.9'
   gem 'shoulda-matchers',  '1.4.2'
   gem 'single_test',       '0.4.0'
