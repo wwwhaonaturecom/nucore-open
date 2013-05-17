@@ -328,4 +328,5 @@ Nucore::Application.routes.draw do
   match '/facilities/:facility_id/instrument_day_reports/reserved_quantity', :to => 'instrument_day_reports#reserved_quantity', :as => 'reserved_quantity_facility_instrument_day_reports', :via => [ :get, :post ]
   match '/facilities/:facility_id/instrument_day_reports/reserved_hours',    :to => 'instrument_day_reports#reserved_hours',    :as => 'reserved_hours_facility_instrument_day_reports',    :via => [ :get, :post ]
   match '/facilities/:facility_id/instrument_day_reports/actual_hours',      :to => 'instrument_day_reports#actual_hours',      :as => 'actual_hours_facility_instrument_day_reports',      :via => [ :get, :post ]
+
 end
