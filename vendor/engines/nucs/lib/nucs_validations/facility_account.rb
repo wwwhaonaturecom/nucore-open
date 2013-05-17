@@ -4,6 +4,6 @@ module NucsValidations::FacilityAccount
   included do
     validates_format_of :revenue_account,
         :with => /^[45]/,
-        :message => lambda { I18n.t('activerecord.errors.facility_account.revenue_account.format') }
+        :message => Proc.new { I18n.t('activerecord.errors.facility_account.revenue_account.format') }
   end
 end
