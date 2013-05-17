@@ -2,12 +2,19 @@ development:
   adapter: oracle_enhanced
   database: oracle.local:1521/xe
   username: nucore_development
-  password: 
+  password:
   encoding: utf8
 
 test:
   adapter: oracle_enhanced
   database: oracle.local:1521/xe
   username: nucore_test
-  password: 
+  password:
+  encoding: utf8
+
+cc_pers:
+  adapter: oracle_enhanced
+  database: 192.168.10.12:1521/xe
+  username: cc_pers
+  password:
   encoding: utf8
