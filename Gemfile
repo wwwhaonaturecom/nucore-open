@@ -6,7 +6,7 @@ gem 'rails_config',     '0.3.3'
 
 ## database
 gem 'foreigner',        '1.1.1'
-gem 'activerecord-oracle_enhanced-adapter', '1.3.0'
+gem 'activerecord-oracle_enhanced-adapter', '1.4.2'
 gem 'ruby-oci8',        '2.1.5'
 
 ## deployment
