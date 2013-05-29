@@ -138,7 +138,6 @@ describe FacilityAccountsController do
         @acct_attrs[:account_number] += '-12345678-01' # add project & activity
         define_gl066 @acct_attrs[:account_number]
         @params={
-          :id => @account.id,
           :facility_id => @authable.url_name,
           :owner_user_id => @owner.id,
           :account => @acct_attrs,
@@ -381,6 +380,7 @@ describe FacilityAccountsController do
       it_should_allow_all facility_managers do
         assigns(:account).should == @account
         should set_the_flash
+        assigns(:account).should be_suspended
         assert_redirected_to facility_account_path(@authable, @account)
       end
 
@@ -402,6 +402,7 @@ describe FacilityAccountsController do
       it_should_allow_all facility_managers do
         assigns(:account).should == @account
         should set_the_flash
+        assigns(:account).should_not be_suspended
         assert_redirected_to facility_account_path(@authable, @account)
       end
 

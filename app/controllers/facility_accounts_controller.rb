@@ -30,6 +30,7 @@ class FacilityAccountsController < ApplicationController
   end
 
   include Overridable
+  include AccountSuspendActions
 
   admin_tab     :all
   before_filter :authenticate_user!
@@ -86,21 +87,9 @@ class FacilityAccountsController < ApplicationController
 
   # POST /facilities/:facility_id/accounts
   def create
-    class_params = account_class_params
-
-    acct_class  = Account.get_subclass(current_facility, params[:class_type])
-
-    if acct_class.included_modules.include?(AffiliateAccount)
-      class_params[:affiliate]=Affiliate.find_by_name(class_params[:affiliate])
-      class_params[:affiliate_other]=nil if class_params[:affiliate] != Affiliate.OTHER
-    end
-
-    @owner_user         = User.find(params[:owner_user_id])
-    @account            = acct_class.new(class_params)
-    @account.created_by = session_user.id
-    @account.account_users_attributes = [{:user_id => params[:owner_user_id], :user_role => 'Owner', :created_by => session_user.id }]
-    @account.facility_id = current_facility.id if @account.class.limited_to_single_facility?
-
+    builder = Accounts::AccountBuilder.new(current_facility, session_user, params)
+    @account = builder.account
+    @owner_user = User.find(params[:owner_user_id])
     configure_new_account @account
     return render :action => 'new' unless @account.errors[:base].empty?
 
@@ -200,31 +189,6 @@ class FacilityAccountsController < ApplicationController
       format.pdf  { render :template => '/statements/show.pdf.prawn' }
     end
   end
-
-  # GET /facilities/:facility_id/accounts/:account_id/suspend
-  def suspend
-    begin
-      @account.suspend!
-      flash[:notice] = I18n.t 'controllers.facility_accounts.suspend.success'
-    rescue => e
-      flash[:notice] = e.message || I18n.t('controllers.facility_accounts.suspend.failure')
-    end
-
-    redirect_to facility_account_path(current_facility, @account)
-  end
-
-  # GET /facilities/:facility_id/accounts/:account_id/unsuspend
-  def unsuspend
-    begin
-      @account.unsuspend!
-      flash[:notice] = I18n.t 'controllers.facility_accounts.unsuspend.success'
-    rescue => e
-      flash[:notice] = e.message || I18n.t('controllers.facility_accounts.unsuspend.failure')
-    end
-
-    redirect_to facility_account_path(current_facility, @account)
-  end
-
 
   private
 
