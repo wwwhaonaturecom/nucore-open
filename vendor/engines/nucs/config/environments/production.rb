@@ -11,7 +11,6 @@ Rails.application.class.configure do
 
   # Show full error reports and disable caching
   config.consider_all_requests_local                   = false
-  config.action_view.debug_rjs                         = false
   config.action_controller.perform_caching             = false
 
   # Don't care if the mailer can't send
