@@ -26,12 +26,10 @@ class UsersController < ApplicationController
   # GET /facilities/:facility_id/users
   def index
     @new_user = User.find_by_id(params[:user])
-    @users = User.joins(:orders).
-                  where(:orders => { :facility_id => current_facility.id }).
-                  where('orders.ordered_at > ?', Time.zone.now - 1.year).
-                  order(:last_name, :first_name).
-                  select("DISTINCT users.*").
-                  paginate(:page => params[:page])
+
+    @users = User.with_recent_orders(current_facility)
+                  .order(:last_name, :first_name)
+                  .paginate(:page => params[:page])
   end
 
   def search
@@ -60,20 +58,15 @@ class UsersController < ApplicationController
 
   def create_external
     @user   = User.new(params[:user])
-    chars   = ("a".."z").to_a + ("1".."9").to_a + ("A".."Z").to_a
-    newpass = Array.new(8, '').collect{chars[rand(chars.size)]}.join
-    @user.password = newpass
+    @user.password = generate_new_password
 
-    begin
-      @user.save!
+    if @user.save
+      # send email
+      Notifier.new_user(:user => @user, :password => @user.password).deliver
       redirect_to facility_users_path(:user => @user.id)
-    rescue Exception => e
-      @user.errors.add(:base, e) if @user.errors.empty?
+    else
       render :action => "new_external" and return
     end
-
-    # send email
-    Notifier.new_user(:user => @user, :password => newpass).deliver
   end
 
   def create_internal
@@ -96,7 +89,7 @@ class UsersController < ApplicationController
   def switch_to
     @user = User.find(params[:user_id])
     unless session_user.id == @user.id
-      session[:acting_user_id] = params[:user_id]
+      session[:acting_user_id] = @user.id
       session[:acting_ref_url] = facility_users_path
     end
     redirect_to facility_path(current_facility)
@@ -154,6 +147,11 @@ class UsersController < ApplicationController
 
   def username_database_lookup(username)
     User.where("LOWER(username) = ?", username.downcase).first
+  end
+
+  def generate_new_password
+    chars   = ("a".."z").to_a + ("1".."9").to_a + ("A".."Z").to_a
+    chars.sample(8).join
   end
 
   def save_user_success
