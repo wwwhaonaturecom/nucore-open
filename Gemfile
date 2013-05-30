@@ -7,15 +7,13 @@ gem 'rails_config',     '0.2.5'
 ## database
 gem 'foreigner',        '1.1.1'
 gem 'activerecord-oracle_enhanced-adapter', '1.3.0'
-# ruby-oci8 won't compile on lion
-unless (RUBY_PLATFORM =~ /x86_64-darwin11/)
-  gem 'ruby-oci8',        '2.1.5'
-end
+
+gem 'ruby-oci8',        '2.1.5'
 
 ## auth
 gem 'devise',           '1.3.4'
 gem 'cancan',           '1.6.8'
-gem 'devise_ldap_authenticatable', '0.4.3'
+gem 'devise_ldap_authenticatable', '0.4.4'
 
 ## deployment
 gem 'capistrano',       '2.6.0'
@@ -56,11 +54,7 @@ gem 'nu',               '~> 1.0.0', :path => 'vendor/engines/nu'
 gem 'nucs',             '~> 1.0.0', :path => 'vendor/engines/nucs'
 gem 'pmu',              '~> 1.0.0', :path => 'vendor/engines/pmu'
 gem 'jxml',             '~> 1.0.0', :path => 'vendor/engines/jxml'
-
-source 'http://download.bioinformatics.northwestern.edu/gems/'
-gem 'bcsec',             '2.1.1', :require => 'pers'
-gem 'bcdatabase',        '1.0.6'
-gem 'schema_qualified_tables', '1.0.0'
+gem 'nu_cancer_center', '~> 1.0.0', :path => 'vendor/engines/nu_cancer_center'
 
 gem 'synaccess_connect', '0.2.0', :git => 'git://github.com/tablexi/synaccess.git'
 
@@ -86,8 +80,7 @@ group :development, :test do
 end
 
 group :test do
-  # Newer versions of timecop don't support 1.8.7
-  gem 'timecop',           '0.3.5'
+  gem 'timecop',           '0.6.1'
 end
 
 group :production, :staging do

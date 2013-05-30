@@ -13,7 +13,7 @@ class User < ActiveRecord::Base
   include Role
 
   # ldap_authenticatable is included via a to_prepare hook if ldap is enabled
-  devise :bcsec_authenticatable, :database_authenticatable, :encryptable, :trackable, :recoverable
+  devise :database_authenticatable, :encryptable, :trackable, :recoverable
 
   has_many :accounts, :through => :account_users
   has_many :account_users, :conditions => {:deleted_at => nil}
