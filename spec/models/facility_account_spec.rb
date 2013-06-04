@@ -6,7 +6,7 @@ describe FacilityAccount do
       @user     = FactoryGirl.create(:user)
       @facility = FactoryGirl.create(:facility)
       assert @facility.valid?
-      @options  = Hash[:is_active => 1, :created_by => @user, :facility_id => @facility.id, :revenue_account => 40000]
+      @options  = Hash[:is_active => 1, :created_by => @user.id, :facility_id => @facility.id, :revenue_account => 40000]
       @starts_at  = Time.zone.now-3.days
       @expires_at = Time.zone.now+3.days
     end
