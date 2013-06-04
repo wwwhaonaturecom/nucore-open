@@ -8,10 +8,10 @@ module Pmu
       InstrumentReportsController.send :include, Pmu::InstrumentReportsControllerExtension
 
       # make this engine's views override the main app's views
-      paths=ActionController::Base.view_paths.dup
-      index=paths.index{|p| p.to_s.include? 'pmu'}
+      paths = ActionController::Base.view_paths.to_a
+      index = paths.find_index { |p| p.to_s.include? 'pmu' }
       paths.unshift paths.delete_at(index)
-      ActionController::Base.view_paths=paths
+      ActionController::Base.view_paths = paths
     end
   end
 end

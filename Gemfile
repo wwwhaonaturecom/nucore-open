@@ -76,7 +76,6 @@ group :development, :test do
 
   # NU specific
   gem 'simplecov', :platforms => [:ruby_19]
-  gem 'silent-oracle'
 end
 
 group :production, :staging do
