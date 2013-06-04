@@ -6,8 +6,12 @@ gem 'rails_config',     '0.3.3'
 
 ## database
 gem 'foreigner',        '1.1.1'
-gem 'activerecord-oracle_enhanced-adapter', '1.3.0'
+gem 'activerecord-oracle_enhanced-adapter', '1.4.2'
 gem 'ruby-oci8',        '2.1.5'
+
+## deployment
+gem 'capistrano',       '2.15.4'
+gem 'capistrano-ext',   '1.2.1'
 
 ## auth
 gem 'devise',           '2.2.4'
@@ -15,22 +19,18 @@ gem 'devise-encryptable', '0.1.2'
 gem 'devise_ldap_authenticatable', '0.6.1'
 gem 'cancan',           '1.6.10'
 
-## deployment
-gem 'capistrano',       '2.15.4'
-gem 'capistrano-ext',   '1.2.1'
-
 ## models
 gem 'aasm',             '2.2.0'
 gem 'paperclip',        '~> 2.7.5'
 gem 'vestal_versions',  '1.2.4.3', :git => 'git://github.com/elzoiddy/vestal_versions.git'
-gem 'awesome_nested_set', '2.1.6'
+# cannot upgrade any higher than 2.0.1 because it stops playing nicely with oracle
+gem 'awesome_nested_set', '2.0.1'
 gem 'nokogiri',         '1.4.4'
 
 ## views
 gem 'haml',             '4.0.3'
 gem 'will_paginate',    '3.0.4'
 gem 'jquery-rails',     '1.0.12'
-gem 'json',             '1.7.7'
 
 ## controllers
 gem 'prawn',            '0.12'
