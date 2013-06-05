@@ -42,6 +42,12 @@ module Nucore
 
     config.active_record.schema_format = :sql
 
+    # Enable the asset pipeline
+    config.assets.enabled = true
+
+    # Version of your assets, change this if you want to expire all your assets
+    config.assets.version = '1.0'
+
     # Configure our frameworks of choice
     config.generators do |g|
      g.template_engine :haml

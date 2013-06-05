@@ -24,6 +24,7 @@ vendor/bundle
 .*~
 *.swp
 .project
+.sass-cache/
 
 config/settings.local.yml
 config/settings/*.local.yml
