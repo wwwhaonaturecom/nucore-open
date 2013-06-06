@@ -13,6 +13,9 @@ public/assets/
 spec/models/nucs/
 spec/controllers/nucs/
 vendor/bundle
+vendor/cache/
+vendor/engines/nucs/Gemfile
+vendor/engines/nucs/Gemfile.lock
 vendor/engines/nucs/config/database.yml
 vendor/plugins/bcsec_authenticatable/config/environments/bcsec_test.yml
 vendor/plugins/bcsec_authenticatable/config/environments/bcsec_development.yml
