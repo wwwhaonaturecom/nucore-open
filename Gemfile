@@ -29,8 +29,10 @@ gem 'nokogiri',         '1.4.4'
 ## views
 gem 'haml',             '4.0.3'
 gem 'will_paginate',    '3.0.4'
-gem 'jquery-rails',     '1.0.12'
 gem 'dynamic_form',     '~> 1.1.4'
+gem "ckeditor"
+gem 'jquery-rails',     '~> 2.1.4'
+gem 'jquery-ui-sass-rails'
 
 ## controllers
 gem 'prawn',            '0.12'
@@ -59,16 +61,17 @@ gem 'nu_cancer_center', '~> 1.0.0', :path => 'vendor/engines/nu_cancer_center'
 gem 'synaccess_connect', '0.2.0', :git => 'git://github.com/tablexi/synaccess.git'
 
 group :development, :test do
+  gem "awesome_print",     '1.1.0'
   gem 'ci_reporter'
   gem 'factory_girl_rails','4.2.1'
+  gem "pry-rails",         '0.2.2'
+  gem 'quiet_assets'
   gem 'rspec-rails',       '2.13.2'
   gem 'ruby-debug19',      '0.11.6'
   gem 'shoulda-matchers',  '2.1'
   gem 'single_test',       '0.4.0'
   gem 'spork',             '0.9.2'
   gem 'timecop',           '0.6.1'
-  gem "pry-rails",         '0.2.2'
-  gem "awesome_print",     '1.1.0'
 
   # http://devnet.jetbrains.com/message/5479367
   # don't require in RubyMine since ruby-debug interferes with ruby-debug-ide gem
@@ -76,6 +79,13 @@ group :development, :test do
 
   # NU specific
   gem 'simplecov', :platforms => [:ruby_19]
+end
+
+group :assets do
+  gem 'sass-rails',   "~> 3.2.6"
+  gem 'coffee-rails', "~> 3.2.2"
+  gem 'uglifier',     ">= 2.1.1"
+  gem 'turbo-sprockets-rails3'
 end
 
 group :production, :staging do

@@ -54,6 +54,31 @@ Nucore::Application.configure do
   # Send deprecation notices to registered listeners
   config.active_support.deprecation = :notify
 
+  # Compress JavaScripts and CSS
+  config.assets.compress = true
+
+  # Don't fallback to assets pipeline if a precompiled asset is missed
+  config.assets.compile = false
+
+  # Generate digests for assets URLs
+  config.assets.digest = true
+
+  # Precompile additional assets (application.js, application.css, and all non-JS/CSS are already added)
+  config.assets.precompile += %w( 960gs/reset.css 960gs/960.css )
+  config.assets.precompile += %w( ie.css ie8.css )
+  config.assets.precompile += %w( reports.js reports.css )
+  config.assets.precompile += %w( chosen.css )
+  config.assets.precompile += %w( *.js ) # precompile all js files
+
+  # Defaults to Rails.root.join("public/assets")
+  # config.assets.manifest = YOUR_PATH
+
+  # Precompile additional assets (application.js, application.css, and all non-JS/CSS are already added)
+  # config.assets.precompile += %w( search.js )
+
+  # Force all access to the app over SSL, use Strict-Transport-Security, and use secure cookies.
+  # config.force_ssl = true
+
   # configure automatic exception notifier
   config.middleware.use ExceptionNotifier,
     :sender_address       => Settings.email.exceptions.sender,
