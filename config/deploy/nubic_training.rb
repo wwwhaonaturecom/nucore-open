@@ -1,46 +1,58 @@
 set :application, "nucore"
+set :user, "nucore"
+set :deploy_to, "/home/nucore/nucore-staging.nubic.northwestern.edu"
+set :rails_env, "staging"
 
-set  :user, "jgi913"
-set  :deploy_to, "/var/www/apps/nucore"
-set  :rails_env, "staging"
-role :web, "admin-staging.nubic.northwestern.edu"                          # Your HTTP server, Apache/etc
-role :app, "admin-staging.nubic.northwestern.edu"                          # This may be the same as your `Web` server
-role :db,  "admin-staging.nubic.northwestern.edu", :primary => true        # This is where Rails migrations will run
+role :web, "nucore-staging.nubic.northwestern.edu"
+role :app, "nucore-staging.nubic.northwestern.edu"
+role :db,  "nucore-staging.nubic.northwestern.edu", :primary => true
 
-default_run_options[:pty] = true
 set :use_sudo, false
+
+########################################
+# github
+set :scm, "git"
+set :deploy_via, :export
+set :repository, "git@github.com:tablexi/nucore-nu.git"
+set :branch, "upgrades"
+
+# forward keys to github
 ssh_options[:forward_agent] = true
 
-set :repository, "git@github.com:tablexi/nucore-nu.git"
-set :deploy_via, :export
-set :scm, "git"
-set :branch, "training"
+# github password
+default_run_options[:pty] = true
 
-default_environment["LD_LIBRARY_PATH"] = "/usr/lib/oracle/11.1/client64/lib"
-default_environment["ORACLE_HOME"] = "/usr/lib/oracle/11.1/client64/lib"
+########################################
+default_environment["LD_LIBRARY_PATH"] = "/usr/lib/oracle/11.2/client64/lib"
+default_environment["ORACLE_HOME"] = "/usr/lib/oracle/11.2/client64/lib"
+
+after 'deploy:finalize_update', 'deploy:symlink_configs', 'deploy:symlink_revision'
 
 namespace :deploy do
-  task :start do ; end
-  task :stop do ; end
   task :restart, :except => { :no_release => true } do
-    run "bash -l -c \"cd #{release_path} && RAILS_ENV=staging bundle exec rake daemon:stop[auto_cancel]\""
-    run "bash -l -c \"cd #{release_path} && RAILS_ENV=staging bundle exec rake daemon:start[auto_cancel]\""
-    run "touch #{release_path}/tmp/restart.txt && chmod -R g+w #{release_path}/tmp"
+#    run "bash -l -c \"cd #{release_path} && RAILS_ENV=staging bundle exec rake daemon:stop[auto_cancel]\""
+#    run "bash -l -c \"cd #{release_path} && RAILS_ENV=staging bundle exec rake daemon:start[auto_cancel]\""
+#    run "touch #{release_path}/tmp/restart.txt && chmod -R g+w #{release_path}/tmp"
   end
+
   task :symlink_configs do
-    run "ln -s #{deploy_to}/database.yml #{release_path}/config/database.yml"
-    run "ln -s #{deploy_to}/settings.local.yml #{release_path}/config/settings.local.yml"
-    run "ln -s #{deploy_to}/newrelic.yml #{release_path}/config/newrelic.yml"
-    run "ln -s #{deploy_to}/files #{release_path}/public/files"
-    run "ln -s #{deploy_to}/database.yml #{release_path}/vendor/engines/nucs/config/database.yml"
+    run "ln -nfs #{deploy_to}/shared/config/database.yml #{release_path}/config/database.yml"
+    run "ln -nfs #{deploy_to}/shared/config/settings.local.yml #{release_path}/config/settings.local.yml"
+    run "ln -nfs #{deploy_to}/shared/config/ldap.yml #{release_path}/config/ldap.yml"
+    run "ln -nfs #{deploy_to}/shared/config/newrelic.yml #{release_path}/config/newrelic.yml"
+
+    # wrong path?
+    run "ln -nfs #{deploy_to}/files #{release_path}/public/files"
   end
-  task :bundle_install do
-    run "cd #{release_path} && ~/.gem/ruby/1.8/bin/./bundle install ../../shared/bundle --without development test"
+
+  task :symlink_revision, :roles => :app do
+    run "ln -nfs #{release_path}/REVISION #{release_path}/public/REVISION.txt"
   end
-  task :chmod_project do
-    run "chmod -R g+w #{release_path}"
-    run "chmod -R g+w #{release_path}/../../shared/bundle"
-  end
+
 end
 
-after 'deploy:update_code', 'deploy:symlink_configs', 'deploy:bundle_install', 'deploy:chmod_project'
+########################################
+# save disk space
+#   http://capitate.rubyforge.org/recipes/deploy.html#deploy:cleanup
+
+after 'deploy:restart', 'deploy:cleanup'

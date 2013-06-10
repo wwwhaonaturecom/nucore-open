@@ -11,7 +11,7 @@ gem 'ruby-oci8',        '2.1.5'
 
 ## deployment
 gem 'capistrano',       '2.15.4'
-gem 'capistrano-ext',   '1.2.1'
+gem 'rvm-capistrano',   '1.3.1'
 
 ## auth
 gem 'devise',           '2.2.4'
