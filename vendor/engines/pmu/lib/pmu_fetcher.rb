@@ -17,7 +17,11 @@ private
     req = Net::HTTP::Get.new uri.request_uri
 
     response = http.request req
-    puts "Got response. Cleaning..."
+
+    puts "Got response #{response.code}."
+
+    write_to_file(response.body, "pmu-raw")
+
     strip_html(response.body)
   end
 
@@ -28,8 +32,8 @@ private
   end
 
   # Returns the path name
-  def write_to_file(string)
-    path = File.expand_path("#{Rails.root}/tmp/pmu-#{now_string}.xml", File.dirname(__FILE__))
+  def write_to_file(string, file_prefix = 'pmu')
+    path = File.expand_path("#{Rails.root}/tmp/#{file_prefix}-#{now_string}.xml", File.dirname(__FILE__))
     puts "Saving to file: #{path}"
     File.open path, 'w' do |f|
       f.write(string)
