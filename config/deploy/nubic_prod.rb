@@ -33,6 +33,7 @@ namespace :deploy do
     run "ln -s #{deploy_to}/newrelic.yml #{release_path}/config/newrelic.yml"
     run "ln -s #{deploy_to}/files #{release_path}/public/files"
     run "ln -s #{deploy_to}/database.yml #{release_path}/vendor/engines/nucs/config/database.yml"
+    run "ln -s #{deploy_to}/settings.pmu.yml #{release_path}/vendor/engines/pmu/config/settings.yml"
   end
   task :bundle_install do
     run "cd #{release_path} && /opt/ruby-enterprise/bin/./bundle install --path ../../shared/bundle --without development test"
