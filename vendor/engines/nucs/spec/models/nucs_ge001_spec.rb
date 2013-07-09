@@ -1,5 +1,5 @@
 require 'spec_helper'
-
+require 'nucs_spec_helper'
 
 share_examples_for 'GE001' do
 

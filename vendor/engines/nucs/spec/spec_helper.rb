@@ -53,13 +53,3 @@ RSpec.configure do |config|
   #
   # For more information take a look at Spec::Runner::Configuration and Spec::Runner
 end
-
-
-#
-# Create fake string data of variable
-# length and characters
-def mkstr(length=10, chars='1')
-  str=''
-  length.times { str += chars }
-  return str
-end
