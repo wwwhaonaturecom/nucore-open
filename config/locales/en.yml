@@ -154,6 +154,8 @@ en:
         search_term: "Search by name, NetID, or username"
     new:
       head: "Add Payment Source User"
+      messages:
+        current_user: "This user is the owner of the account. To change this user's role, you must replace the account owner first."
       label:
         account:
           type: "Payment Source Type"
@@ -294,6 +296,7 @@ en:
           resolve: "Resolution Notes"
         resolved: "Resolved At"
         reconcile: "Reconciliation Note:"
+        with_cancel_fee: Add reservation cost
       instruct:
         dispute: "To resolve the dispute, please make the necessary changes and click \"Resolve Dispute\"."
         bundle: "This order is part of a bundle.  Below is a summary of related bundle order line items."
@@ -347,6 +350,10 @@ en:
       confirm: Are you sure you wish to cancel this reservation?
       link: Cancel
     finished: Reservation Ended
+    moving_up:
+      confirm_same_day: The earliest time you can move this reservation to begins on %{start_date} at %{start_time} and ends at %{end_time}.
+      confirm_different_day: The earliest time you can move this reservation to begins on %{start_date} at %{start_time} and ends on %{end_date} at %{end_time}.
+      confirm: Would you like to move your reservation?
 
   statements:
     index:
@@ -757,7 +764,7 @@ en:
       reservation:
         intro: "(Optional)  Define minimum and maximum reservation limits below."
         instruct:
-          cancel_hours: "Minimum length of time before a reservation begins that a user may cancel a reservation without penalty"
+          cancel_hours: "Minimum length of time before a reservation begins that a user may cancel a reservation without invoking the reservation cost"
           auto_cancel: "The duration a due but unactivated reservation can exist before the system cancels it"
         label:
           restrict: "Reservation Restrictions"
