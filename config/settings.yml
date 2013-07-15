@@ -16,7 +16,7 @@ validator:
   class_name: NucsValidator
   test:
     factory: 'vendor/engines/nucs/spec/factories' # relative to Rails.root
-    helper: 'vendor/engines/nucs/spec/nucs_validator_helper' # relative to Rails.root
+    helper: 'vendor/engines/nucs/spec/support/nucs_validator_helper' # relative to Rails.root
 
 email:
   from: 'nucore-noreply@northwestern.edu'

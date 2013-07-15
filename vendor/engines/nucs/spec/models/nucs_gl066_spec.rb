@@ -1,4 +1,5 @@
 require 'spec_helper'
+require 'nucs_spec_helper'
 
 describe NucsGl066 do
 
@@ -72,7 +73,7 @@ describe NucsGl066 do
 
 
   it 'should tell us when now on expires_at' do
-    gl=Factory.create(:nucs_gl066_with_dates, { :starts_at => Time.zone.now-3.day, :expires_at => Time.zone.now})
+    gl=Factory.create(:nucs_gl066_with_dates, { :starts_at => Time.zone.now-3.day, :expires_at => Time.zone.now.end_of_day})
     gl.should_not be_expired
   end
 
@@ -112,7 +113,7 @@ describe NucsGl066 do
 
         if tokens.size > 6
           gl.starts_at.should == Time.zone.parse(tokens[6])
-          gl.expires_at.should == Time.zone.parse(tokens[7])
+          gl.expires_at.should == Time.zone.parse(tokens[7]).end_of_day
         end
       end
     end
