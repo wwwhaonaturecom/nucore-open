@@ -1,1 +1,10 @@
 /* Fork specific bootstrap overrides go here. This is included before bootstrap. */
+$purple: #571963;
+
+$sansFontFamily: "Lucida Grande",Geneva,Verdana,Arial,sans-serif;
+
+$btnPrimaryBackground: lighten($purple, 10%);
+$btnPrimaryBackgroundHighlight: $purple;
+
+$btnSuccessBackgroundHighlight: adjust-hue($purple, 180deg);
+$btnSuccessBackground: lighten($btnSuccessBackgroundHighlight, 10%);

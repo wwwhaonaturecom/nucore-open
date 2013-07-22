@@ -9,3 +9,13 @@ Example of this to include here:
   $headerBackgroundColor: #571963;
   $headerColor: white;
 */
+
+$headerBackgroundColor: $purple;
+$headerBackgroundColorHighLight: darken($headerBackgroundColor, 5%);
+$headerColor: white;
+$navbarActiveBorderColor: #aca66c;
+$usernavColor: white;
+$usernavColorHover: #EEE;
+$sidebarActiveBackgroundColor: $purple;
+$sidebarActiveBackgroundColorHighlight: lighten($sidebarActiveBackgroundColor, 10%);
+$usernavDividerColor: transparentize($usernavColor, 0.9);
