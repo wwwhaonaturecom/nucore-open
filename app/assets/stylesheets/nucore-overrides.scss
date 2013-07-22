@@ -1,0 +1,21 @@
+/*
+Fork-specific styling should go in this file. This is included after Bootstrap,
+so you will have access to Bootstrap's variables and mixins.
+
+If you need to override a bootstrap variable--for example, $sansFontFamily--you should
+do that in bootstrap-variables.scss, since it is included before bootstrap.
+
+Example of this to include here:
+  $headerBackgroundColor: #571963;
+  $headerColor: white;
+*/
+
+$headerBackgroundColor: $purple;
+$headerBackgroundColorHighLight: darken($headerBackgroundColor, 5%);
+$headerColor: white;
+$navbarActiveBorderColor: #aca66c;
+$usernavColor: white;
+$usernavColorHover: #EEE;
+$sidebarActiveBackgroundColor: $purple;
+$sidebarActiveBackgroundColorHighlight: lighten($sidebarActiveBackgroundColor, 10%);
+$usernavDividerColor: transparentize($usernavColor, 0.9);

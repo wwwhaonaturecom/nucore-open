@@ -27,12 +27,16 @@ gem 'awesome_nested_set', '2.1.6'
 gem 'nokogiri',         '1.5.9'
 
 ## views
+gem 'bootstrap-sass'
 gem 'haml',             '4.0.3'
 gem 'will_paginate',    '3.0.4'
 gem 'dynamic_form',     '~> 1.1.4'
-gem "ckeditor"
+gem 'ckeditor'
 gem 'jquery-rails',     '~> 2.1.4'
 gem 'jquery-ui-sass-rails'
+gem 'clockpunch',       '~> 0.1.0'
+gem 'simple_form'
+gem 'font-awesome-rails'
 
 ## controllers
 gem 'prawn',            '0.12'
@@ -61,10 +65,10 @@ gem 'nu_cancer_center', '~> 1.0.0', :path => 'vendor/engines/nu_cancer_center'
 gem 'synaccess_connect', '0.2.1', :git => 'git://github.com/tablexi/synaccess.git'
 
 group :development, :test do
-  gem "awesome_print",     '1.1.0'
+  gem 'awesome_print',     '1.1.0'
   gem 'ci_reporter'
   gem 'factory_girl_rails','4.2.1'
-  gem "pry-rails",         '0.2.2'
+  gem 'pry-rails',         '0.2.2'
   gem 'quiet_assets'
   gem 'rspec-rails',       '2.13.2'
   gem 'ruby-debug19',      '0.11.6'
@@ -82,9 +86,9 @@ group :development, :test do
 end
 
 group :assets do
-  gem 'sass-rails',   "~> 3.2.6"
-  gem 'coffee-rails', "~> 3.2.2"
-  gem 'uglifier',     ">= 2.1.1"
+  gem 'sass-rails',   '~> 3.2.6'
+  gem 'coffee-rails', '~> 3.2.2'
+  gem 'uglifier',     '>= 2.1.1'
   gem 'therubyracer'
   gem 'turbo-sprockets-rails3'
 end
