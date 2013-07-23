@@ -33,6 +33,7 @@ FactoryGirl.define do
     end
 
     factory :bundle, :class => Bundle do
+      account nil # bundles don't have accounts
       sequence(:name) {|n| "Bundle #{n}" }
       sequence(:url_name) {|n| "bundle-#{n}" }
     end
@@ -66,6 +67,9 @@ FactoryGirl.define do
     end
 
     factory :setup_item, :class => Item do
+      after(:create) do |product|
+        product.item_price_policies.create(FactoryGirl.attributes_for(:item_price_policy, :price_group => product.facility.price_groups.last))
+      end
     end
 
   end

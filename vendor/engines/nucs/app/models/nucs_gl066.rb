@@ -29,8 +29,7 @@ class NucsGl066 < ActiveRecord::Base
   # Returns false if the current time is between or on +#starts_at+ and
   # +#expires_at+. true otherwise.
   def expired?
-    today=Time.zone.now.to_datetime.to_date
-    return expires_at.to_date < today  || starts_at.to_date > today
+    expires_at <= Time.zone.now || starts_at > Time.zone.now
   end
 
 
@@ -60,8 +59,8 @@ class NucsGl066 < ActiveRecord::Base
 
     if tokens.size > 6
       # has start and expire dates
-      attrs[:starts_at]=Time.zone.parse(tokens[6])
-      attrs[:expires_at]=Time.zone.parse(tokens[7])
+      attrs[:starts_at]=Time.zone.parse(tokens[6]).beginning_of_day
+      attrs[:expires_at]=Time.zone.parse(tokens[7]).end_of_day
     end
 
     create(attrs)

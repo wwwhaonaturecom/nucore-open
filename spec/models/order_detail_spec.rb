@@ -199,6 +199,22 @@ describe OrderDetail do
 
   context 'instrument' do
 
+    context 'where the account has a price group, but the user does not' do
+      let(:reservation) { FactoryGirl.create(:setup_reservation) }
+      let(:order_detail) { reservation.order_detail }
+      let(:price_group) { FactoryGirl.create(:price_group, :facility => @facility) }
+      before :each do
+        FactoryGirl.create(:price_group_product, :product => order_detail.product, :price_group => price_group)
+        FactoryGirl.create(:instrument_price_policy, :product => order_detail.product, :price_group => price_group)
+        order_detail.user.stub(:price_groups).and_return([])
+        order_detail.account.stub(:price_groups).and_return([price_group])
+      end
+
+      it 'allows purchase' do
+        order_detail.should be_valid_for_purchase
+      end
+    end
+
 #    before :each do
 #      @price_group    = FactoryGirl.create(:price_group, :facility => @facility)
 #      @pg_user_member = FactoryGirl.create(:user_price_group_member, :user => @user, :price_group => @price_group)
@@ -305,8 +321,10 @@ describe OrderDetail do
 
       @no_actuals_od.create_reservation FactoryGirl.attributes_for(:reservation, :product => @no_actuals_instrument)
       @actuals_od.create_reservation FactoryGirl.attributes_for(:reservation, :product => @actuals_instrument)
-      @both_od.create_reservation FactoryGirl.attributes_for(:reservation, :product => @both_instrument)
-      @no_pp_od.create_reservation FactoryGirl.attributes_for(:reservation, :product => @both_instrument)
+
+      # since these two are on the same instrument, make sure the reservations do not conflict
+      both_res = @both_od.create_reservation FactoryGirl.attributes_for(:reservation, :product => @both_instrument)
+      @no_pp_od.create_reservation FactoryGirl.attributes_for(:reservation, :product => @both_instrument, :reserve_start_at => both_res.reserve_start_at + 1.hour, :duration_mins => 60)
 
       # travel to the future to complete the order_details
       Timecop.travel(2.days.from_now) do

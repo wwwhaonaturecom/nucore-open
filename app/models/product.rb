@@ -32,6 +32,14 @@ class Product < ActiveRecord::Base
   scope :archived,           :conditions => { :is_archived => true }
   scope :not_archived,       :conditions => { :is_archived => false }
 
+  def self.non_instruments
+    where("products.type <> 'Instrument'")
+  end
+
+  def self.exclude(exclusion_list)
+    where("products.id NOT IN (?)", exclusion_list)
+  end
+
 
   ## AR Hooks
   before_validation do
@@ -135,8 +143,12 @@ class Product < ActiveRecord::Base
     false
   end
 
+  def can_purchase_order_detail?(order_detail)
+    can_purchase? order_detail.price_groups.map(&:id)
+  end
+
   def cheapest_price_policy(order_detail, date = Time.zone.now)
-    groups = groups_for_order_detail(order_detail)
+    groups = order_detail.price_groups
     return nil if groups.empty?
     price_policies = current_price_policies(date).delete_if { |pp| pp.restrict_purchase? || groups.exclude?(pp.price_group) }
 
@@ -154,12 +166,6 @@ class Product < ActiveRecord::Base
       costs = pp.estimate_cost_and_subsidy_from_order_detail(order_detail) || {:cost => 999999999, :subsidy => 0}
       costs[:cost] - costs[:subsidy]
     end
-  end
-
-  def groups_for_order_detail(order_detail)
-    groups = order_detail.order.user.price_groups
-    groups += order_detail.account.price_groups if order_detail.account
-    groups.compact.uniq
   end
 
   def product_type

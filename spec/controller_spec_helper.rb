@@ -120,7 +120,6 @@ def it_should_allow(user_sym, spec_desc='', &eval)
   end
 end
 
-
 #
 # The *_all helpers are useful for testing multiple roles in one shot.
 # They generate a new spec for each role and behave just like their
@@ -200,7 +199,7 @@ def it_should_allow_managers_and_senior_staff_only(response=:success, spec_desc=
 
   it_should_deny(:staff, spec_desc)
 
-  it_should_allow_all(facility_managers, spec_desc) do |user|
+  it_should_allow_all(facility_managers + [:senior_staff], spec_desc) do |user|
     should respond_with response
     instance_exec(user, &eval) if eval
   end

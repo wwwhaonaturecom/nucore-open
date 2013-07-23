@@ -2,7 +2,7 @@ class Account < ActiveRecord::Base
   include Accounts::AccountNumberSectionable
   include DateHelper
 
-  has_many   :account_users
+  has_many   :account_users, :inverse_of => :account
   has_one    :owner, :class_name => 'AccountUser', :conditions => {:user_role => AccountUser::ACCOUNT_OWNER, :deleted_at => nil}
   has_many   :business_admins, :class_name => 'AccountUser', :conditions => {:user_role => AccountUser::ACCOUNT_ADMINISTRATOR, :deleted_at => nil}
   has_many   :price_group_members
@@ -18,8 +18,9 @@ class Account < ActiveRecord::Base
   validates_length_of :description, :maximum => 50
 
   validate do |acct|
-    # an account owner if required
-    unless acct.account_users.any?{ |au| au.user_role == AccountUser::ACCOUNT_OWNER }
+    # a current account owner if required
+    # don't use a scope so we can validate on nested attributes
+    unless acct.account_users.any?{ |au| au.deleted_at.nil? && au.user_role == AccountUser::ACCOUNT_OWNER }
       acct.errors.add(:base, "Must have an account owner")
     end
   end
@@ -49,7 +50,9 @@ class Account < ActiveRecord::Base
       # set creation information
       @account_user.created_by = session_user.id
 
-      raise ActiveRecord::Rollback unless @account_user.save
+      self.account_users << @account_user
+
+      raise ActiveRecord::Rollback unless self.save
     end
 
     return @account_user
@@ -164,6 +167,10 @@ class Account < ActiveRecord::Base
     return nil
   end
 
+  def can_reconcile?(order_detail)
+    order_detail.statement_id.present?
+  end
+
   def self.need_statements (facility)
     # find details that are complete, not yet statemented, priced, and not in dispute
     details = OrderDetail.need_statement(facility)
@@ -228,6 +235,12 @@ class Account < ActiveRecord::Base
 
   def price_groups
     (price_group_members.collect{ |pgm| pgm.price_group } + (owner_user ? owner_user.price_groups : [])).flatten.uniq
+  end
+
+  def affiliate_to_s
+    affiliate_name = affiliate.name
+    affiliate_name += " (#{affiliate_other})" if affiliate == Affiliate.OTHER
+    affiliate_name
   end
 
 end
