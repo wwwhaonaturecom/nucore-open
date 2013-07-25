@@ -1,3 +1,4 @@
+# encoding: UTF-8
 # This file is auto-generated from the current state of the database. Instead
 # of editing this file, please use the migrations feature of Active Record to
 # incrementally modify your database, and then regenerate this schema definition.
@@ -10,11 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-<<<<<<< HEAD
-ActiveRecord::Schema.define(:version => 20120824185714) do
-=======
-ActiveRecord::Schema.define(:version => 20130108221731) do
->>>>>>> upstream/shared_calendar
+ActiveRecord::Schema.define(:version => 20130624220923) do
 
   create_table "account_users", :force => true do |t|
     t.integer  "account_id",               :precision => 38, :scale => 0, :null => false
@@ -25,7 +22,6 @@ ActiveRecord::Schema.define(:version => 20130108221731) do
     t.datetime "deleted_at"
     t.integer  "deleted_by",               :precision => 38, :scale => 0
   end
-
 
   create_table "accounts", :force => true do |t|
     t.string   "type",                   :limit => 50,                                 :null => false
@@ -48,7 +44,6 @@ ActiveRecord::Schema.define(:version => 20130108221731) do
 
   add_index "accounts", ["affiliate_id"], :name => "index_accounts_on_affiliate_id", :tablespace => "bc_nucore"
 
-
   create_table "affiliates", :force => true do |t|
     t.string   "name"
     t.datetime "created_at"
@@ -62,7 +57,6 @@ ActiveRecord::Schema.define(:version => 20130108221731) do
 
   add_index "bi_netids", ["facility_id"], :name => "index_bi_netids_on_facility_id", :tablespace => "bc_nucore"
   add_index "bi_netids", ["netid"], :name => "index_bi_netids_on_netid", :tablespace => "bc_nucore"
-
 
   create_table "budgeted_chart_strings", :force => true do |t|
     t.string   "fund",       :limit => 20, :null => false
@@ -79,7 +73,6 @@ ActiveRecord::Schema.define(:version => 20130108221731) do
     t.integer "product_id",        :precision => 38, :scale => 0, :null => false
     t.integer "quantity",          :precision => 38, :scale => 0, :null => false
   end
-
 
   create_table "external_service_passers", :force => true do |t|
     t.integer  "external_service_id", :precision => 38, :scale => 0
@@ -138,27 +131,11 @@ ActiveRecord::Schema.define(:version => 20130108221731) do
     t.integer  "revenue_account",               :precision => 38, :scale => 0, :null => false
   end
 
-
-  create_table "file_uploads", :force => true do |t|
-    t.integer  "order_detail_id",                  :precision => 38, :scale => 0
-    t.integer  "product_id",                       :precision => 38, :scale => 0
-    t.string   "name",              :limit => 200,                                :null => false
-    t.string   "file_type",         :limit => 50,                                 :null => false
-    t.integer  "created_by",                       :precision => 38, :scale => 0, :null => false
-    t.datetime "created_at",                                                      :null => false
-    t.string   "file_file_name"
-    t.string   "file_content_type"
-    t.integer  "file_file_size",                   :precision => 38, :scale => 0
-    t.datetime "file_updated_at"
-  end
-
-
   create_table "instrument_statuses", :force => true do |t|
     t.integer  "instrument_id", :precision => 38, :scale => 0, :null => false
     t.boolean  "is_on",         :precision => 1,  :scale => 0, :null => false
     t.datetime "created_at",                                   :null => false
   end
-
 
   create_table "journal_rows", :force => true do |t|
     t.integer "journal_id",                     :precision => 38, :scale => 0, :null => false
@@ -188,6 +165,10 @@ ActiveRecord::Schema.define(:version => 20130108221731) do
     t.integer  "file_file_size",                   :precision => 38, :scale => 0
     t.datetime "file_updated_at"
     t.datetime "journal_date",                                                    :null => false
+  end
+
+  create_table "jxml_holidays", :force => true do |t|
+    t.datetime "date", :null => false
   end
 
   create_table "notifications", :force => true do |t|
@@ -305,8 +286,23 @@ ActiveRecord::Schema.define(:version => 20130108221731) do
     t.integer  "journal_id",                             :precision => 38, :scale => 0
     t.string   "reconciled_note"
     t.integer  "created_by",                             :precision => 38, :scale => 0, :null => false
+    t.integer  "parent_order_detail_id",                 :precision => 38, :scale => 0
+    t.integer  "product_accessory_id",                   :precision => 38, :scale => 0
   end
 
+  create_table "order_imports", :force => true do |t|
+    t.integer  "upload_file_id", :precision => 38, :scale => 0,                    :null => false
+    t.integer  "error_file_id",  :precision => 38, :scale => 0
+    t.boolean  "fail_on_error",  :precision => 1,  :scale => 0, :default => false
+    t.boolean  "send_receipts",  :precision => 1,  :scale => 0, :default => false
+    t.integer  "created_by",     :precision => 38, :scale => 0,                    :null => false
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  add_index "order_imports", ["created_by"], :name => "i_order_imports_created_by", :tablespace => "bc_nucore"
+  add_index "order_imports", ["error_file_id"], :name => "i_order_imports_error_file_id", :tablespace => "bc_nucore"
+  add_index "order_imports", ["upload_file_id"], :name => "i_order_imports_upload_file_id", :tablespace => "bc_nucore"
 
   create_table "order_statuses", :force => true do |t|
     t.string  "name",        :limit => 50,                                :null => false
@@ -328,8 +324,26 @@ ActiveRecord::Schema.define(:version => 20130108221731) do
     t.integer  "facility_id",                       :precision => 38, :scale => 0
     t.string   "state",               :limit => 50
     t.integer  "merge_with_order_id",               :precision => 38, :scale => 0
+    t.integer  "order_import_id",                   :precision => 38, :scale => 0
   end
 
+  add_index "orders", ["order_import_id"], :name => "i_orders_order_import_id", :tablespace => "bc_nucore"
+
+  create_table "pmu_departments", :force => true do |t|
+    t.string   "unit_id",           :limit => 32
+    t.string   "pmu",               :limit => 256
+    t.string   "area",              :limit => 128
+    t.string   "division",          :limit => 128
+    t.string   "organization",      :limit => 256
+    t.string   "fasis_id",          :limit => 128
+    t.string   "fasis_description", :limit => 256
+    t.string   "nufin_id",          :limit => 32
+    t.string   "nufin_description", :limit => 64
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  add_index "pmu_departments", ["nufin_id"], :name => "i_pmu_departments_nufin_id", :tablespace => "bc_nucore"
 
   create_table "price_group_members", :force => true do |t|
     t.string  "type",           :limit => 50,                                :null => false
@@ -337,7 +351,6 @@ ActiveRecord::Schema.define(:version => 20130108221731) do
     t.integer "user_id",                      :precision => 38, :scale => 0
     t.integer "account_id",                   :precision => 38, :scale => 0
   end
-
 
   create_table "price_group_products", :force => true do |t|
     t.integer  "price_group_id",     :precision => 38, :scale => 0, :null => false
@@ -358,7 +371,6 @@ ActiveRecord::Schema.define(:version => 20130108221731) do
   end
 
   add_index "price_groups", ["facility_id", "name"], :name => "sys_c008577", :unique => true, :tablespace => "bc_nucore"
-
 
   create_table "price_policies", :force => true do |t|
     t.string   "type",                :limit => 50,                                                   :null => false
@@ -382,7 +394,6 @@ ActiveRecord::Schema.define(:version => 20130108221731) do
     t.boolean  "can_purchase",                      :precision => 1,  :scale => 0, :default => false, :null => false
   end
 
-
   create_table "product_access_groups", :force => true do |t|
     t.integer  "product_id", :precision => 38, :scale => 0, :null => false
     t.string   "name"
@@ -396,8 +407,9 @@ ActiveRecord::Schema.define(:version => 20130108221731) do
   end
 
   create_table "product_accessories", :force => true do |t|
-    t.integer "product_id",   :precision => 38, :scale => 0, :null => false
-    t.integer "accessory_id", :precision => 38, :scale => 0, :null => false
+    t.integer "product_id",   :precision => 38, :scale => 0,                         :null => false
+    t.integer "accessory_id", :precision => 38, :scale => 0,                         :null => false
+    t.string  "scaling_type",                                :default => "quantity", :null => false
   end
 
   create_table "product_users", :force => true do |t|
@@ -408,14 +420,12 @@ ActiveRecord::Schema.define(:version => 20130108221731) do
     t.integer  "product_access_group_id", :precision => 38, :scale => 0
   end
 
-
   create_table "products", :force => true do |t|
     t.string   "type",                    :limit => 50,                                                    :null => false
     t.integer  "facility_id",                            :precision => 38, :scale => 0,                    :null => false
     t.string   "name",                    :limit => 200,                                                   :null => false
     t.string   "url_name",                :limit => 50,                                                    :null => false
     t.text     "description"
-<<<<<<< HEAD
     t.boolean  "requires_approval",                      :precision => 1,  :scale => 0,                    :null => false
     t.integer  "initial_order_status_id",                :precision => 38, :scale => 0
     t.boolean  "is_archived",                            :precision => 1,  :scale => 0,                    :null => false
@@ -426,31 +436,14 @@ ActiveRecord::Schema.define(:version => 20130108221731) do
     t.integer  "max_reserve_mins",                       :precision => 38, :scale => 0
     t.integer  "min_cancel_hours",                       :precision => 38, :scale => 0
     t.integer  "facility_account_id",                    :precision => 38, :scale => 0
-=======
-    t.integer  "schedule_id"
-    t.boolean  "requires_approval",                                         :null => false
-    t.integer  "initial_order_status_id"
-    t.boolean  "is_archived",                                               :null => false
-    t.boolean  "is_hidden",                                                 :null => false
-    t.datetime "created_at",                                                :null => false
-    t.datetime "updated_at",                                                :null => false
-    t.integer  "min_reserve_mins"
-    t.integer  "max_reserve_mins"
-    t.integer  "min_cancel_hours"
-    t.integer  "facility_account_id"
->>>>>>> upstream/shared_calendar
     t.string   "account",                 :limit => 5
     t.boolean  "show_details",                           :precision => 1,  :scale => 0, :default => false, :null => false
     t.integer  "auto_cancel_mins",                       :precision => 38, :scale => 0
     t.string   "contact_email"
+    t.integer  "schedule_id",                            :precision => 38, :scale => 0
   end
 
-<<<<<<< HEAD
-=======
-  add_index "products", ["facility_account_id"], :name => "fk_facility_accounts"
-  add_index "products", ["facility_id"], :name => "sys_c008556"
-  add_index "products", ["schedule_id"], :name => "i_instruments_schedule_id"
->>>>>>> upstream/shared_calendar
+  add_index "products", ["schedule_id"], :name => "i_instruments_schedule_id", :tablespace => "bc_nucore"
 
   create_table "relays", :force => true do |t|
     t.integer  "instrument_id",               :precision => 38, :scale => 0
@@ -467,33 +460,16 @@ ActiveRecord::Schema.define(:version => 20130108221731) do
   add_index "relays", ["instrument_id"], :name => "index_relays_on_instrument_id", :tablespace => "bc_nucore"
 
   create_table "reservations", :force => true do |t|
-<<<<<<< HEAD
     t.integer  "order_detail_id",                :precision => 38, :scale => 0
-    t.integer  "instrument_id",                  :precision => 38, :scale => 0, :null => false
+    t.integer  "product_id",                     :precision => 38, :scale => 0, :null => false
     t.datetime "reserve_start_at",                                              :null => false
     t.datetime "reserve_end_at",                                                :null => false
-=======
-    t.integer  "order_detail_id"
-    t.integer  "product_id",                     :null => false
-    t.datetime "reserve_start_at",               :null => false
-    t.datetime "reserve_end_at",                 :null => false
->>>>>>> upstream/shared_calendar
     t.datetime "actual_start_at"
     t.datetime "actual_end_at"
     t.datetime "canceled_at"
     t.integer  "canceled_by",                    :precision => 38, :scale => 0
     t.string   "canceled_reason",  :limit => 50
   end
-
-<<<<<<< HEAD
-=======
-  add_index "reservations", ["order_detail_id"], :name => "res_ord_det_id_fk"
-  add_index "reservations", ["product_id"], :name => "reservations_instrument_id_fk"
-
-  create_table "roles", :force => true do |t|
-    t.string "name"
-  end
->>>>>>> upstream/shared_calendar
 
   create_table "schedule_rules", :force => true do |t|
     t.integer "instrument_id",    :precision => 38, :scale => 0,                  :null => false
@@ -512,15 +488,14 @@ ActiveRecord::Schema.define(:version => 20130108221731) do
     t.boolean "on_sat",           :precision => 1,  :scale => 0,                  :null => false
   end
 
-
   create_table "schedules", :force => true do |t|
     t.string   "name"
-    t.integer  "facility_id"
+    t.integer  "facility_id", :precision => 38, :scale => 0
     t.datetime "created_at"
     t.datetime "updated_at"
   end
 
-  add_index "schedules", ["facility_id"], :name => "i_schedules_facility_id"
+  add_index "schedules", ["facility_id"], :name => "i_schedules_facility_id", :tablespace => "bc_nucore"
 
   create_table "statement_rows", :force => true do |t|
     t.integer  "statement_id",    :precision => 38, :scale => 0, :null => false
@@ -537,6 +512,18 @@ ActiveRecord::Schema.define(:version => 20130108221731) do
     t.integer  "account_id",  :precision => 38, :scale => 0, :null => false
   end
 
+  create_table "stored_files", :force => true do |t|
+    t.integer  "order_detail_id",                  :precision => 38, :scale => 0
+    t.integer  "product_id",                       :precision => 38, :scale => 0
+    t.string   "name",              :limit => 200,                                :null => false
+    t.string   "file_type",         :limit => 50,                                 :null => false
+    t.integer  "created_by",                       :precision => 38, :scale => 0, :null => false
+    t.datetime "created_at",                                                      :null => false
+    t.string   "file_file_name"
+    t.string   "file_content_type"
+    t.integer  "file_file_size",                   :precision => 38, :scale => 0
+    t.datetime "file_updated_at"
+  end
 
   create_table "user_roles", :force => true do |t|
     t.integer "user_id",     :precision => 38, :scale => 0, :null => false
@@ -569,7 +556,8 @@ ActiveRecord::Schema.define(:version => 20130108221731) do
   add_index "users", ["uid"], :name => "index_users_on_uid", :tablespace => "bc_nucore"
   add_index "users", ["username"], :name => "index_users_on_username", :unique => true, :tablespace => "bc_nucore"
 
-  create_table "versions", :force => true do |t|
+  create_table "versions", :id => false, :force => true do |t|
+    t.integer  "id",                :precision => 38, :scale => 0, :null => false
     t.integer  "versioned_id",      :precision => 38, :scale => 0
     t.string   "versioned_type"
     t.integer  "user_id",           :precision => 38, :scale => 0
@@ -585,54 +573,10 @@ ActiveRecord::Schema.define(:version => 20130108221731) do
     t.string   "commit_label"
   end
 
-  add_index "versions", ["commit_label"], :name => "index_versions_on_commit_label", :tablespace => "bc_nucore"
-  add_index "versions", ["created_at"], :name => "index_versions_on_created_at", :tablespace => "bc_nucore"
-  add_index "versions", ["tag"], :name => "index_versions_on_tag", :tablespace => "bc_nucore"
-  add_index "versions", ["user_id", "user_type"], :name => "i_versions_user_id_user_type", :tablespace => "bc_nucore"
-  add_index "versions", ["user_name"], :name => "index_versions_on_user_name", :tablespace => "bc_nucore"
-  add_index "versions", ["version_number"], :name => "index_versions_on_number", :tablespace => "bc_nucore"
-  add_index "versions", ["versioned_id", "versioned_type"], :name => "i_ver_ver_id_ver_typ", :tablespace => "bc_nucore"
+  add_foreign_key "order_details", "order_details", :name => "ord_det_par_ord_det_id_fk", :column => nil, :primary_key => nil
+  add_foreign_key "order_details", "product_accessories", :name => "ord_det_pro_acc_id_fk", :column => nil, :primary_key => nil
 
-  add_foreign_key "account_users", "accounts", :name => "fk_accounts"
-  add_foreign_key "accounts", "facilities", :name => "fk_account_facility_id"
-  add_foreign_key "bi_netids", "facilities", :name => "sys_c00260348"
-  add_foreign_key "bundle_products", "products", :name => "fk_bundle_prod_bundle"
-  add_foreign_key "bundle_products", "products", :name => "fk_bundle_prod_prod", :column => "bundle_product_id"
-  add_foreign_key "facility_accounts", "facilities", :name => "fk_facilities"
-  add_foreign_key "file_uploads", "order_details", :name => "fk_files_od"
-  add_foreign_key "file_uploads", "products", :name => "fk_files_product"
-  add_foreign_key "instrument_statuses", "products", :name => "fk_int_stats_product", :column => "instrument_id"
-  add_foreign_key "order_details", "accounts", :name => "fk_od_accounts"
-  add_foreign_key "order_details", "orders", :name => "sys_c009172"
-  add_foreign_key "order_details", "price_policies", :name => "sys_c009175"
-  add_foreign_key "order_details", "products", :name => "fk_bundle_prod_id", :column => "bundle_product_id"
-  add_foreign_key "order_details", "products", :name => "sys_c009173"
-  add_foreign_key "orders", "accounts", :name => "sys_c008808"
-  add_foreign_key "orders", "facilities", :name => "orders_facility_id_fk"
-  add_foreign_key "price_group_members", "price_groups", :name => "sys_c008583"
-  add_foreign_key "price_groups", "facilities", :name => "sys_c008578"
-  add_foreign_key "price_policies", "price_groups", :name => "sys_c008589"
-<<<<<<< HEAD
-=======
+  add_foreign_key "order_details", "order_details", :name => "ord_det_par_ord_det_id_fk", :column => nil, :primary_key => nil
+  add_foreign_key "order_details", "product_accessories", :name => "ord_det_pro_acc_id_fk", :column => nil, :primary_key => nil
 
->>>>>>> upstream/shared_calendar
-  add_foreign_key "product_users", "products", :name => "fk_products"
-  add_foreign_key "products", "facilities", :name => "sys_c008556"
-  add_foreign_key "products", "facility_accounts", :name => "fk_facility_accounts"
-<<<<<<< HEAD
-  add_foreign_key "reservations", "order_details", :name => "res_ord_det_id_fk"
-  add_foreign_key "reservations", "products", :name => "reservations_instrument_id_fk", :column => "instrument_id"
-  add_foreign_key "schedule_rules", "products", :name => "sys_c008573", :column => "instrument_id"
-=======
-  add_foreign_key "products", "schedules", :name => "fk_instruments_schedule"
-
-  add_foreign_key "reservations", "order_details", :name => "res_ord_det_id_fk"
-  add_foreign_key "reservations", "products", :name => "reservations_product_id_fk"
-
-  add_foreign_key "schedule_rules", "products", :name => "sys_c008573", :column => "instrument_id"
-
-  add_foreign_key "schedules", "facilities", :name => "fk_schedules_facility"
-
->>>>>>> upstream/shared_calendar
-  add_foreign_key "statements", "facilities", :name => "fk_statement_facilities"
 end
