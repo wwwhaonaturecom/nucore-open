@@ -30,8 +30,8 @@ after 'deploy:finalize_update', 'deploy:symlink_configs', 'deploy:symlink_revisi
 
 namespace :deploy do
   task :restart, :except => { :no_release => true } do
-#    run "bash -l -c \"cd #{release_path} && RAILS_ENV=staging bundle exec rake daemon:stop[auto_cancel]\""
-#    run "bash -l -c \"cd #{release_path} && RAILS_ENV=staging bundle exec rake daemon:start[auto_cancel]\""
+    run "bash -l -c \"cd #{release_path} && RAILS_ENV=staging bundle exec rake daemon:stop[auto_cancel]\""
+    run "bash -l -c \"cd #{release_path} && RAILS_ENV=staging bundle exec rake daemon:start[auto_cancel]\""
 #    run "touch #{release_path}/tmp/restart.txt && chmod -R g+w #{release_path}/tmp"
   end
 
