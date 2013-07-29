@@ -176,6 +176,11 @@ footer .span8 {
 }
 
 /* Various Styles */
+
+abbr[title=required] {
+  border-bottom: none;
+}
+
 ul.unstyled {
   list-style: none;
   margin-left: 0;
@@ -193,7 +198,8 @@ ul.unstyled {
   }
 }
 
-td.currency {
+td.currency,
+th.currency {
   text-align: right;
 }
 .currency-input input {
@@ -251,6 +257,13 @@ td.currency {
 }
 
 /* Account Fields */
+.order_account,
+.order_detail_account {
+  select {
+    width: inherit;
+  }
+}
+
 ul.inline > li, ol.inline > li {
   &.account_number_field {
     padding: 0;

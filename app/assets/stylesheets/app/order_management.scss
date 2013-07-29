@@ -2,11 +2,8 @@
   max-height: 800px;
 }
 
-.order-action {
+.order-action .btn {
   margin-top: 1em;
-  a {
-    @extend .btn;
-  }
 }
 
 #order-detail-modal {
@@ -108,6 +105,10 @@ table.order-list {
 
   th {
     text-align: center;
+
+    &.currency, &.time {
+      text-align: right;
+    }
 
     &.order-id {
       text-align: left;
