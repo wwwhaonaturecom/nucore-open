@@ -273,3 +273,13 @@ ul.inline > li, ol.inline > li {
   }
 }
 
+/* Accessories Form */
+.pick_accessories_form {
+  .control-group, input {
+    margin-bottom: 0;
+  }
+}
+
+.action-form select {
+  width: 100%;
+}
