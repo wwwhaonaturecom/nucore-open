@@ -52,12 +52,20 @@ class Reservation < ActiveRecord::Base
     joins('LEFT JOIN orders ON orders.id = order_details.order_id')
   end
 
+  def self.admin
+    where(:order_detail_id => nil)
+  end
+
   def self.not_cancelled
     where(:canceled_at => nil)
   end
 
   def self.not_started
     where(:actual_start_at => nil)
+  end
+
+  def self.not_ended
+    where(:actual_end_at => nil)
   end
 
   def self.not_this_reservation(reservation)
@@ -107,6 +115,11 @@ class Reservation < ActiveRecord::Base
 
   # Instance Methods
   #####
+
+  def round_reservation_times
+    self.reserve_start_at = time_ceil(self.reserve_start_at)
+    self.reserve_end_at   = time_ceil(self.reserve_end_at)
+  end
 
   def assign_actuals_off_reserve
     self.actual_start_at ||= self.reserve_start_at
