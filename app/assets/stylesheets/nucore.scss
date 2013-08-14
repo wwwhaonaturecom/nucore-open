@@ -136,19 +136,18 @@ footer .span8 {
     text-decoration: none;
     color: $textColor;
     font-size: 175%;
+    &.available {
+      color: $successText;
+    }
+    &.in-use {
+      color: $errorText;
+    }
   }
 }
 
 /*
   Product View
 */
-.wysiwyg {
-  float: left;
-}
-
-.controls .wysiwyg {
-  float: none;
-}
 
 .order-statuses-table {
   .action-column {
@@ -283,4 +282,10 @@ ul.inline > li, ol.inline > li {
 
 .action-form select {
   width: 100%;
+}
+
+/* Other forms */
+textarea.wide {
+  width: 99%;
+  height: 4em;
 }
