@@ -32,7 +32,6 @@ namespace :deploy do
   task :restart, :except => { :no_release => true } do
     run "bash -l -c \"cd #{release_path} && RAILS_ENV=production bundle exec rake daemon:stop[auto_cancel]\""
     run "bash -l -c \"cd #{release_path} && RAILS_ENV=production bundle exec rake daemon:start[auto_cancel]\""
-#    run "touch #{release_path}/tmp/restart.txt && chmod -R g+w #{release_path}/tmp"
   end
 
   task :symlink_configs do
@@ -42,9 +41,7 @@ namespace :deploy do
     run "ln -nfs #{deploy_to}/shared/config/newrelic.yml #{release_path}/config/newrelic.yml"
     run "ln -nfs #{deploy_to}/database.yml #{release_path}/vendor/engines/nucs/config/database.yml"
     run "ln -nfs #{deploy_to}/settings.pmu.yml #{release_path}/vendor/engines/pmu/config/settings.yml"
-
-    # wrong path?
-    run "ln -nfs #{deploy_to}/files #{release_path}/public/files"
+    run "ln -nfs #{deploy_to}/shared/files #{release_path}/public/files"
   end
 
   task :symlink_revision, :roles => :app do
