@@ -14,7 +14,7 @@ set :use_sudo, false
 set :scm, "git"
 set :deploy_via, :export
 set :repository, "git@github.com:tablexi/nucore-nu.git"
-set :branch, "upgrades"
+set :branch, "develop"
 
 # forward keys to github
 ssh_options[:forward_agent] = true
