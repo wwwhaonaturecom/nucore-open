@@ -39,8 +39,8 @@ namespace :deploy do
     run "ln -nfs #{deploy_to}/shared/config/settings.local.yml #{release_path}/config/settings.local.yml"
     run "ln -nfs #{deploy_to}/shared/config/ldap.yml #{release_path}/config/ldap.yml"
     run "ln -nfs #{deploy_to}/shared/config/newrelic.yml #{release_path}/config/newrelic.yml"
-    run "ln -nfs #{deploy_to}/database.yml #{release_path}/vendor/engines/nucs/config/database.yml"
-    run "ln -nfs #{deploy_to}/settings.pmu.yml #{release_path}/vendor/engines/pmu/config/settings.yml"
+    run "ln -nfs #{deploy_to}/shared/config/database.yml #{release_path}/vendor/engines/nucs/config/database.yml"
+    run "ln -nfs #{deploy_to}/shared/config/settings.pmu.yml #{release_path}/vendor/engines/pmu/config/settings.yml"
     run "ln -nfs #{deploy_to}/shared/files #{release_path}/public/files"
   end
 
