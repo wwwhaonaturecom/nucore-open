@@ -35,7 +35,7 @@ private
   def write_to_file(string, file_prefix = 'pmu')
     path = File.expand_path("#{Rails.root}/tmp/#{file_prefix}-#{now_string}.xml", File.dirname(__FILE__))
     puts "Saving to file: #{path}"
-    File.open path, 'w' do |f|
+    File.open path, 'wb' do |f|
       f.write(string)
     end
     path
