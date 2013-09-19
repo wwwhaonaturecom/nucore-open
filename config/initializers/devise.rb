@@ -121,4 +121,6 @@ Devise.setup do |config|
   # config.default_url_options do
   #   { :locale => I18n.locale }
   # end
+
+  config.ldap_use_admin_to_bind = true
 end
