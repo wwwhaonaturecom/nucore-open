@@ -42,6 +42,7 @@ module Nu
           :project         => account.project,
           :activity        => account.activity,
           :program         => account.program,
+          :chart_field1    => account.chart_field1,
           :account         => od.product.account
         )
         order_detail_ids << od.id
@@ -59,6 +60,7 @@ module Nu
           :project         => fa.project,
           :activity        => fa.activity,
           :program         => fa.program,
+          :chart_field1    => fa.chart_field1,
           :account         => fa.revenue_account,
           :amount          => total * -1,
           :description     => product.to_s
@@ -83,10 +85,11 @@ module Nu
         line[2] = row.project
         line[3] = row.activity
         line[4] = row.program
-        line[5] = row.account
-        line[6] = sprintf("%.2f", row.amount)
-        line[7] = row.description
-        line[8] = row.reference
+        line[5] = row.chart_field1
+        line[6] = row.account
+        line[7] = sprintf("%.2f", row.amount)
+        line[8] = row.description
+        line[9] = row.reference
       end
 
       # add/import journal spreadsheet
