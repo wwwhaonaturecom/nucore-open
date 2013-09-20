@@ -19,6 +19,11 @@ PATH
     c2po (1.0.0)
 
 PATH
+  remote: vendor/engines/dataprobe
+  specs:
+    dataprobe (1.0.0)
+
+PATH
   remote: vendor/engines/jxml
   specs:
     jxml (1.0.0)
@@ -328,6 +333,7 @@ DEPENDENCIES
   clockpunch (~> 0.1.0)
   coffee-rails (~> 3.2.2)
   daemons (= 1.1.9)
+  dataprobe (~> 1.0.0)!
   devise (~> 2.2.4)
   devise-encryptable (= 0.1.2)
   devise_ldap_authenticatable (~> 0.7.0)

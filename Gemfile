@@ -62,6 +62,7 @@ gem 'pmu',              '~> 1.0.0', :path => 'vendor/engines/pmu'
 gem 'jxml',             '~> 1.0.0', :path => 'vendor/engines/jxml'
 gem 'nu_cancer_center', '~> 1.0.0', :path => 'vendor/engines/nu_cancer_center'
 
+gem 'dataprobe',        '~> 1.0.0', :path => 'vendor/engines/dataprobe'
 gem 'synaccess_connect', '0.2.1', :git => 'git://github.com/tablexi/synaccess.git'
 
 group :development, :test do
