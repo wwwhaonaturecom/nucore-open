@@ -13,7 +13,7 @@ class NucsValidator
 
 
   def self.pattern
-    /^(\d{3})-(\d{7})(?:-(\d{8}))?(?:-(\d{2}))?(?:-(\d{4})?)?(?:-(\d{4})?)?$/
+    /\A(\d{3})-(\d{7})(?:-(\d{8})(?:-(\d{2}))?(?:-(\d{4})?)?(?:-(\d{4})?)?)?\z/
   end
 
   #
@@ -57,14 +57,14 @@ class NucsValidator
   # Returns a +Hash+ with keys :fund, :dept, :project, :activity,
   # :program, and :chart_field along with their corresponding values
   def components
-    ActiveSupport::OrderedHash[
-      :fund, fund,
-      :dept, department,
-      :project, project,
-      :activity, activity,
-      :program, program,
-      :chart_field1,  chart_field1
-    ]
+    {
+      :fund => fund,
+      :dept => department,
+      :project => project,
+      :activity => activity,
+      :program => program,
+      :chart_field1 => chart_field1
+    }
   end
 
 

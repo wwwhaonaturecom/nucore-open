@@ -30,6 +30,30 @@ describe FacilityAccountsController do
       }
     end
 
+    context 'entering a four digit project' do
+      before :each do
+        @params.merge!(:account => { :description => 'description', :account_number_parts => {:fund => '901', :dept => '7777777', :project => '1234' }})
+        do_request
+      end
+
+      it 'should not save' do
+        assigns(:account).should_not be_persisted
+        expect(assigns(:account).errors.full_messages).to include("901-7777777-1234 is invalid for chart string")
+      end
+    end
+
+    context 'without a project, but with an activity' do
+      before :each do
+        @params.merge!(:account => { :description => 'description', :account_number_parts => {:fund => '901', :dept => '7777777', :activity => '12' }})
+        do_request
+      end
+
+      it 'should not save' do
+        assigns(:account).should_not be_persisted
+        expect(assigns(:account).errors.full_messages).to include("901-7777777--12 is invalid for chart string")
+      end
+    end
+
     context 'without a program or chart_field1' do
       before :each do
         define_gl066 base_account_number
@@ -41,7 +65,6 @@ describe FacilityAccountsController do
       end
 
       it 'should be persisted' do
-        puts assigns(:account).errors.full_messages
         assigns(:account).should be_persisted
       end
 
