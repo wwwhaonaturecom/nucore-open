@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20130808193707) do
+ActiveRecord::Schema.define(:version => 20130920161744) do
 
   create_table "account_users", :force => true do |t|
     t.integer  "account_id",               :precision => 38, :scale => 0, :null => false
@@ -150,6 +150,7 @@ ActiveRecord::Schema.define(:version => 20130808193707) do
     t.string  "activity",        :limit => 2
     t.string  "program",         :limit => 4
     t.string  "account",         :limit => 5
+    t.string  "chart_field1",    :limit => 4
   end
 
   create_table "journals", :force => true do |t|
@@ -585,7 +586,7 @@ ActiveRecord::Schema.define(:version => 20130808193707) do
 
   add_foreign_key "accounts", "facilities", :name => "fk_account_facility_id", :column => nil, :primary_key => nil
 
-  add_foreign_key "bi_netids", "facilities", :name => "sys_c00299164", :column => nil, :primary_key => nil
+  add_foreign_key "bi_netids", "facilities", :name => "sys_c00305827", :column => nil, :primary_key => nil
 
   add_foreign_key "bundle_products", "products", :name => "fk_bundle_prod_bundle", :column => nil, :primary_key => nil
   add_foreign_key "bundle_products", "products", :name => "fk_bundle_prod_prod", :column => nil, :primary_key => nil
@@ -633,7 +634,7 @@ ActiveRecord::Schema.define(:version => 20130808193707) do
 
   add_foreign_key "accounts", "facilities", :name => "fk_account_facility_id", :column => nil, :primary_key => nil
 
-  add_foreign_key "bi_netids", "facilities", :name => "sys_c00299164", :column => nil, :primary_key => nil
+  add_foreign_key "bi_netids", "facilities", :name => "sys_c00305827", :column => nil, :primary_key => nil
 
   add_foreign_key "bundle_products", "products", :name => "fk_bundle_prod_bundle", :column => nil, :primary_key => nil
   add_foreign_key "bundle_products", "products", :name => "fk_bundle_prod_prod", :column => nil, :primary_key => nil
