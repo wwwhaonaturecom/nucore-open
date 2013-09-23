@@ -42,7 +42,7 @@ private
   end
 
   def build_parts
-    self.account_number_parts = ValidatorFactory.instance(account_number).components
+    self.account_number_parts = ValidatorFactory.instance(account_number).components if account_number
   end
 
 end
