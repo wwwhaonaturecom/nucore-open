@@ -1,14 +1,9 @@
 module Accounts::NucsAccountSections
   def account_number_fields
-    #TODO Replace with normal hash in Ruby 1.9
-    ActiveSupport::OrderedHash[
-      :fund, { :length => 3 },
-      :dept, { :length => 7 },
-      :project, { :length => 8 },
-      :activity, { :length => 2 },
-      :program, { :length => 4 },
-      :chart_field1, { :length => 4 }
-    ]
+    example_validator.components.inject({}) do |hash, (field, value)|
+      hash[field] = { :length => value.length }
+      hash
+    end
   end
 
   def account_number_to_storage_format
@@ -35,24 +30,19 @@ module Accounts::NucsAccountSections
 
 private
 
+  def example_validator
+    @example_validator ||= ValidatorFactory.instance(ValidatorFactory.pattern_format)
+  end
+
   def account_number_beginning
-    a = account_number_parts # for brevity in string building
-    number = [a.fund, a.dept, a.project, a.activity].reject(&:blank?).join('-')
+    a = account_number_parts
+    sections = [a.fund, a.dept, a.project, a.activity]
+    # get everything up to the last non-blank element
+    sections.reverse.drop_while { |e| e.blank? }.reverse.join('-')
   end
 
   def build_parts
-    if self.account_number
-      parts = self.account_number.split('-')
-      self.account_number_parts = {
-        :fund => parts[0],
-        :dept => parts[1],
-        :project => parts[2],
-        :activity => parts[3],
-        :program => parts[4],
-        :chart_field1 => parts[5]
-      }
-    else
-      self.account_number_parts = {}
-    end
+    self.account_number_parts = ValidatorFactory.instance(account_number).components
   end
+
 end

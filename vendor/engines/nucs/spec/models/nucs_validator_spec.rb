@@ -1,5 +1,5 @@
 require 'spec_helper'
-require 'nucs_validator_helper'
+require_relative '../support/nucs_validator_helper'
 
 include NucsValidatorHelper
 
@@ -41,6 +41,49 @@ describe NucsValidator do
     end
   end
 
+  it 'should allow just a fund and department' do
+    validator = NucsValidator.new('123-1234567')
+    expect(validator.components.reject { |k, v| v.nil? }).to eq({:fund => '123', :dept => '1234567'})
+  end
+
+  it 'should allow a fund, department, and project' do
+    validator = NucsValidator.new('123-1234567-12345678')
+    expect(validator.components.reject { |k, v| v.nil? }).to eq({:fund => '123', :dept => '1234567', :project => '12345678'})
+  end
+
+  it 'should not allow a four digit project' do
+    expect { NucsValidator.new('123-1234567-1234') }.to raise_error(NucsErrors::InputError)
+  end
+
+  it 'should not allow a two digit project' do
+    expect { NucsValidator.new('123-1234567-12') }.to raise_error(NucsErrors::InputError)
+  end
+
+  it 'should allow averything and an activity' do
+    validator = NucsValidator.new('123-1234567-12345678-12')
+    expect(validator.components.reject { |k, v| v.nil? }).to eq({:fund => '123', :dept => '1234567', :project => '12345678', :activity => '12'})
+  end
+
+  it 'should allow everything with a program' do
+    validator = NucsValidator.new('123-1234567-12345678-12-1234')
+    expect(validator.components.reject { |k, v| v.nil? }).to eq({:fund => '123', :dept => '1234567', :project => '12345678', :activity => '12', :program => '1234'})
+  end
+
+  it 'should allow everything including chart_field1' do
+    validator = NucsValidator.new('123-1234567-12345678-12-1234-4321')
+    expect(validator.components.reject { |k, v| v.nil? }).to eq({:fund => '123', :dept => '1234567', :project => '12345678', :activity => '12', :program => '1234', :chart_field1 => '4321'})
+  end
+
+  it 'should allow skipping program' do
+    validator = NucsValidator.new('123-1234567-12345678-12--1234')
+    expect(validator.components.reject { |k, v| v.nil? }).to eq({:fund => '123', :dept => '1234567', :project => '12345678', :activity => '12', :chart_field1 => '1234'})
+  end
+
+  # this might be incorrect, but asserting for now
+  it 'should allow skipping activity' do
+    validator = NucsValidator.new('123-1234567-12345678-1234')
+    expect(validator.components.reject { |k, v| v.nil? }).to eq({:fund => '123', :dept => '1234567', :project => '12345678', :program => '1234'})
+  end
 
   # tests below are commented out because they test logic overridden by blacklist requirements
 
@@ -249,7 +292,7 @@ describe NucsValidator do
 
 
   it 'should recognize a missing budget tree' do
-    Factory.create(:nucs_grants_budget_tree)
+    FactoryGirl.create(:nucs_grants_budget_tree)
     define_gl066(GRANT_CS)
     assert_raise NucsErrors::UnknownBudgetTreeError do
       NucsValidator.new(GRANT_CS, NON_REVENUE_ACCT).account_is_open!
