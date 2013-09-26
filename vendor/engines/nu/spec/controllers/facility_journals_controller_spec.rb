@@ -11,8 +11,8 @@ describe FacilityJournalsController do
 
   before(:each) do
     @authable=FactoryGirl.create(:facility)
-    @account = FactoryGirl.create(:nufs_account, :account_users_attributes => [Hash[:user => @admin, :created_by => @admin, :user_role => 'Owner']], :facility_id => @authable.id)
-    @journal=FactoryGirl.create(:journal, :facility => @authable, :created_by => @admin.id, :journal_date => Time.zone.now)
+    @account = FactoryGirl.create(:nufs_account, :account_users_attributes => account_users_attributes_hash(:user => @admin), :facility_id => @authable.id)
+    @journal = FactoryGirl.create(:journal, :facility => @authable, :created_by => @admin.id, :journal_date => Time.zone.now)
   end
 
 

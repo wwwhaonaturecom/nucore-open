@@ -4,7 +4,7 @@ describe NufsAccount do
   before(:each) do
     @facility          = FactoryGirl.create(:facility)
     @user              = FactoryGirl.create(:user)
-    @nufs_account      = FactoryGirl.create(:nufs_account, :account_users_attributes => [{:user => @user, :created_by => @user, :user_role => 'Owner'}])
+    @nufs_account      = FactoryGirl.create(:nufs_account, :account_users_attributes => account_users_attributes_hash(:user => @user))
 
     @pmu_dept = stub 'pmu'
     @pmu_dept.stub(:pmu).and_return 'Best Department Ever'

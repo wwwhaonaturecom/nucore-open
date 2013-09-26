@@ -6,12 +6,12 @@ describe Account do
     before(:each) do
       @facility          = FactoryGirl.create(:facility)
       @user              = FactoryGirl.create(:user)
-      @nufs_account      = FactoryGirl.create(:nufs_account, :account_users_attributes => [{:user => @user, :created_by => @user, :user_role => 'Owner'}])
+      @nufs_account      = FactoryGirl.create(:nufs_account, :account_users_attributes => account_users_attributes_hash(:user => @user))
       @facility_account  = @facility.facility_accounts.create(FactoryGirl.attributes_for(:facility_account))
       @item              = @facility.items.create(FactoryGirl.attributes_for(:item, :facility_account_id => @facility_account.id))
       @price_group       = FactoryGirl.create(:price_group, :facility => @facility)
       @price_group_product=FactoryGirl.create(:price_group_product, :product => @item, :price_group => @price_group, :reservation_window => nil)
-      @price_policy      = FactoryGirl.create(:item_price_policy, :item => @item, :price_group => @price_group)
+      @price_policy      = FactoryGirl.create(:item_price_policy, :product => @item, :price_group => @price_group)
       @pg_user_member    = FactoryGirl.create(:user_price_group_member, :user => @user, :price_group => @price_group)
     end
 
