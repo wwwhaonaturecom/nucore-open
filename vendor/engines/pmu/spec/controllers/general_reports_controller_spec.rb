@@ -5,7 +5,7 @@ describe GeneralReportsController do
   before(:all) { create_users }
 
   before :each do
-    @authable = Factory.create :facility
+    @authable = FactoryGirl.create :facility
   end
 
 

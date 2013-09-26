@@ -33,7 +33,7 @@ describe NucsGl066 do
 
 
   it "should give a Time based on budget_period even when starts_at column value is null" do
-    gl=Factory.create(:nucs_gl066_without_dates)
+    gl=FactoryGirl.create(:nucs_gl066_without_dates)
     date=gl.starts_at
     date.should be_a_kind_of(Time)
     date.should == Time.zone.parse("#{gl.budget_period}0901")-1.year
@@ -41,7 +41,7 @@ describe NucsGl066 do
 
 
   it "should give a Time based on starts_at even when expires_at column value is null" do
-    gl=Factory.create(:nucs_gl066_without_dates)
+    gl=FactoryGirl.create(:nucs_gl066_without_dates)
     date=gl.expires_at
     date.should be_a_kind_of(Time)
     date.should == (gl.starts_at + 1.year - 1.second)
@@ -49,31 +49,31 @@ describe NucsGl066 do
 
 
   it 'should tell us when now is before a starts_at date' do
-    gl=Factory.create(:nucs_gl066_with_dates, { :starts_at => Time.zone.now+5.day, :expires_at => Time.zone.now+8.day})
+    gl=FactoryGirl.create(:nucs_gl066_with_dates, { :starts_at => Time.zone.now+5.day, :expires_at => Time.zone.now+8.day})
     gl.should be_expired
   end
 
 
   it 'should tell us when now is after a expires_at date' do
-    gl=Factory.create(:nucs_gl066_with_dates, { :starts_at => Time.zone.now-5.day, :expires_at => Time.zone.now-2.day})
+    gl=FactoryGirl.create(:nucs_gl066_with_dates, { :starts_at => Time.zone.now-5.day, :expires_at => Time.zone.now-2.day})
     gl.should be_expired
   end
 
 
   it 'should tell us when now is in a starts_at and expires_at window' do
-    gl=Factory.create(:nucs_gl066_with_dates, { :starts_at => Time.zone.now-3.day, :expires_at => Time.zone.now+3.day})
+    gl=FactoryGirl.create(:nucs_gl066_with_dates, { :starts_at => Time.zone.now-3.day, :expires_at => Time.zone.now+3.day})
     gl.should_not be_expired
   end
 
 
   it 'should tell us when now on starts_at' do
-    gl=Factory.create(:nucs_gl066_with_dates, { :starts_at => Time.zone.now, :expires_at => Time.zone.now+3.day})
+    gl=FactoryGirl.create(:nucs_gl066_with_dates, { :starts_at => Time.zone.now, :expires_at => Time.zone.now+3.day})
     gl.should_not be_expired
   end
 
 
   it 'should tell us when now on expires_at' do
-    gl=Factory.create(:nucs_gl066_with_dates, { :starts_at => Time.zone.now-3.day, :expires_at => Time.zone.now.end_of_day})
+    gl=FactoryGirl.create(:nucs_gl066_with_dates, { :starts_at => Time.zone.now-3.day, :expires_at => Time.zone.now.end_of_day})
     gl.should_not be_expired
   end
 

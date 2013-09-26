@@ -4,15 +4,15 @@ require 'transaction_search_spec_helper'
 
 describe FacilityJournalsController do
   include DateHelper
-  
+
   render_views
 
   before(:all) { create_users }
 
   before(:each) do
-    @authable=Factory.create(:facility)
-    @account = Factory.create(:nufs_account, :account_users_attributes => [Hash[:user => @admin, :created_by => @admin, :user_role => 'Owner']], :facility_id => @authable.id)
-    @journal=Factory.create(:journal, :facility => @authable, :created_by => @admin.id, :journal_date => Time.zone.now)
+    @authable=FactoryGirl.create(:facility)
+    @account = FactoryGirl.create(:nufs_account, :account_users_attributes => [Hash[:user => @admin, :created_by => @admin, :user_role => 'Owner']], :facility_id => @authable.id)
+    @journal=FactoryGirl.create(:journal, :facility => @authable, :created_by => @admin.id, :journal_date => Time.zone.now)
   end
 
 

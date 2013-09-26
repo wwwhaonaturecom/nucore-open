@@ -3,7 +3,7 @@ require 'spec_helper'
 describe NufsAccount do
   context "account number validations" do
     before(:each) do
-      @user     = Factory.create(:user)
+      @user     = FactoryGirl.create(:user)
       @owner    = Hash[:user => @user, :created_by => @user, :user_role => 'Owner']
       @options  = Hash[:description => "account description", :expires_at => Time.zone.now+1.day, :created_by => @user,
                        :account_users_attributes => [@owner]]
@@ -83,7 +83,7 @@ describe NufsAccount do
       assert !@account.valid?
       @account.errors[:account_number].should_not be_nil
     end
-    
+
     private
 
     def assert_number_format(account_number, valid, gl066_override=nil)

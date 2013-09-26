@@ -2,9 +2,9 @@ require 'spec_helper'
 
 describe NufsAccount do
   before(:each) do
-    @facility          = Factory.create(:facility)
-    @user              = Factory.create(:user)
-    @nufs_account      = Factory.create(:nufs_account, :account_users_attributes => [{:user => @user, :created_by => @user, :user_role => 'Owner'}])
+    @facility          = FactoryGirl.create(:facility)
+    @user              = FactoryGirl.create(:user)
+    @nufs_account      = FactoryGirl.create(:nufs_account, :account_users_attributes => [{:user => @user, :created_by => @user, :user_role => 'Owner'}])
 
     @pmu_dept = stub 'pmu'
     @pmu_dept.stub(:pmu).and_return 'Best Department Ever'

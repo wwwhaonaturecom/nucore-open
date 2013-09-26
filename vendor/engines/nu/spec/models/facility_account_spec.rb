@@ -3,8 +3,8 @@ require 'spec_helper'
 describe FacilityAccount do
   context "valid account number" do
     before(:each) do
-      @user     = Factory.create(:user)
-      @facility = Factory.create(:facility)
+      @user     = FactoryGirl.create(:user)
+      @facility = FactoryGirl.create(:facility)
       assert @facility.valid?
       @options  = Hash[:is_active => 1, :created_by => @user, :facility_id => @facility.id, :revenue_account => 10000]
       @starts_at  = Time.zone.now-3.days
