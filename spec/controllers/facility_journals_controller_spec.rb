@@ -198,7 +198,7 @@ describe FacilityJournalsController do
         end
 
         it 'has an error' do
-          expect(assigns(:journal).errors.full_messages.join).to include error_message
+          expect(assigns(:journal).errors.full_messages.join).to match /#{error_message}/i
         end
       end
 
@@ -231,7 +231,7 @@ describe FacilityJournalsController do
           @params[:journal_date] = format_usa_date(1.day.from_now)
         end
 
-        it_behaves_like 'journal error', "Journal date may not be in the future"
+        it_behaves_like 'journal error', "Journal Date may not be in the future"
       end
 
       context 'trying to put journal date before fulfillment date' do
@@ -241,7 +241,7 @@ describe FacilityJournalsController do
           @params[:journal_date] = format_usa_date(4.days.ago)
         end
 
-        it_behaves_like 'journal error', "Journal date may not be before the latest fulfillment date."
+        it_behaves_like 'journal error', "Journal Date may not be before the latest fulfillment date."
 
         it 'does allow to be the same day' do
           @params[:journal_date] = format_usa_date(3.day.ago)
