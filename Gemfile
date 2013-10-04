@@ -44,14 +44,13 @@ gem 'prawn_rails',      '0.0.11'
 
 ## monitoring
 gem 'newrelic_rpm',     '~> 3.6'
-gem 'exception_notification', :require => 'exception_notifier'
 
 ## other
 gem 'rake'
 gem 'spreadsheet',      '~> 0.6.5.5'
 gem 'fast-aes',         '0.1.1'
 gem 'pdf-reader',       '1.3.3'
-gem 'exception_notification', :require => 'exception_notifier'
+gem 'exception_notification', '~> 4.0.1'
 gem 'daemons',          '1.1.9'
 
 ## custom
