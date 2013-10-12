@@ -1,6 +1,13 @@
 require 'spec_helper'
 
 describe Account do
+  def unopen_account(account_number)
+    components = ValidatorFactory.instance(account_number).components.reject do |k,v|
+      v.nil?
+    end
+    components[:department] = components.delete(:dept)
+    NucsGl066.where(components).destroy_all
+  end
 
   context "validation against product/user" do
     before(:each) do
@@ -16,6 +23,7 @@ describe Account do
     end
 
     it "should return error if the product's account is not open for a chart string" do
+      unopen_account(@nufs_account.account_number)
       @nufs_account.validate_against_product(@item, @user).should_not be_nil
     end
 
