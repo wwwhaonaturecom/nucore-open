@@ -39,7 +39,8 @@ en:
           rescue: "An error was encountered while trying to close the journal"
       create:
         notice: "The journal file has been created successfully"
-
+      create_with_search:
+        more_errors: "There are more errors. Please resolve those above to see those that remain."
 
     facility_orders:
       update:
@@ -86,6 +87,10 @@ en:
     price_policies:
       errors:
         remove_active_policy: "Sorry, but you cannot remove an active price policy. If you really want to do so move the start date to the future and try again."
+
+    orders:
+      purchase:
+        future_dating_error: "Order dates in the future are not allowed"
 
     order_imports:
       create:

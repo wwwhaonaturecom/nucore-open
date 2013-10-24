@@ -76,13 +76,15 @@ Nucore::Application.configure do
   # Force all access to the app over SSL, use Strict-Transport-Security, and use secure cookies.
   # config.force_ssl = true
 
-  # configure automatic exception notifier
-  config.middleware.use ExceptionNotifier,
-    :sender_address       => Settings.email.exceptions.sender,
-    :exception_recipients => Settings.email.exceptions.recipients
+  config.middleware.use ExceptionNotification::Rack,
+    :email => {
+      :sender_address       => Settings.email.exceptions.sender,
+      :exception_recipients => Settings.email.exceptions.recipients
+    }
 
   # Where a surveyor external service redirects to when a survey is completed
   config.surveyor_redirects_to='https://nucore.northwestern.edu'
+
 end
 
 # What's this for?

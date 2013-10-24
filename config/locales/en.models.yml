@@ -76,7 +76,7 @@ en:
         order_detail:
           changing_status: There was an error trying to change the status of the order.
         reservation:
-          connot_be_completed_in_future: You cannot complete a future reservation.
+          cannot_be_completed_in_future: You cannot complete a future reservation.
           attributes:
             base:
               conflict: The reservation conflicts with another reservation.
@@ -170,6 +170,8 @@ en:
         auto_cancel_mins: Automatic Cancelation Minutes
       price_group:
         is_internal: Is Internal?
+      price_policy:
+        cancellation_cost: Reservation cost
       user_role:
         username: User
       order:
@@ -206,6 +208,10 @@ en:
       journal:
         description: Notes
         journal_status: Status
+        created_at: Created At
+        created_by_user: Created By
+        journal_date: Journal Date
+        status_string: Journal Status
       relay:
         type: Relay Type
         ip: Relay IP Address

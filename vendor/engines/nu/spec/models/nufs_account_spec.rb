@@ -6,7 +6,7 @@ describe NufsAccount do
       @user     = FactoryGirl.create(:user)
       @options  = { :description => "account description",
                     :expires_at => Time.zone.now + 1.day,
-                    :created_by => @user,
+                    :created_by => @user.id,
                     :account_users_attributes => account_users_attributes_hash(:user => @user) }
       @starts_at  = Time.zone.now-3.days
       @expires_at = Time.zone.now+3.days

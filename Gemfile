@@ -44,14 +44,13 @@ gem 'prawn_rails',      '0.0.11'
 
 ## monitoring
 gem 'newrelic_rpm',     '~> 3.6'
-gem 'exception_notification', :require => 'exception_notifier'
 
 ## other
 gem 'rake'
 gem 'spreadsheet',      '~> 0.6.5.5'
 gem 'fast-aes',         '0.1.1'
 gem 'pdf-reader',       '1.3.3'
-gem 'exception_notification', :require => 'exception_notifier'
+gem 'exception_notification', '~> 4.0.1'
 gem 'daemons',          '1.1.9'
 
 ## custom
@@ -72,7 +71,7 @@ group :development, :test do
   gem 'pry-rails',         '0.2.2'
   gem 'quiet_assets'
   gem 'rspec-rails',       '2.13.2'
-  gem 'ruby-debug19',      '0.11.6'
+  gem 'ruby-debug19',      '0.11.6', :platforms => :ruby_19
   gem 'shoulda-matchers',  '2.1'
   gem 'single_test',       '0.4.0'
   gem 'spork',             '0.9.2'

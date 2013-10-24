@@ -198,7 +198,7 @@ describe FacilityJournalsController do
         end
 
         it 'has an error' do
-          expect(assigns(:journal).errors.full_messages.join).to include error_message
+          expect(assigns(:journal).errors.full_messages.join).to match /#{error_message}/i
         end
       end
 
@@ -206,6 +206,21 @@ describe FacilityJournalsController do
         create_order_details
         @params[:order_detail_ids] = [@order_detail1.id, @order_detail3.id]
         sign_in @admin
+      end
+
+      it 'throttles the error message size' do
+        msgs = []
+        err = ''
+        500.times { err += 'x' }
+        10.times { msgs << err }
+        errors = double 'ActiveModel::Errors', full_messages: msgs
+        Journal.any_instance.stub(:errors).and_return errors
+        Journal.any_instance.stub(:save).and_return false
+        do_request
+        expect(response).to redirect_to new_facility_journal_path
+        expect(flash[:error]).to be_present
+        expect(flash[:error].length).to be < 4000
+        expect(flash[:error]).to end_with I18n.t 'controllers.facility_journals.create_with_search.more_errors'
       end
 
       context 'order detail is already journaled' do
@@ -231,7 +246,7 @@ describe FacilityJournalsController do
           @params[:journal_date] = format_usa_date(1.day.from_now)
         end
 
-        it_behaves_like 'journal error', "Journal date may not be in the future"
+        it_behaves_like 'journal error', "Journal Date may not be in the future"
       end
 
       context 'trying to put journal date before fulfillment date' do
@@ -241,7 +256,7 @@ describe FacilityJournalsController do
           @params[:journal_date] = format_usa_date(4.days.ago)
         end
 
-        it_behaves_like 'journal error', "Journal date may not be before the latest fulfillment date."
+        it_behaves_like 'journal error', "Journal Date may not be before the latest fulfillment date."
 
         it 'does allow to be the same day' do
           @params[:journal_date] = format_usa_date(3.day.ago)

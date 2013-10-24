@@ -22,10 +22,6 @@ class FacilityJournalsController < ApplicationController
   # GET /facilities/journals
   def index
     set_pending_journals
-
-    @journals = @journals.
-      order('journals.created_at DESC').
-      paginate(:page => params[:page])
   end
 
   # GET /facilities/journals/new
@@ -113,7 +109,7 @@ class FacilityJournalsController < ApplicationController
       flash[:notice] = I18n.t('controllers.facility_journals.create.notice')
       redirect_to facility_journals_path(current_facility)
     else
-      flash[:error] = @journal.errors.full_messages.join("<br/>").html_safe
+      flash_error_messages
       remove_ugly_params
       redirect_to new_facility_journal_path
     end
@@ -185,9 +181,25 @@ class FacilityJournalsController < ApplicationController
     @journals = Journal.for_facilities(manageable_facilities, manageable_facilities.size > 1).order("journals.created_at DESC")
     jid=params[:id] || params[:journal_id]
     @journal = @journals.find(jid) if jid
+    @journals = @journals.paginate(:page => params[:page], :per_page => 10)
   end
 
   def has_pending_journals?
     current_facility.has_pending_journals?
+  end
+
+  def flash_error_messages
+    msg = ''
+
+    @journal.errors.full_messages.each do |error|
+      msg += "#{error}<br/>"
+
+      if msg.size > 3000 # don't overflow session (flash) cookie
+        msg += I18n.t 'controllers.facility_journals.create_with_search.more_errors'
+        break
+      end
+    end
+
+    flash[:error] = msg.html_safe if msg.present?
   end
 end

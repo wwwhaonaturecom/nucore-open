@@ -76,11 +76,12 @@ Nucore::Application.configure do
   config.assets.precompile += %w( ie.css ie8.css )
   config.assets.precompile += %w( *.js ) # precompile all js files
 
+  config.middleware.use ExceptionNotification::Rack,
+    :email => {
+      :sender_address       => Settings.email.exceptions.sender,
+      :exception_recipients => Settings.email.exceptions.recipients
+    }
 
-  # configure automatic exception notifier based on addresses in Constants.rb
-  config.middleware.use ExceptionNotifier,
-    :sender_address       => Settings.email.exceptions.sender,
-    :exception_recipients => Settings.email.exceptions.recipients
 
   # Where a surveyor external service redirects to when a survey is completed
   config.surveyor_redirects_to='https://nucore-staging.nubic.northwestern.edu'
