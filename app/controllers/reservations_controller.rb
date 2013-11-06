@@ -29,7 +29,6 @@ class ReservationsController < ApplicationController
                                   in_range(@start_at, @end_at).
                                   includes(:order_detail => { :order => :user })
 
-
     @rules        = @instrument.schedule_rules
 
     # restrict to available if it requires approval and the user
@@ -39,11 +38,11 @@ class ReservationsController < ApplicationController
     end
 
     # We're not using unavailable rules for month view
-    if @end_at - @start_at <= 1.week
+    if month_view?
+      @unavailable = []
+    else
       # build unavailable schedule
       @unavailable = ScheduleRule.unavailable(@rules)
-    else
-      @unavailable = []
     end
 
     respond_to do |format|
@@ -245,6 +244,9 @@ class ReservationsController < ApplicationController
 
         if status
           @reservation.actual_start_at = Time.zone.now
+          # If starting in the 5 minute grace period, move the reservation forward so other
+          # reservations can't overlap with this one.
+          @reservation.reserve_start_at = @reservation.actual_start_at if @reservation.reserve_start_at > @reservation.actual_start_at
           @reservation.save!
           flash[:notice] = 'The instrument has been activated successfully'
         else
@@ -374,5 +376,11 @@ class ReservationsController < ApplicationController
     Reservation.new(:product => @instrument,
                     :duration_value => default_reservation_mins,
                     :duration_unit => 'minutes')
+  end
+
+  def month_view?
+    # 1.week causes a problem with daylight saving week since it's technically longer
+    # than a week
+    @end_at - @start_at > 8.days
   end
 end
