@@ -76,6 +76,7 @@ group :development, :test do
   gem 'single_test',       '0.4.0'
   gem 'spork',             '0.9.2'
   gem 'timecop',           '0.6.1'
+  gem 'thin'
 
   # http://devnet.jetbrains.com/message/5479367
   # don't require in RubyMine since ruby-debug interferes with ruby-debug-ide gem
