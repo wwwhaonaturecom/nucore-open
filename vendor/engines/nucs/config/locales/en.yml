@@ -22,6 +22,8 @@ en:
         account: Expense account code
       facility_account:
         revenue_account: Revenue account code
+      nufs_account:
+        dept: Department
     errors:
       facility_account:
         revenue_account:

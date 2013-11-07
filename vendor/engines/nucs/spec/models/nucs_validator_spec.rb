@@ -52,37 +52,42 @@ describe NucsValidator do
   end
 
   it 'should not allow a four digit project' do
-    expect { NucsValidator.new('123-1234567-1234') }.to raise_error(NucsErrors::InputError)
+    expect { NucsValidator.new('123-1234567-1234') }.to raise_error(AccountNumberFormatError)
   end
 
   it 'should not allow a two digit project' do
-    expect { NucsValidator.new('123-1234567-12') }.to raise_error(NucsErrors::InputError)
+    expect { NucsValidator.new('123-1234567-12') }.to raise_error(AccountNumberFormatError)
   end
 
   it 'should allow averything and an activity' do
     validator = NucsValidator.new('123-1234567-12345678-12')
-    expect(validator.components.reject { |k, v| v.nil? }).to eq({:fund => '123', :dept => '1234567', :project => '12345678', :activity => '12'})
+    expect(validator.components.reject { |k, v| v.blank? }).to eq({:fund => '123', :dept => '1234567', :project => '12345678', :activity => '12'})
   end
 
   it 'should allow everything with a program' do
     validator = NucsValidator.new('123-1234567-12345678-12-1234')
-    expect(validator.components.reject { |k, v| v.nil? }).to eq({:fund => '123', :dept => '1234567', :project => '12345678', :activity => '12', :program => '1234'})
+    expect(validator.components.reject { |k, v| v.blank? }).to eq({:fund => '123', :dept => '1234567', :project => '12345678', :activity => '12', :program => '1234'})
   end
 
   it 'should allow everything including chart_field1' do
     validator = NucsValidator.new('123-1234567-12345678-12-1234-4321')
-    expect(validator.components.reject { |k, v| v.nil? }).to eq({:fund => '123', :dept => '1234567', :project => '12345678', :activity => '12', :program => '1234', :chart_field1 => '4321'})
+    expect(validator.components.reject { |k, v| v.blank? }).to eq({:fund => '123', :dept => '1234567', :project => '12345678', :activity => '12', :program => '1234', :chart_field1 => '4321'})
+  end
+
+  it 'should allow a chartfield1 with just fund and department' do
+    validator = NucsValidator.new('123-1234567----1025')
+    expect(validator.components.reject { |k, v| v.blank? }).to eq({:fund => '123', :dept => '1234567', :chart_field1 => '1025'})
   end
 
   it 'should allow skipping program' do
     validator = NucsValidator.new('123-1234567-12345678-12--1234')
-    expect(validator.components.reject { |k, v| v.nil? }).to eq({:fund => '123', :dept => '1234567', :project => '12345678', :activity => '12', :chart_field1 => '1234'})
+    expect(validator.components.reject { |k, v| v.blank? }).to eq({:fund => '123', :dept => '1234567', :project => '12345678', :activity => '12', :chart_field1 => '1234'})
   end
 
   # this might be incorrect, but asserting for now
   it 'should allow skipping activity' do
-    validator = NucsValidator.new('123-1234567-12345678-1234')
-    expect(validator.components.reject { |k, v| v.nil? }).to eq({:fund => '123', :dept => '1234567', :project => '12345678', :program => '1234'})
+    validator = NucsValidator.new('123-1234567-12345678--1234')
+    expect(validator.components.reject { |k, v| v.blank? }).to eq({:fund => '123', :dept => '1234567', :project => '12345678', :program => '1234'})
   end
 
   # tests below are commented out because they test logic overridden by blacklist requirements

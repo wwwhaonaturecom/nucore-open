@@ -11,12 +11,12 @@ module Accounts::NucsAccountSections
     if account_number_parts.program.present? || account_number_parts.chart_field1.present?
       number << "-#{account_number_parts.program}-#{account_number_parts.chart_field1}"
     end
-    number
+    trim(number)
   end
 
   def account_number_to_s
     build_parts unless account_number_parts
-    number = account_number_beginning
+    number = trim(account_number_beginning)
     if account_number_parts.program.present? || account_number_parts.chart_field1.present?
       number << " (#{account_number_parts.program}) (#{account_number_parts.chart_field1})"
     end
@@ -36,13 +36,14 @@ private
 
   def account_number_beginning
     a = account_number_parts
-    sections = [a.fund, a.dept, a.project, a.activity]
-    # get everything up to the last non-blank element
-    sections.reverse.drop_while { |e| e.blank? }.reverse.join('-')
+    [a.fund, a.dept, a.project, a.activity].join('-')
   end
 
   def build_parts
     self.account_number_parts = ValidatorFactory.instance(account_number).components if account_number
   end
 
+  def trim(str)
+    str.sub(/-+\z/, '')
+  end
 end

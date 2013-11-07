@@ -38,7 +38,7 @@ describe FacilityAccountsController do
 
       it 'should not save' do
         assigns(:account).should_not be_persisted
-        expect(assigns(:account).errors.full_messages).to include("901-7777777-1234 is invalid for chart string")
+        expect(assigns(:account).errors.full_messages).to include("Project is the wrong length (should be 8 characters)")
       end
     end
 
@@ -50,7 +50,7 @@ describe FacilityAccountsController do
 
       it 'should not save' do
         assigns(:account).should_not be_persisted
-        expect(assigns(:account).errors.full_messages).to include("901-7777777--12 is invalid for chart string")
+        expect(assigns(:account).errors.full_messages).to include("Project can't be blank")
       end
     end
 
