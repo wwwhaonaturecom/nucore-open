@@ -8,8 +8,6 @@ module NucsErrors
       super(message)
     end
   end
-
-
   #
   # Raised when user input is invalid
   class InputError < ValidatorError
