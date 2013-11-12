@@ -92,7 +92,7 @@ describe FacilityAccountsController do
       end
 
       it 'should set the number' do
-        assigns(:account).account_number.should == base_account_number + "-1234-"
+        assigns(:account).account_number.should == base_account_number + "-1234"
       end
 
       it 'should set the display' do
