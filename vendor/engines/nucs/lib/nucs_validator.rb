@@ -1,19 +1,26 @@
 class NucsValidator
   include NucsErrors
+  include ActiveModel::Validations
 
   NUCS_BLANK='-'
 
   attr_reader :chart_string, :fund, :department, :project, :activity, :program, :chart_field1, :account
   alias_attribute :dept, :department
 
+  validates :fund,         presence: true, length: { is: 3 }, numericality: true
+  validates :dept,         presence: true, length: { is: 7 }, numericality: true
+  validates :project,      presence: true, if: lambda { activity.present? }
+  validates :project,      length: { is: 8 }, numericality: true, allow_blank: true
+  validates :activity,     length: { is: 2 }, numericality: true, allow_blank: true
+  validates :program,      length: { is: 4 }, numericality: true, allow_blank: true
+  validates :chart_field1, length: { is: 4 }, numericality: true, allow_blank: true
 
   def self.pattern_format
     '123-1234567-12345678-12-1234-1234'
   end
 
-
   def self.pattern
-    /\A(\d{3})-(\d{7})(?:-(\d{8})(?:-(\d{2}))?(?:-(\d{4})?)?(?:-(\d{4})?)?)?\z/
+    /\A[-0-9]*\z/
   end
 
   #
@@ -66,7 +73,6 @@ class NucsValidator
       :chart_field1 => chart_field1
     }
   end
-
 
   #
   # Compares this object's +#chart string+ components against
@@ -127,8 +133,10 @@ class NucsValidator
   # Raises a +NucsErrors::InputError+ if +chart_string+ doesn't match +#pattern+
   def chart_string=(chart_string)
     raise InputError.new('chart string', chart_string) unless valid_chart_string?(chart_string)
-    @chart_string=chart_string
+    @chart_string = chart_string
     parse_chart_string
+
+    raise AccountNumberFormatError.new(self.errors) unless valid?
     raise BlacklistedError.new('fund', @fund) unless Blacklist.valid_fund?(@fund)
   end
 
@@ -136,13 +144,14 @@ class NucsValidator
   private
 
   def parse_chart_string
-    results=@chart_string.match(self.class.pattern)
-    @fund=results[1]
-    @department=results[2]
-    @project=results[3]
-    @activity=results[4]
-    @program=results[5]
-    @chart_field1=results[6]
+    # results = @chart_string.match(self.class.pattern)
+    results = @chart_string.split('-')
+    @fund         = results[0]
+    @department   = results[1]
+    @project      = results[2]
+    @activity     = results[3]
+    @program      = results[4]
+    @chart_field1 = results[5]
   end
 
 
@@ -236,5 +245,4 @@ class NucsValidator
       raise InputError.new('project', @project) if validate_project && !@project.start_with?('8')
     end
   end
-
 end

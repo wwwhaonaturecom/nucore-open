@@ -1,23 +1,20 @@
 #
 # Knows how to talk to NUCore-tweaked Surveyor webapps
-# https://github.com/breakpointer/surveyor
+# https://github.com/NUBIC/surveyor
 class Surveyor < UrlService
-
   def edit_url(receiver)
-    receiver.external_service_receiver.response_data + '/take'
+    "#{super}/take"
   end
 
-
-  def new_url(receiver)
-    params={
-        :receiver_id => receiver.id,
-        :product_id => receiver.product.url_name,
-        :survey_id => id,
-        :facility_id => receiver.product.facility.url_name,
-        :redirect_host => Rails.configuration.surveyor_redirects_to
+  def url_params(receiver)
+    {
+      # Items below this are deprecated for use with the old version
+      # of surveyor and should be removed after upgrading
+      :receiver_id => receiver.id,
+      :product_id => receiver.product.url_name,
+      :survey_id => id,
+      :facility_id => receiver.product.facility.url_name,
+      :redirect_host => Rails.configuration.surveyor_redirects_to
     }
-
-    location + '?' + params.to_a.collect{|pair| "#{pair[0]}=#{pair[1]}"}.join('&')
   end
-
 end

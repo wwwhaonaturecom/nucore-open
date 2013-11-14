@@ -9,7 +9,7 @@ describe FacilityAccount do
       @options  = { :is_active => 1,
                     :created_by => @user.id,
                     :facility_id => @facility.id,
-                    :revenue_account => 40000 }
+                    :revenue_account => 51234 }
       @starts_at  = Time.zone.now-3.days
       @expires_at = Time.zone.now+3.days
     end

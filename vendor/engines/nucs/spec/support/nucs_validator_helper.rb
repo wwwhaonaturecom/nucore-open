@@ -6,12 +6,12 @@ module NucsValidatorHelper
   # [_attrs_]
   #   Overrides for the +NucsGl066+ Factory, if any
   def define_gl066(chart_string, attrs={})
-    components=chart_string.match(NucsValidator.pattern)
-    raise Exception.new("#{chart_string} does not match #{NucsValidator.pattern}") unless components
-    attrs.merge!(:fund => components[1]) unless attrs.has_key?(:fund)
-    attrs.merge!(:department => components[2]) unless attrs.has_key?(:department)
-    attrs.merge!(:project => components[3]) if components[3] and not attrs.has_key?(:project)
-    attrs.merge!(:activity => components[4]) if components[4] and not attrs.has_key?(:activity)
+    validator = NucsValidator.new(chart_string)
+    raise Exception.new("#{chart_string} does not match #{NucsValidator.pattern}") unless validator.valid?
+    attrs.merge!(:fund => validator.fund) unless attrs.has_key?(:fund)
+    attrs.merge!(:department => validator.department) unless attrs.has_key?(:department)
+    attrs.merge!(:project => validator.project) if validator.project and not attrs.has_key?(:project)
+    attrs.merge!(:activity => validator.activity) if validator.activity and not attrs.has_key?(:activity)
 
     if attrs.has_key?(:expires_at) or attrs.has_key?(:starts_at)
       FactoryGirl.create(:nucs_gl066_with_dates, attrs)
@@ -26,7 +26,7 @@ module NucsValidatorHelper
       gl=FactoryGirl.create(:nucs_gl066_without_dates, attrs)
     end
 
-    FactoryGirl.create(:nucs_chart_field1, :value => components[6]) if components[6]
+    FactoryGirl.create(:nucs_chart_field1, :value => validator.chart_field1) if validator.chart_field1
   end
 
 
@@ -35,18 +35,18 @@ module NucsValidatorHelper
   # [_chart_string_]
   #   A +ValidatorFactory#pattern+ matching +String+
   def define_ge001(chart_string)
-    components=chart_string.match(NucsValidator.pattern)
-    FactoryGirl.create(:nucs_fund, :value => components[1])
-    FactoryGirl.create(:nucs_department, :value => components[2])
+    validator = NucsValidator.new(chart_string)
+    FactoryGirl.create(:nucs_fund, :value => validator.fund)
+    FactoryGirl.create(:nucs_department, :value => validator.department)
 
-    if components[3]
-      project_activity={ :project => components[3] }
-      project_activity.merge!(:activity => components[4]) if components[4]
+    if validator.project
+      project_activity={ :project => validator.project }
+      project_activity.merge!(:activity => validator.activity) if validator.activity
       FactoryGirl.create(:nucs_project_activity, project_activity)
     end
 
-    FactoryGirl.create(:nucs_program, :value => components[5]) if components[5]
-    FactoryGirl.create(:nucs_chart_field1, :value => components[6]) if components[6]
+    FactoryGirl.create(:nucs_program, :value => validator.program) if validator.program
+    FactoryGirl.create(:nucs_chart_field1, :value => validator.chart_field1) if validator.chart_field1
   end
 
 
