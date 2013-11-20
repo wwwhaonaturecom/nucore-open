@@ -176,6 +176,13 @@ namespace :nu do
     relays.each {|relay| relay.destroy }
   end
 
+  desc 'remove price policy from details that should not have had them assigned in the first place (#76683)'
+  task :update_order_details_76683 => :environment do
+    [ 120822, 120059, 117873, 116361, 115303 ].each do |id|
+      od = OrderDetail.find id
+      puts "Removed price policy from order detail #{id}" if od.update_attribute :price_policy_id, nil
+    end
+  end
 
   desc 'fix for task #59917'
   task :update_pathcore_orders => :environment do
