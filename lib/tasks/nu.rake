@@ -233,4 +233,12 @@ namespace :nu do
       end
     end
   end
+
+  desc 'fix accounts for #77103'
+  task :fix_accounts_77103 => :environment do
+    Account.where(id: [9253, 10453]).each do |account|
+      validator = NucsValidator.new(account.account_number)
+      account.update_attributes(expires_at: validator.latest_expiration)
+    end
+  end
 end

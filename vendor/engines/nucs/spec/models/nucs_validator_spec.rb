@@ -151,6 +151,30 @@ describe NucsValidator do
     assert_unknown_ge001(validator, 'program')
   end
 
+  context 'blank segments' do
+    subject(:validator) { NucsValidator.new(chart_string, REVENUE_ACCT) }
+    before :each do
+      NucsFund.stub(:find_by_value).with('110').and_return true
+      NucsDepartment.stub(:find_by_value).with('5432300').and_return true
+      NucsProjectActivity.stub(:find_by_project).with('10006385').and_return true
+      NucsProjectActivity.stub(:find_by_activity).with('01').and_return true
+      NucsChartField1.stub(:find_by_value).with('1025').and_return true
+    end
+
+    context 'with several empty segments' do
+      let(:chart_string) { '110-5432300----1025' }
+      it { should be_components_exist }
+    end
+
+    context 'with missing program' do
+      let(:chart_string) { '110-5432300-10006385-01--1025' }
+
+      it 'does finds the GE001 and never tries to find the blank program' do
+        NucsProgram.should_not_receive(:find_by_value)
+        expect(validator).to be_components_exist
+      end
+    end
+  end
 
   it 'should recognize a bad chart field on a revenue account' do
     validator=NucsValidator.new(NON_GRANT_CS.gsub('1095', '2000'), REVENUE_ACCT)

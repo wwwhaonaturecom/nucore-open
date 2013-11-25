@@ -144,14 +144,13 @@ class NucsValidator
   private
 
   def parse_chart_string
-    # results = @chart_string.match(self.class.pattern)
     results = @chart_string.split('-')
-    @fund         = results[0]
-    @department   = results[1]
-    @project      = results[2]
-    @activity     = results[3]
-    @program      = results[4]
-    @chart_field1 = results[5]
+    @fund         = results[0].presence
+    @department   = results[1].presence
+    @project      = results[2].presence
+    @activity     = results[3].presence
+    @program      = results[4].presence
+    @chart_field1 = results[5].presence
   end
 
 
