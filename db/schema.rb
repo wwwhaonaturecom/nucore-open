@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20131118175503) do
+ActiveRecord::Schema.define(:version => 20131205230514) do
 
   create_table "account_users", :force => true do |t|
     t.integer  "account_id",               :precision => 38, :scale => 0, :null => false
@@ -380,7 +380,7 @@ ActiveRecord::Schema.define(:version => 20131118175503) do
     t.datetime "start_date",                                                                          :null => false
     t.decimal  "unit_cost",                         :precision => 10, :scale => 2
     t.decimal  "unit_subsidy",                      :precision => 10, :scale => 2
-    t.decimal  "usage_rate",                        :precision => 10, :scale => 2
+    t.decimal  "usage_rate",                        :precision => 12, :scale => 4
     t.integer  "usage_mins",                        :precision => 38, :scale => 0
     t.decimal  "reservation_rate",                  :precision => 10, :scale => 2
     t.integer  "reservation_mins",                  :precision => 38, :scale => 0
@@ -388,7 +388,7 @@ ActiveRecord::Schema.define(:version => 20131118175503) do
     t.integer  "overage_mins",                      :precision => 38, :scale => 0
     t.decimal  "minimum_cost",                      :precision => 10, :scale => 2
     t.decimal  "cancellation_cost",                 :precision => 10, :scale => 2
-    t.decimal  "usage_subsidy",                     :precision => 10, :scale => 2
+    t.decimal  "usage_subsidy",                     :precision => 12, :scale => 4
     t.decimal  "reservation_subsidy",               :precision => 10, :scale => 2
     t.decimal  "overage_subsidy",                   :precision => 10, :scale => 2
     t.datetime "expire_date",                                                                         :null => false
@@ -444,6 +444,7 @@ ActiveRecord::Schema.define(:version => 20131118175503) do
     t.integer  "auto_cancel_mins",                       :precision => 38, :scale => 0
     t.string   "contact_email"
     t.integer  "schedule_id",                            :precision => 38, :scale => 0
+    t.integer  "reserve_interval",                       :precision => 38, :scale => 0
   end
 
   add_index "products", ["schedule_id"], :name => "i_instruments_schedule_id", :tablespace => "bc_nucore"
@@ -481,7 +482,6 @@ ActiveRecord::Schema.define(:version => 20131118175503) do
     t.integer "start_min",        :precision => 38, :scale => 0,                  :null => false
     t.integer "end_hour",         :precision => 38, :scale => 0,                  :null => false
     t.integer "end_min",          :precision => 38, :scale => 0,                  :null => false
-    t.integer "duration_mins",    :precision => 38, :scale => 0,                  :null => false
     t.boolean "on_sun",           :precision => 1,  :scale => 0,                  :null => false
     t.boolean "on_mon",           :precision => 1,  :scale => 0,                  :null => false
     t.boolean "on_tue",           :precision => 1,  :scale => 0,                  :null => false
@@ -559,8 +559,7 @@ ActiveRecord::Schema.define(:version => 20131118175503) do
   add_index "users", ["uid"], :name => "index_users_on_uid", :tablespace => "bc_nucore"
   add_index "users", ["username"], :name => "index_users_on_username", :unique => true, :tablespace => "bc_nucore"
 
-  create_table "versions", :id => false, :force => true do |t|
-    t.integer  "id",                :precision => 38, :scale => 0, :null => false
+  create_table "versions", :force => true do |t|
     t.integer  "versioned_id",      :precision => 38, :scale => 0
     t.string   "versioned_type"
     t.integer  "user_id",           :precision => 38, :scale => 0
@@ -581,12 +580,14 @@ ActiveRecord::Schema.define(:version => 20131118175503) do
   add_index "versions", ["tag"], :name => "index_versions_on_tag", :tablespace => "bc_nucore"
   add_index "versions", ["user_id", "user_type"], :name => "i_versions_user_id_user_type", :tablespace => "bc_nucore"
   add_index "versions", ["user_name"], :name => "index_versions_on_user_name", :tablespace => "bc_nucore"
+  add_index "versions", ["version_number"], :name => "index_versions_on_number", :tablespace => "bc_nucore"
+  add_index "versions", ["versioned_id", "versioned_type"], :name => "i_ver_ver_id_ver_typ"
 
   add_foreign_key "account_users", "accounts", :name => "fk_accounts", :column => nil, :primary_key => nil
 
   add_foreign_key "accounts", "facilities", :name => "fk_account_facility_id", :column => nil, :primary_key => nil
 
-  add_foreign_key "bi_netids", "facilities", :name => "sys_c00315186", :column => nil, :primary_key => nil
+  add_foreign_key "bi_netids", "facilities", :name => "sys_c00329325", :column => nil, :primary_key => nil
 
   add_foreign_key "bundle_products", "products", :name => "fk_bundle_prod_bundle", :column => nil, :primary_key => nil
   add_foreign_key "bundle_products", "products", :name => "fk_bundle_prod_prod", :column => nil, :primary_key => nil
@@ -634,7 +635,7 @@ ActiveRecord::Schema.define(:version => 20131118175503) do
 
   add_foreign_key "accounts", "facilities", :name => "fk_account_facility_id", :column => nil, :primary_key => nil
 
-  add_foreign_key "bi_netids", "facilities", :name => "sys_c00315186", :column => nil, :primary_key => nil
+  add_foreign_key "bi_netids", "facilities", :name => "sys_c00329325", :column => nil, :primary_key => nil
 
   add_foreign_key "bundle_products", "products", :name => "fk_bundle_prod_bundle", :column => nil, :primary_key => nil
   add_foreign_key "bundle_products", "products", :name => "fk_bundle_prod_prod", :column => nil, :primary_key => nil

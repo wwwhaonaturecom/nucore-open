@@ -1,13 +1,13 @@
 require 'spec_helper'
 
 describe InstrumentPricePolicy do
-  it "should create a price policy for tomorrow if no policies already exist for that day" do
-    should allow_value(Date.today+1).for(:start_date)
-  end
+  it { should allow_value(Date.current+1).for(:start_date) }
 
-  it "should create a price policy for yesterday" do
-    should allow_value(Date.today - 1).for(:start_date)
-  end
+  it { should allow_value(Date.current - 1).for(:start_date) }
+
+  it { should allow_value(123.4567).for :usage_rate }
+
+  it { should allow_value(123.4567).for :usage_subsidy }
 
   context "test requiring instruments" do
     before(:each) do
@@ -47,24 +47,24 @@ describe InstrumentPricePolicy do
     end
 
     it "should create a price policy for today if no active price policy already exists" do
-      should allow_value(Date.today).for(:start_date)
-      @ipp.start_date=Date.today - 7.days
+      should allow_value(Date.current).for(:start_date)
+      @ipp.start_date=Date.current - 7.days
       @ipp.save(:validate => false) #save without validations
-      ipp_new = @instrument.instrument_price_policies.create(FactoryGirl.attributes_for(:instrument_price_policy, :start_date => Date.today, :price_group => @price_group))
+      ipp_new = @instrument.instrument_price_policies.create(FactoryGirl.attributes_for(:instrument_price_policy, :start_date => Date.current, :price_group => @price_group))
       ipp_new.errors_on(:start_date).should_not be_nil
     end
 
     it "should not create a price policy for a day that a policy already exists for" do
-      @ipp.start_date=Date.today + 7.days
+      @ipp.start_date=Date.current + 7.days
       assert @ipp.save
-      ipp_new = @instrument.instrument_price_policies.create(FactoryGirl.attributes_for(:instrument_price_policy, :start_date => Date.today + 7.days, :price_group => @price_group))
+      ipp_new = @instrument.instrument_price_policies.create(FactoryGirl.attributes_for(:instrument_price_policy, :start_date => Date.current + 7.days, :price_group => @price_group))
       ipp_new.errors_on(:start_date).should_not be_nil
     end
 
     it "should return the date for the current policies" do
-      @ipp.start_date=Date.today - 7.days
+      @ipp.start_date=Date.current - 7.days
       @ipp.save(:validate => false) #save without validations
-      @instrument.instrument_price_policies.create(FactoryGirl.attributes_for(:instrument_price_policy, :start_date => Date.today + 7.days, :price_group => @price_group))
+      @instrument.instrument_price_policies.create(FactoryGirl.attributes_for(:instrument_price_policy, :start_date => Date.current + 7.days, :price_group => @price_group))
       InstrumentPricePolicy.current_date(@instrument).to_date.should == @ipp.start_date.to_date
 
       @ipp = @instrument.instrument_price_policies.create(FactoryGirl.attributes_for(:instrument_price_policy, :price_group => @price_group))
@@ -72,15 +72,15 @@ describe InstrumentPricePolicy do
     end
 
     it "should return the date for upcoming policies" do
-      @instrument.instrument_price_policies.create(FactoryGirl.attributes_for(:instrument_price_policy, :start_date => Date.today, :price_group => @price_group))
-      ipp2=@instrument.instrument_price_policies.create(FactoryGirl.attributes_for(:instrument_price_policy, :start_date => Date.today + 7.days, :price_group => @price_group))
-      ipp3=@instrument.instrument_price_policies.create(FactoryGirl.attributes_for(:instrument_price_policy, :start_date => Date.today + 14.days, :price_group => @price_group))
+      @instrument.instrument_price_policies.create( attributes_for(:instrument_price_policy, start_date: Date.current, price_group: @price_group) )
+      ipp2 = @instrument.instrument_price_policies.create( attributes_for(:instrument_price_policy, start_date: Date.current + 7.days, price_group: @price_group) )
+      ipp3 = @instrument.instrument_price_policies.create( attributes_for(:instrument_price_policy, start_date: Date.current + 14.days, price_group: @price_group) )
 
-      InstrumentPricePolicy.next_date(@instrument).to_date.should == ipp2.start_date.to_date
-      next_dates = InstrumentPricePolicy.next_dates(@instrument)
-      next_dates.length.should == 2
-      next_dates.include?(ipp2.start_date.to_date).should be_true
-      next_dates.include?(ipp3.start_date.to_date).should be_true
+      expect(described_class.next_date(@instrument).to_date).to eq ipp2.start_date.to_date
+      next_dates = described_class.next_dates @instrument
+      expect(next_dates.size).to eq 2
+      expect(next_dates).to include ipp2.start_date.to_date
+      expect(next_dates).to include ipp3.start_date.to_date
     end
   end
 
@@ -95,32 +95,33 @@ describe InstrumentPricePolicy do
       @price_group      = @facility.price_groups.create(FactoryGirl.attributes_for(:price_group))
       @instrument       = FactoryGirl.create(:instrument,
                                       :facility => @facility,
+                                      :reserve_interval => 30,
                                       :facility_account => @facility_account)
       @price_group_product=FactoryGirl.create(:price_group_product, :price_group => @price_group, :product => @instrument)
       # create rule every day from 9 am to 5 pm, no discount, duration= 30 minutes
-      @rule             = @instrument.schedule_rules.create(FactoryGirl.attributes_for(:schedule_rule, :duration_mins => 30))
+      @rule             = @instrument.schedule_rules.create(FactoryGirl.attributes_for(:schedule_rule))
     end
 
     it "should correctly estimate cost with usage cost" do
       pp = @instrument.instrument_price_policies.create!(ipp_attributes)
 
       # 1 hour (4 intervals)
-      start_dt = Time.zone.parse("#{Date.today + 1.day} 9:00")
-      end_dt   = Time.zone.parse("#{Date.today + 1.day} 10:00")
+      start_dt = Time.zone.parse("#{Date.current + 1.day} 9:00")
+      end_dt   = Time.zone.parse("#{Date.current + 1.day} 10:00")
       costs    = pp.estimate_cost_and_subsidy(start_dt, end_dt)
       costs[:cost].should    == 10.75 * 4
       costs[:subsidy].should == 0
 
       # 3 hours (4 * 3 intervals)
-      start_dt = Time.zone.parse("#{Date.today + 1.day} 10:00")
-      end_dt   = Time.zone.parse("#{Date.today + 1.day} 13:00")
+      start_dt = Time.zone.parse("#{Date.current + 1.day} 10:00")
+      end_dt   = Time.zone.parse("#{Date.current + 1.day} 13:00")
       costs    = pp.estimate_cost_and_subsidy(start_dt, end_dt)
       costs[:cost].should    == 10.75 * 3 * 4
       costs[:subsidy].should == 0
 
       # 35 minutes ceil(35.0/15.0) intervals (3)
-      start_dt = Time.zone.parse("#{Date.today + 1.day} 10:00")
-      end_dt   = Time.zone.parse("#{Date.today + 1.day} 10:35")
+      start_dt = Time.zone.parse("#{Date.current + 1.day} 10:00")
+      end_dt   = Time.zone.parse("#{Date.current + 1.day} 10:35")
       costs    = pp.estimate_cost_and_subsidy(start_dt, end_dt)
       costs[:cost].should    == 10.75 * 3
       costs[:subsidy].should == 0
@@ -130,22 +131,22 @@ describe InstrumentPricePolicy do
       pp = @instrument.instrument_price_policies.create!(ipp_attributes(:usage_subsidy => 1.75))
 
       # 1 hour (4 intervals)
-      start_dt = Time.zone.parse("#{Date.today + 1.day} 9:00")
-      end_dt   = Time.zone.parse("#{Date.today + 1.day} 10:00")
+      start_dt = Time.zone.parse("#{Date.current + 1.day} 9:00")
+      end_dt   = Time.zone.parse("#{Date.current + 1.day} 10:00")
       costs    = pp.estimate_cost_and_subsidy(start_dt, end_dt)
       costs[:cost].should    == 10.75 * 4
       costs[:subsidy].should == 1.75 * 4
 
       # 3 hours (4 * 3 intervals)
-      start_dt = Time.zone.parse("#{Date.today + 1.day} 10:00")
-      end_dt   = Time.zone.parse("#{Date.today + 1.day} 13:00")
+      start_dt = Time.zone.parse("#{Date.current + 1.day} 10:00")
+      end_dt   = Time.zone.parse("#{Date.current + 1.day} 13:00")
       costs    = pp.estimate_cost_and_subsidy(start_dt, end_dt)
       costs[:cost].should    == 10.75 * 3 * 4
       costs[:subsidy].should == 1.75 * 3 * 4
 
       # 35 minutes ceil(35.0/15.0) intervals (3)
-      start_dt = Time.zone.parse("#{Date.today + 1.day} 10:00")
-      end_dt   = Time.zone.parse("#{Date.today + 1.day} 10:35")
+      start_dt = Time.zone.parse("#{Date.current + 1.day} 10:00")
+      end_dt   = Time.zone.parse("#{Date.current + 1.day} 10:35")
       costs    = pp.estimate_cost_and_subsidy(start_dt, end_dt)
       costs[:cost].should    == 10.75 * 3
       costs[:subsidy].should == 1.75 * 3
@@ -155,22 +156,22 @@ describe InstrumentPricePolicy do
       pp = @instrument.instrument_price_policies.create!(ipp_attributes(:overage_rate => 15.50))
 
       # 1 hour (4 intervals)
-      start_dt = Time.zone.parse("#{Date.today + 1.day} 9:00")
-      end_dt   = Time.zone.parse("#{Date.today + 1.day} 10:00")
+      start_dt = Time.zone.parse("#{Date.current + 1.day} 9:00")
+      end_dt   = Time.zone.parse("#{Date.current + 1.day} 10:00")
       costs    = pp.estimate_cost_and_subsidy(start_dt, end_dt)
       costs[:cost].should    == 10.75 * 4
       costs[:subsidy].should == 0
 
       # 3 hours (4 * 3 intervals)
-      start_dt = Time.zone.parse("#{Date.today + 1.day} 10:00")
-      end_dt   = Time.zone.parse("#{Date.today + 1.day} 13:00")
+      start_dt = Time.zone.parse("#{Date.current + 1.day} 10:00")
+      end_dt   = Time.zone.parse("#{Date.current + 1.day} 13:00")
       costs    = pp.estimate_cost_and_subsidy(start_dt, end_dt)
       costs[:cost].should    == 10.75 * 3 * 4
       costs[:subsidy].should == 0
 
       # 35 minutes ceil(35.0/15.0) intervals (3)
-      start_dt = Time.zone.parse("#{Date.today + 1.day} 10:00")
-      end_dt   = Time.zone.parse("#{Date.today + 1.day} 10:35")
+      start_dt = Time.zone.parse("#{Date.current + 1.day} 10:00")
+      end_dt   = Time.zone.parse("#{Date.current + 1.day} 10:35")
       costs    = pp.estimate_cost_and_subsidy(start_dt, end_dt)
       costs[:cost].should    == 10.75 * 3
       costs[:subsidy].should == 0
@@ -185,22 +186,22 @@ describe InstrumentPricePolicy do
       pp = @instrument.instrument_price_policies.create!(options)
 
       # 1 hour (4 intervals)
-      start_dt = Time.zone.parse("#{Date.today + 1.day} 9:00")
-      end_dt   = Time.zone.parse("#{Date.today + 1.day} 10:00")
+      start_dt = Time.zone.parse("#{Date.current + 1.day} 9:00")
+      end_dt   = Time.zone.parse("#{Date.current + 1.day} 10:00")
       costs    = pp.estimate_cost_and_subsidy(start_dt, end_dt)
       costs[:cost].should    == 10.75 * 4
       costs[:subsidy].should == 0
 
       # 3 hours (4 * 3 intervals)
-      start_dt = Time.zone.parse("#{Date.today + 1.day} 10:00")
-      end_dt   = Time.zone.parse("#{Date.today + 1.day} 13:00")
+      start_dt = Time.zone.parse("#{Date.current + 1.day} 10:00")
+      end_dt   = Time.zone.parse("#{Date.current + 1.day} 13:00")
       costs    = pp.estimate_cost_and_subsidy(start_dt, end_dt)
       costs[:cost].should    == 10.75 * 3 * 4
       costs[:subsidy].should == 0
 
       # 35 minutes ceil(35.0/15.0) intervals (3)
-      start_dt = Time.zone.parse("#{Date.today + 1.day} 10:00")
-      end_dt   = Time.zone.parse("#{Date.today + 1.day} 10:35")
+      start_dt = Time.zone.parse("#{Date.current + 1.day} 10:00")
+      end_dt   = Time.zone.parse("#{Date.current + 1.day} 10:35")
       costs    = pp.estimate_cost_and_subsidy(start_dt, end_dt)
       costs[:cost].should    == 10.75 * 3
       costs[:subsidy].should == 0
@@ -216,22 +217,22 @@ describe InstrumentPricePolicy do
       pp = @instrument.instrument_price_policies.create!(options)
 
       # 1 hour (4 intervals)
-      start_dt = Time.zone.parse("#{Date.today + 1.day} 9:00")
-      end_dt   = Time.zone.parse("#{Date.today + 1.day} 10:00")
+      start_dt = Time.zone.parse("#{Date.current + 1.day} 9:00")
+      end_dt   = Time.zone.parse("#{Date.current + 1.day} 10:00")
       costs    = pp.estimate_cost_and_subsidy(start_dt, end_dt)
       costs[:cost].should    == 10.75 * 4
       costs[:subsidy].should == 1.75 * 4
 
       # 3 hours (4 * 3 intervals)
-      start_dt = Time.zone.parse("#{Date.today + 1.day} 10:00")
-      end_dt   = Time.zone.parse("#{Date.today + 1.day} 13:00")
+      start_dt = Time.zone.parse("#{Date.current + 1.day} 10:00")
+      end_dt   = Time.zone.parse("#{Date.current + 1.day} 13:00")
       costs    = pp.estimate_cost_and_subsidy(start_dt, end_dt)
       costs[:cost].should    == 10.75 * 3 * 4
       costs[:subsidy].should == 1.75 * 3 * 4
 
       # 35 minutes ceil(35.0/15.0) intervals (3)
-      start_dt = Time.zone.parse("#{Date.today + 1.day} 10:00")
-      end_dt   = Time.zone.parse("#{Date.today + 1.day} 10:35")
+      start_dt = Time.zone.parse("#{Date.current + 1.day} 10:00")
+      end_dt   = Time.zone.parse("#{Date.current + 1.day} 10:35")
       costs    = pp.estimate_cost_and_subsidy(start_dt, end_dt)
       costs[:cost].should    == 10.75 * 3
       costs[:subsidy].should == 1.75 * 3
@@ -246,22 +247,22 @@ describe InstrumentPricePolicy do
       pp = @instrument.instrument_price_policies.create!(options)
 
       # 1 hour (4 intervals)
-      start_dt = Time.zone.parse("#{Date.today + 1.day} 9:00")
-      end_dt   = Time.zone.parse("#{Date.today + 1.day} 10:00")
+      start_dt = Time.zone.parse("#{Date.current + 1.day} 9:00")
+      end_dt   = Time.zone.parse("#{Date.current + 1.day} 10:00")
       costs    = pp.estimate_cost_and_subsidy(start_dt, end_dt)
       costs[:cost].should    == (5 + 5.75) * 4
       costs[:subsidy].should == 0
 
       # 3 hours (4 * 3 intervals)
-      start_dt = Time.zone.parse("#{Date.today + 1.day} 10:00")
-      end_dt   = Time.zone.parse("#{Date.today + 1.day} 13:00")
+      start_dt = Time.zone.parse("#{Date.current + 1.day} 10:00")
+      end_dt   = Time.zone.parse("#{Date.current + 1.day} 13:00")
       costs    = pp.estimate_cost_and_subsidy(start_dt, end_dt)
       costs[:cost].should    == (5 + 5.75) * 3 * 4
       costs[:subsidy].should == 0
 
       # 35 minutes ceil(35.0/15.0) intervals (3)
-      start_dt = Time.zone.parse("#{Date.today + 1.day} 10:00")
-      end_dt   = Time.zone.parse("#{Date.today + 1.day} 10:35")
+      start_dt = Time.zone.parse("#{Date.current + 1.day} 10:00")
+      end_dt   = Time.zone.parse("#{Date.current + 1.day} 10:35")
       costs    = pp.estimate_cost_and_subsidy(start_dt, end_dt)
       costs[:cost].should    == (5 + 5.75) * 3
       costs[:subsidy].should == 0
@@ -278,22 +279,22 @@ describe InstrumentPricePolicy do
       pp = @instrument.instrument_price_policies.create!(options)
 
       # 1 hour (4 intervals)
-      start_dt = Time.zone.parse("#{Date.today + 1.day} 9:00")
-      end_dt   = Time.zone.parse("#{Date.today + 1.day} 10:00")
+      start_dt = Time.zone.parse("#{Date.current + 1.day} 9:00")
+      end_dt   = Time.zone.parse("#{Date.current + 1.day} 10:00")
       costs    = pp.estimate_cost_and_subsidy(start_dt, end_dt)
       costs[:cost].should    == (5 + 5.75) * 4
       costs[:subsidy].should == (0.5 + 0.75) * 4
 
       # 3 hours (4 * 3 intervals)
-      start_dt = Time.zone.parse("#{Date.today + 1.day} 10:00")
-      end_dt   = Time.zone.parse("#{Date.today + 1.day} 13:00")
+      start_dt = Time.zone.parse("#{Date.current + 1.day} 10:00")
+      end_dt   = Time.zone.parse("#{Date.current + 1.day} 13:00")
       costs    = pp.estimate_cost_and_subsidy(start_dt, end_dt)
       costs[:cost].should    == (5 + 5.75) * 3 * 4
       costs[:subsidy].should == (0.5 + 0.75) * 3 * 4
 
       # 35 minutes ceil(35.0/15.0) intervals (3)
-      start_dt = Time.zone.parse("#{Date.today + 1.day} 10:00")
-      end_dt   = Time.zone.parse("#{Date.today + 1.day} 10:35")
+      start_dt = Time.zone.parse("#{Date.current + 1.day} 10:00")
+      end_dt   = Time.zone.parse("#{Date.current + 1.day} 10:35")
       costs    = pp.estimate_cost_and_subsidy(start_dt, end_dt)
       costs[:cost].should    == (5 + 5.75) * 3
       costs[:subsidy].should == (0.5 + 0.75) * 3
@@ -301,12 +302,13 @@ describe InstrumentPricePolicy do
 
     it "should correctly estimate cost across schedule rules" do
       # create adjacent schedule rule
-      @instrument.schedule_rules.create(FactoryGirl.attributes_for(:schedule_rule, :start_hour => @rule.end_hour, :end_hour => @rule.end_hour + 1, :duration_mins => 30))
+      @instrument.update_attribute :reserve_interval, 30
+      @instrument.schedule_rules.create(FactoryGirl.attributes_for(:schedule_rule, :start_hour => @rule.end_hour, :end_hour => @rule.end_hour + 1))
       pp = @instrument.instrument_price_policies.create!(ipp_attributes)
 
       # 2 hour (8 intervals)
-      start_dt = Time.zone.parse("#{Date.today + 1.day} #{@rule.end_hour - 1}:00")
-      end_dt   = Time.zone.parse("#{Date.today + 1.day} #{@rule.end_hour + 1}:00")
+      start_dt = Time.zone.parse("#{Date.current + 1.day} #{@rule.end_hour - 1}:00")
+      end_dt   = Time.zone.parse("#{Date.current + 1.day} #{@rule.end_hour + 1}:00")
       costs    = pp.estimate_cost_and_subsidy(start_dt, end_dt)
       costs[:cost].should    == 10.75 * 8
       costs[:subsidy].should == 0
@@ -314,12 +316,13 @@ describe InstrumentPricePolicy do
 
     it "should correctly estimate cost for a schedule rule with a discount" do
       # create discount schedule rule
-      @discount_rule = @instrument.schedule_rules.create(FactoryGirl.attributes_for(:schedule_rule, :start_hour => @rule.end_hour, :end_hour => @rule.end_hour + 1, :duration_mins => 30, :discount_percent => 50))
+      @instrument.update_attribute :reserve_interval, 30
+      @discount_rule = @instrument.schedule_rules.create(FactoryGirl.attributes_for(:schedule_rule, :start_hour => @rule.end_hour, :end_hour => @rule.end_hour + 1, :discount_percent => 50))
       pp = @instrument.instrument_price_policies.create!(ipp_attributes)
 
       # 1 hour (4 intervals)
-      start_dt = Time.zone.parse("#{Date.today + 1.day} #{@discount_rule.start_hour}:00")
-      end_dt   = Time.zone.parse("#{Date.today + 1.day} #{@discount_rule.start_hour + 1}:00")
+      start_dt = Time.zone.parse("#{Date.current + 1.day} #{@discount_rule.start_hour}:00")
+      end_dt   = Time.zone.parse("#{Date.current + 1.day} #{@discount_rule.start_hour + 1}:00")
       costs    = pp.estimate_cost_and_subsidy(start_dt, end_dt)
       costs[:cost].should    == 10.75 * 0.5 * 4
       costs[:subsidy].should == 0
@@ -327,12 +330,13 @@ describe InstrumentPricePolicy do
 
     it "should correctly estimate cost across schedule rules with discounts" do
       # create discount schedule rule
-      @discount_rule = @instrument.schedule_rules.create(FactoryGirl.attributes_for(:schedule_rule, :start_hour => @rule.end_hour, :end_hour => @rule.end_hour + 1, :duration_mins => 30, :discount_percent => 50))
+      @instrument.update_attribute :reserve_interval, 30
+      @discount_rule = @instrument.schedule_rules.create(FactoryGirl.attributes_for(:schedule_rule, :start_hour => @rule.end_hour, :end_hour => @rule.end_hour + 1, :discount_percent => 50))
       pp = @instrument.instrument_price_policies.create!(ipp_attributes)
 
       # 2 hour (8 intervals); half of the time, 50% discount
-      start_dt = Time.zone.parse("#{Date.today + 1.day} #{@rule.end_hour - 1}:00")
-      end_dt   = Time.zone.parse("#{Date.today + 1.day} #{@rule.end_hour + 1}:00")
+      start_dt = Time.zone.parse("#{Date.current + 1.day} #{@rule.end_hour - 1}:00")
+      end_dt   = Time.zone.parse("#{Date.current + 1.day} #{@rule.end_hour + 1}:00")
       costs    = pp.estimate_cost_and_subsidy(start_dt, end_dt)
       costs[:cost].should    == (10.75 * 0.5 * 4) + (10.75 * 4)
       costs[:subsidy].should == 0
@@ -340,24 +344,24 @@ describe InstrumentPricePolicy do
 
     it "should return nil if the end time is earlier than the start time" do
       pp = @instrument.instrument_price_policies.create!(ipp_attributes)
-      start_dt = Time.zone.parse("#{Date.today + 1.day} 10:00")
-      end_dt   = Time.zone.parse("#{Date.today + 1.day} 9:00")
+      start_dt = Time.zone.parse("#{Date.current + 1.day} 10:00")
+      end_dt   = Time.zone.parse("#{Date.current + 1.day} 9:00")
       costs    = pp.estimate_cost_and_subsidy(start_dt, end_dt)
       costs.should be_nil
     end
 
     it "should return nil for cost if purchase is restricted" do
       options = Hash[
-          :start_date          => Date.today,
-          :expire_date         => Date.today+7.days,
+          :start_date          => Date.current,
+          :expire_date         => Date.current+7.days,
           :price_group         => @price_group,
         ]
 
       @price_group_product.destroy
       pp = @instrument.instrument_price_policies.create!(options)
 
-      start_dt = Time.zone.parse("#{Date.today + 1.day} 10:00")
-      end_dt   = Time.zone.parse("#{Date.today + 1.day} 9:00")
+      start_dt = Time.zone.parse("#{Date.current + 1.day} 10:00")
+      end_dt   = Time.zone.parse("#{Date.current + 1.day} 9:00")
       costs    = pp.estimate_cost_and_subsidy(start_dt, end_dt)
       costs.should be_nil
     end
@@ -376,16 +380,17 @@ describe InstrumentPricePolicy do
       @price_group      = @facility.price_groups.create!(FactoryGirl.attributes_for(:price_group))
       @instrument       = FactoryGirl.create(:instrument,
                                       :facility => @facility,
+                                      :reserve_interval => 30,
                                       :facility_account => @facility_account)
       @price_group_product=FactoryGirl.create(:price_group_product, :price_group => @price_group, :product => @instrument)
-      @rule             = @instrument.schedule_rules.create!(FactoryGirl.attributes_for(:schedule_rule, :start_hour => 0, :end_hour => 24, :duration_mins => 30))
+      @rule             = @instrument.schedule_rules.create!(FactoryGirl.attributes_for(:schedule_rule, :start_hour => 0, :end_hour => 24))
       @pp = @instrument.instrument_price_policies.create!(ipp_attributes)
     end
 
     it "should correctly estimate cost across multiple days" do
       # 2 hour (8 intervals)
-      start_dt = Time.zone.parse("#{Date.today + 1.day} 23:00")
-      end_dt   = Time.zone.parse("#{Date.today + 2.day} 1:00")
+      start_dt = Time.zone.parse("#{Date.current + 1.day} 23:00")
+      end_dt   = Time.zone.parse("#{Date.current + 2.day} 1:00")
       costs    = @pp.estimate_cost_and_subsidy(start_dt, end_dt)
       costs[:cost].should    == 10.75 * 8
       costs[:subsidy].should == 0
@@ -404,8 +409,8 @@ describe InstrumentPricePolicy do
 
   def ipp_attributes(overrides={})
     attrs={
-      :start_date          => Date.today,
-      :expire_date         => Date.today+7.days,
+      :start_date          => Date.current,
+      :expire_date         => Date.current+7.days,
       :usage_rate          => 10.75,
       :usage_subsidy       => 0,
       :usage_mins          => 15,
