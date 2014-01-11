@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20131205230514) do
+ActiveRecord::Schema.define(:version => 20131218205335) do
 
   create_table "account_users", :force => true do |t|
     t.integer  "account_id",               :precision => 38, :scale => 0, :null => false
@@ -394,6 +394,7 @@ ActiveRecord::Schema.define(:version => 20131205230514) do
     t.datetime "expire_date",                                                                         :null => false
     t.integer  "product_id",                        :precision => 38, :scale => 0
     t.boolean  "can_purchase",                      :precision => 1,  :scale => 0, :default => false, :null => false
+    t.string   "charge_for"
   end
 
   create_table "product_access_groups", :force => true do |t|
@@ -559,7 +560,8 @@ ActiveRecord::Schema.define(:version => 20131205230514) do
   add_index "users", ["uid"], :name => "index_users_on_uid", :tablespace => "bc_nucore"
   add_index "users", ["username"], :name => "index_users_on_username", :unique => true, :tablespace => "bc_nucore"
 
-  create_table "versions", :force => true do |t|
+  create_table "versions", :id => false, :force => true do |t|
+    t.integer  "id",                :precision => 38, :scale => 0, :null => false
     t.integer  "versioned_id",      :precision => 38, :scale => 0
     t.string   "versioned_type"
     t.integer  "user_id",           :precision => 38, :scale => 0
@@ -576,18 +578,16 @@ ActiveRecord::Schema.define(:version => 20131205230514) do
   end
 
   add_index "versions", ["commit_label"], :name => "index_versions_on_commit_label", :tablespace => "bc_nucore"
-  add_index "versions", ["created_at"], :name => "index_versions_on_created_at", :tablespace => "bc_nucore"
   add_index "versions", ["tag"], :name => "index_versions_on_tag", :tablespace => "bc_nucore"
   add_index "versions", ["user_id", "user_type"], :name => "i_versions_user_id_user_type", :tablespace => "bc_nucore"
   add_index "versions", ["user_name"], :name => "index_versions_on_user_name", :tablespace => "bc_nucore"
   add_index "versions", ["version_number"], :name => "index_versions_on_number", :tablespace => "bc_nucore"
-  add_index "versions", ["versioned_id", "versioned_type"], :name => "i_ver_ver_id_ver_typ"
 
   add_foreign_key "account_users", "accounts", :name => "fk_accounts", :column => nil, :primary_key => nil
 
   add_foreign_key "accounts", "facilities", :name => "fk_account_facility_id", :column => nil, :primary_key => nil
 
-  add_foreign_key "bi_netids", "facilities", :name => "sys_c00329325", :column => nil, :primary_key => nil
+  add_foreign_key "bi_netids", "facilities", :name => "sys_c00336571", :column => nil, :primary_key => nil
 
   add_foreign_key "bundle_products", "products", :name => "fk_bundle_prod_bundle", :column => nil, :primary_key => nil
   add_foreign_key "bundle_products", "products", :name => "fk_bundle_prod_prod", :column => nil, :primary_key => nil
@@ -635,7 +635,7 @@ ActiveRecord::Schema.define(:version => 20131205230514) do
 
   add_foreign_key "accounts", "facilities", :name => "fk_account_facility_id", :column => nil, :primary_key => nil
 
-  add_foreign_key "bi_netids", "facilities", :name => "sys_c00329325", :column => nil, :primary_key => nil
+  add_foreign_key "bi_netids", "facilities", :name => "sys_c00336571", :column => nil, :primary_key => nil
 
   add_foreign_key "bundle_products", "products", :name => "fk_bundle_prod_bundle", :column => nil, :primary_key => nil
   add_foreign_key "bundle_products", "products", :name => "fk_bundle_prod_prod", :column => nil, :primary_key => nil
