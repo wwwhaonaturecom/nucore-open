@@ -51,6 +51,8 @@ describe JxmlRenderer do
     let :av_mock do
       mock = double 'ActionView::Base'
       mock.stub :render
+      mock.stub(:view_paths).and_return([])
+      mock.stub(:assign)
       mock
     end
 
@@ -108,7 +110,7 @@ describe JxmlRenderer do
 
     it "should create an ActionView with this engine's template" do
       templates_path = File.expand_path '../../app/views', File.dirname(__FILE__)
-      ActionView::Base.should_receive(:new).with templates_path
+      ActionView::Base.should_receive(:new)
       JxmlRenderer.render '/tmp'
     end
 
@@ -122,14 +124,15 @@ describe JxmlRenderer do
     end
 
     it "should render this engine's templates" do
+      av_mock.should_receive(:assign).with(
+        :journal => journal_mock, :journal_rows => journal_mock.journal_rows
+      )
       av_mock.should_receive(:render).with(
-        :template => 'facility_journals/jxml.xml.haml',
-        :locals => { :journal => journal_mock, :journal_rows => journal_mock.journal_rows }
+        :template => 'facility_journals/show.xml.haml'
       )
 
       av_mock.should_receive(:render).with(
-        :template => 'facility_journals/jxml.text.haml',
-        :locals => { :journal => journal_mock }
+        :template => 'facility_journals/jxml.text.haml'
       )
 
       JxmlRenderer.render '/tmp'
