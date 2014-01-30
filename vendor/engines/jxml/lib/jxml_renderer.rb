@@ -17,17 +17,29 @@ class JxmlRenderer
     xml_name="#{today.gsub(/-/,'')}_CCC_UPLOAD.XML"
     xml_src=File.join(from_dir, xml_name)
 
-    av=ActionView::Base.new(File.expand_path('../app/views', File.dirname(__FILE__)))
+    av = build_view
+
     File.open(xml_src, 'w') do |xml|
       journals.each do |journal|
+        av.assign( journal: journal, journal_rows: journal.journal_rows )
         # props to http://www.omninerd.com/articles/render_to_string_in_Rails_Models_or_Rake_Tasks
-        xml << av.render(:template => 'facility_journals/jxml.xml.haml', :locals => { :journal => journal, :journal_rows => journal.journal_rows })
-        puts av.render(:template => 'facility_journals/jxml.text.haml', :locals => {:journal => journal})
+        xml << av.render(:template => 'facility_journals/show.xml.haml')
+        puts av.render(:template => 'facility_journals/jxml.text.haml')
         puts
       end
     end
 
     FileUtils.mv xml_src, File.join(to_dir, xml_name) if to_dir
+  end
+
+  def self.build_view
+    av = ActionView::Base.new
+
+    # Engine path should take precedence
+    av.view_paths << File.expand_path('../app/views', File.dirname(__FILE__))
+    av.view_paths << File.expand_path("#{Rails.root}/app/views")
+
+    av
   end
 
 end
