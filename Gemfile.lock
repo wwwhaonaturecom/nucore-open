@@ -291,6 +291,9 @@ GEM
     slop (3.4.7)
     spreadsheet (0.6.5.9)
       ruby-ole (>= 1.0)
+    spring (1.1.1)
+    spring-commands-rspec (1.0.1)
+      spring (>= 0.9.1)
     sprockets (2.2.2)
       hike (~> 1.2)
       multi_json (~> 1.0)
@@ -379,6 +382,8 @@ DEPENDENCIES
   simplecov
   single_test (= 0.4.0)
   spreadsheet (~> 0.6.5.5)
+  spring
+  spring-commands-rspec
   synaccess_connect (= 0.2.1)!
   therubyracer
   thin
