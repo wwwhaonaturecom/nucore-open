@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20131218205335) do
+ActiveRecord::Schema.define(:version => 20140410170132) do
 
   create_table "account_users", :force => true do |t|
     t.integer  "account_id",               :precision => 38, :scale => 0, :null => false
@@ -90,6 +90,7 @@ ActiveRecord::Schema.define(:version => 20131218205335) do
     t.string   "response_data"
     t.datetime "created_at"
     t.datetime "updated_at"
+    t.string   "external_id"
   end
 
   create_table "external_services", :force => true do |t|

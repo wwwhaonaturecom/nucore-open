@@ -51,11 +51,23 @@ billing:
   review_period: <%= 7.days %>
 
 external_services:
-  survey: Surveyor
+  survey: UrlService
 
 relays:
   # can also be NetBooter::Telnet
   connect_module: NetBooter::Http
+  test:
+    admin_enabled: false
+    reservation_enabled: false
+  development:
+    admin_enabled: false
+    reservation_enabled: false
+  staging:
+    admin_enabled: true
+    reservation_enabled: false
+  production:
+    admin_enabled: true
+    reservation_enabled: true
 #
 # For these settings use SettingsHelper#feature_on?
 feature:
