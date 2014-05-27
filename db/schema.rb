@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20140410170132) do
+ActiveRecord::Schema.define(:version => 20140527201943) do
 
   create_table "account_users", :force => true do |t|
     t.integer  "account_id",               :precision => 38, :scale => 0, :null => false
@@ -87,7 +87,7 @@ ActiveRecord::Schema.define(:version => 20140410170132) do
     t.integer  "external_service_id", :precision => 38, :scale => 0
     t.integer  "receiver_id",         :precision => 38, :scale => 0
     t.string   "receiver_type"
-    t.string   "response_data"
+    t.text     "response_data"
     t.datetime "created_at"
     t.datetime "updated_at"
     t.string   "external_id"
