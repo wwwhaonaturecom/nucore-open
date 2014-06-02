@@ -73,6 +73,7 @@ prawn_document pdf_config do |pdf|
     end
   end
 
+
   # TRANSACTION LISTING
   bottom_of_second_row = [bill_to_box.absolute_bottom, remit_to_box.absolute_bottom].min - pdf.bounds.absolute_bottom
 
@@ -84,9 +85,10 @@ prawn_document pdf_config do |pdf|
     subsidy_display = number_to_currency(od.actual_subsidy)
     subsidy_display += "\n#{od.price_policy.price_group.name}" if od.actual_subsidy > 0
     item_description = "#{od.product}"
-    item_description += "\n<i>#{od.note}</i>" if od.note
+    item_description += "\n<i>#{od.note}</i>" if od.note.present?
     [
-      human_datetime(od.fulfilled_at),
+      format_usa_date(od.fulfilled_at),
+      "#{od}",
       { content: item_description, inline_format: true },
       "#{od.quantity}",
       number_to_currency(od.actual_cost / od.quantity),
@@ -95,16 +97,18 @@ prawn_document pdf_config do |pdf|
     ]
   end
 
-  headers = ["Fulfillment Date", "Item Name", "Quantity", "Unit Cost", "Subsidy Amount", "Total Cost"]
+  headers = ["Fulfillment Date", "Order Number", "Item Name", "Quantity", "Unit Cost", "Subsidy Amount", "Total Cost"]
   footer = ["", "", "", "", "", "TOTAL DUE", number_to_currency(total_due)]
 
   pdf.table([headers] + rows + [footer], header: true, width: pdf.bounds.width) do
     cells.style(borders: [], inline_format: true)
     row(0).style(font_style: :bold, background_color: 'cccccc', borders: [:top, :left, :bottom, :right])
-    column(0).width = 80
-    column(1).width = 200
-    column(2..3).width = 45
-    column(2..5).style(align: :right)
+    column(0).width = 70
+    column(1).width = 65
+    column(2).width = 168
+    column(3).width = 43
+    column(4).width = 45
+    column(3..6).style(align: :right)
     row(rows.size + 1).style(font_style: :bold)
   end
 
