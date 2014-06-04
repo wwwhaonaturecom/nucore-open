@@ -73,42 +73,39 @@ prawn_document pdf_config do |pdf|
     end
   end
 
-
   # TRANSACTION LISTING
   bottom_of_second_row = [bill_to_box.absolute_bottom, remit_to_box.absolute_bottom].min - pdf.bounds.absolute_bottom
 
   pdf.move_cursor_to(bottom_of_second_row - vertical_gutter)
 
   total_due = 0;
-  rows = []
-  @statement.order_details.includes(:order, :product).order('orders.ordered_at DESC').each do |od|
+  rows = @statement.order_details.includes(:product).order("fulfilled_at DESC").map do |od|
     total_due += od.actual_total
     subsidy_display = number_to_currency(od.actual_subsidy)
     subsidy_display += "\n#{od.price_policy.price_group.name}" if od.actual_subsidy > 0
     item_description = "#{od.product}"
     item_description += "\n<i>#{od.note}</i>" if od.note
-    rows << [
-      od.order.ordered_at.strftime("%m/%d/%Y"),
-      {:content => item_description, :inline_format => true},
+    [
+      human_datetime(od.fulfilled_at),
+      { content: item_description, inline_format: true },
       "#{od.quantity}",
-      number_to_currency(od.actual_cost/od.quantity),
+      number_to_currency(od.actual_cost / od.quantity),
       subsidy_display,
       number_to_currency(od.actual_total)
     ]
   end
 
-  headers = ["Transaction Date", "Item Name", "Quantity", "Unit Cost", "Subsidy Amount", "Total Cost"]
-  footer = ["", "", "", "", "TOTAL DUE", number_to_currency(total_due)]
+  headers = ["Fulfillment Date", "Item Name", "Quantity", "Unit Cost", "Subsidy Amount", "Total Cost"]
+  footer = ["", "", "", "", "", "TOTAL DUE", number_to_currency(total_due)]
 
-  pdf.table [headers] + rows + [footer], :header => true,
-            :width => pdf.bounds.width do
-    cells.style(:borders => [], :inline_format => true)
-    row(0).style(:font_style => :bold, :background_color => 'cccccc', :borders => [:top, :left, :bottom, :right])
+  pdf.table([headers] + rows + [footer], header: true, width: pdf.bounds.width) do
+    cells.style(borders: [], inline_format: true)
+    row(0).style(font_style: :bold, background_color: 'cccccc', borders: [:top, :left, :bottom, :right])
     column(0).width = 80
     column(1).width = 200
     column(2..3).width = 45
-    column(2..5).style(:align => :right)
-    row(rows.size + 1).style(:font_style => :bold)
+    column(2..5).style(align: :right)
+    row(rows.size + 1).style(font_style: :bold)
   end
 
   pdf.text "PLEASE MAKE ALL CHECKS PAYABLE TO: NORTHWESTERN UNIVERSITY", :style => :bold
