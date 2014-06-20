@@ -55,7 +55,7 @@ class TabbableReports
     $(tab).data('base-href') + @build_query_string()
 
   init_form: ->
-    $('#status_filter\\[\\]').chosen() if $('#status_filter\\[\\]').length
+    $('[id*="status_filter"]').chosen() if $('[id*="status_filter"]').length
     $('.datepicker').datepicker()
     self = this
     @$element.find(':input').change ->
