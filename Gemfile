@@ -64,6 +64,11 @@ gem 'nu_cancer_center', '~> 1.0.0', :path => 'vendor/engines/nu_cancer_center'
 gem 'dataprobe',        '~> 1.0.0', :path => 'vendor/engines/dataprobe'
 gem 'synaccess_connect', '0.2.2', :git => 'git://github.com/tablexi/synaccess.git'
 
+group :development do
+  gem 'better_errors'
+  gem 'binding_of_caller'
+end
+
 group :development, :test do
   gem 'awesome_print',     '1.1.0'
   gem 'ci_reporter'
