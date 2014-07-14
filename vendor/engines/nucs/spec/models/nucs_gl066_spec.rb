@@ -112,8 +112,8 @@ describe NucsGl066 do
         gl.should_not be_new_record
 
         if tokens.size > 6
-          gl.starts_at.should == Time.zone.parse(tokens[6])
-          gl.expires_at.should == Time.zone.parse(tokens[7]).end_of_day
+          expect(gl.starts_at).to eq Time.zone.parse("2009-04-27").beginning_of_day
+          expect(gl.expires_at).to eq Time.zone.parse("2011-04-26").end_of_day
         end
       end
     end

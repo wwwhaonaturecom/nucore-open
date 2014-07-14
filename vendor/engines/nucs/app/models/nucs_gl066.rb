@@ -1,4 +1,5 @@
 class NucsGl066 < ActiveRecord::Base
+  include NUCore::Database::DateHelper
   include NucsSourcedFromFile
 
   validates_format_of(:budget_period, :with => /^(-|\d{4,8})$/)
@@ -59,8 +60,8 @@ class NucsGl066 < ActiveRecord::Base
 
     if tokens.size > 6
       # has start and expire dates
-      attrs[:starts_at]=Time.zone.parse(tokens[6]).beginning_of_day
-      attrs[:expires_at]=Time.zone.parse(tokens[7]).end_of_day
+      attrs[:starts_at] = parse_2_digit_year_date(tokens[6]).beginning_of_day
+      attrs[:expires_at] = parse_2_digit_year_date(tokens[7]).end_of_day
     end
 
     create(attrs)
