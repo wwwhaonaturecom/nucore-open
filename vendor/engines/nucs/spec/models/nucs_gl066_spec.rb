@@ -95,29 +95,40 @@ describe NucsGl066 do
 
   context 'tokenize_source_line' do
 
-    { '2010|171|4011100|10002342|-|-||' => 6, '-|610|4011400|60023761|01|77000|27-APR-09|26-APR-11' => 8 }.each do |k, v|
-      it "should successfully tokenize #{k}" do
-        assert_nothing_raised do
-          tokens=NucsGl066.tokenize_source_line(k)
-          tokens.should be_a_kind_of(Array)
-          tokens.size.should == v
-        end
-      end
-
-
-      it "should successfully create a new record from #{k}" do
-        tokens=NucsGl066.tokenize_source_line(k)
-        gl=NucsGl066.create_from_source(tokens)
-        gl.should be_a_kind_of(NucsGl066)
-        gl.should_not be_new_record
-
-        if tokens.size > 6
-          gl.starts_at.should == Time.zone.parse(tokens[6])
-          gl.expires_at.should == Time.zone.parse(tokens[7]).end_of_day
-        end
+    shared_context 'tokens' do |expected_count|
+      it 'tokenizes without error' do
+        expect(tokens).to be_a Array
+        expect(tokens).to have(expected_count).items
       end
     end
 
+    shared_context 'a NucsGl066 record' do
+      it 'creates a new record' do
+        expect(record).to be_a NucsGl066
+        expect(record).to_not be_new_record
+      end
+    end
+
+    context 'a line with 6 fields' do
+      let(:tokens) { NucsGl066.tokenize_source_line '2010|171|4011100|10002342|-|-||' }
+      let(:record) { NucsGl066.create_from_source(tokens) }
+
+      it_behaves_like 'tokens', 6
+      it_behaves_like 'a NucsGl066 record'
+    end
+
+    context 'a line with 8 fields' do
+      let(:tokens) { NucsGl066.tokenize_source_line '-|610|4011400|60023761|01|77000|27-APR-09|26-APR-11' }
+      let(:record) { NucsGl066.create_from_source(tokens) }
+
+      it_behaves_like 'tokens', 8
+      it_behaves_like 'a NucsGl066 record'
+
+      it 'interprets dates with 2 digit years as 21st century dates' do
+        expect(record.starts_at).to eq Time.zone.parse('2009-04-27').beginning_of_day
+        expect(record.expires_at).to eq Time.zone.parse('2011-04-26').end_of_day
+      end
+    end
 
     it 'should give next year as current fiscal year' do
       fiscal_year_test '-|820|1800100|80021533|-|70000||', '2011-10-01', 2012
