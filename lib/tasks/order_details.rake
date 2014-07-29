@@ -94,7 +94,11 @@ namespace :order_details  do
 
   desc "Retouch all complete order details and recalculate pricing"
   task :recalculate_prices, [:facility_slug] => :environment do |t, args|
-    Facility.find_by_url_name('path').order_details.where(:state => 'complete').each do |od|
+    Facility.find_by_url_name('flow')
+      .order_details
+      .where(:state => 'complete', :journal_id => nil, :statement_id => nil)
+      .where('fulfilled_at >= ?', Date.civil(2014,3,1))
+      .joins(:order).where(:orders => {:state => 'purchased'}).each do |od|
       old_cost = od.actual_cost
       old_subsidy = od.actual_subsidy
       old_total = od.actual_total
