@@ -5,6 +5,12 @@ en:
     accessories:
       create:
         success: "%{accessories} added"
+    facilities:
+      bulk_reassignment:
+        no_transactions_selected: Please select at least one transaction to move.
+        move:
+          success: "%{count} transactions were reassigned."
+          failure: "No transactions were reassigned. %{reassignment_error} on Order Detail #%{order_detail_id}."
     facility_accounts:
       create:
         expires_at_missing: "The chart string appears to be invalid. Either the fund, department, project, or activity could not be found."
@@ -104,3 +110,9 @@ en:
         blank: "The uploaded import file was blank. Please enter your orders and try the import again."
         fail_immediately: "The import failed. %{successes} line item(s) would have been created successfully, but %{failures} failed. Please download the error report below, view each error message, correct the error, and try to import again."
         fail_continue_on_error: "The import failed. %{successes} line item(s) created successfully, %{failures} failed. Please download the error report below, view each error message, correct the error, and try to import again."
+
+    users:
+      access_list:
+        update:
+          notice: "Product approvals updated: %{granted} granted, %{revoked} revoked."
+          no_change: "No product approvals were changed."
