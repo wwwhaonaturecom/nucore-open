@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20140730215658) do
+ActiveRecord::Schema.define(:version => 20140730222842) do
 
   create_table "account_users", :force => true do |t|
     t.integer  "account_id",               :precision => 38, :scale => 0, :null => false
@@ -87,10 +87,10 @@ ActiveRecord::Schema.define(:version => 20140730215658) do
     t.integer  "external_service_id", :precision => 38, :scale => 0
     t.integer  "receiver_id",         :precision => 38, :scale => 0
     t.string   "receiver_type"
-    t.text     "response_data"
     t.datetime "created_at"
     t.datetime "updated_at"
     t.string   "external_id"
+    t.text     "response_data"
   end
 
   create_table "external_services", :force => true do |t|
@@ -261,9 +261,9 @@ ActiveRecord::Schema.define(:version => 20140730215658) do
   add_index "nucs_project_activities", ["project"], :name => "i_nuc_pro_act_pro", :tablespace => "bc_nucore"
 
   create_table "order_details", :force => true do |t|
-    t.integer  "order_id",                               :precision => 38, :scale => 0, :null => false
-    t.integer  "product_id",                             :precision => 38, :scale => 0, :null => false
-    t.integer  "quantity",                               :precision => 38, :scale => 0, :null => false
+    t.integer  "order_id",                               :precision => 38, :scale => 0,                    :null => false
+    t.integer  "product_id",                             :precision => 38, :scale => 0,                    :null => false
+    t.integer  "quantity",                               :precision => 38, :scale => 0,                    :null => false
     t.integer  "price_policy_id",                        :precision => 38, :scale => 0
     t.decimal  "actual_cost",                            :precision => 10, :scale => 2
     t.decimal  "actual_subsidy",                         :precision => 10, :scale => 2
@@ -288,9 +288,10 @@ ActiveRecord::Schema.define(:version => 20140730215658) do
     t.integer  "statement_id",                           :precision => 38, :scale => 0
     t.integer  "journal_id",                             :precision => 38, :scale => 0
     t.string   "reconciled_note"
-    t.integer  "created_by",                             :precision => 38, :scale => 0, :null => false
+    t.integer  "created_by",                             :precision => 38, :scale => 0,                    :null => false
     t.integer  "parent_order_detail_id",                 :precision => 38, :scale => 0
     t.integer  "product_accessory_id",                   :precision => 38, :scale => 0
+    t.boolean  "problem",                                :precision => 1,  :scale => 0, :default => false, :null => false
   end
 
   create_table "order_imports", :force => true do |t|
@@ -578,6 +579,7 @@ ActiveRecord::Schema.define(:version => 20140730215658) do
   end
 
   add_index "versions", ["commit_label"], :name => "index_versions_on_commit_label", :tablespace => "bc_nucore"
+  add_index "versions", ["created_at"], :name => "index_versions_on_created_at", :tablespace => "bc_nucore"
   add_index "versions", ["tag"], :name => "index_versions_on_tag", :tablespace => "bc_nucore"
   add_index "versions", ["user_id", "user_type"], :name => "i_versions_user_id_user_type", :tablespace => "bc_nucore"
   add_index "versions", ["user_name"], :name => "index_versions_on_user_name", :tablespace => "bc_nucore"
@@ -587,7 +589,7 @@ ActiveRecord::Schema.define(:version => 20140730215658) do
 
   add_foreign_key "accounts", "facilities", :name => "fk_account_facility_id", :column => nil, :primary_key => nil
 
-  add_foreign_key "bi_netids", "facilities", :name => "sys_c00336571", :column => nil, :primary_key => nil
+  add_foreign_key "bi_netids", "facilities", :name => "sys_c00345154", :column => nil, :primary_key => nil
 
   add_foreign_key "bundle_products", "products", :name => "fk_bundle_prod_bundle", :column => nil, :primary_key => nil
   add_foreign_key "bundle_products", "products", :name => "fk_bundle_prod_prod", :column => nil, :primary_key => nil
@@ -635,7 +637,7 @@ ActiveRecord::Schema.define(:version => 20140730215658) do
 
   add_foreign_key "accounts", "facilities", :name => "fk_account_facility_id", :column => nil, :primary_key => nil
 
-  add_foreign_key "bi_netids", "facilities", :name => "sys_c00336571", :column => nil, :primary_key => nil
+  add_foreign_key "bi_netids", "facilities", :name => "sys_c00345154", :column => nil, :primary_key => nil
 
   add_foreign_key "bundle_products", "products", :name => "fk_bundle_prod_bundle", :column => nil, :primary_key => nil
   add_foreign_key "bundle_products", "products", :name => "fk_bundle_prod_prod", :column => nil, :primary_key => nil

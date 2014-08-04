@@ -19,6 +19,12 @@ class OrderDetail < ActiveRecord::Base
   before_validation :mark_dispute_resolved, :if => :resolve_dispute
   after_validation :reset_dispute
 
+  before_save :set_problem_order
+  def set_problem_order
+    self.problem = !!(complete? && (price_policy.nil? || reservation.try(:requires_but_missing_actuals?)))
+    true # problem might be false; we need the callback chain to continue
+  end
+
   belongs_to :product
   belongs_to :price_policy
   belongs_to :statement, :inverse_of => :order_details
@@ -161,6 +167,10 @@ class OrderDetail < ActiveRecord::Base
     end
   end
 
+  def self.problem_orders
+    where(problem: true)
+  end
+
   def in_review?
     # check in the database if self.id is in the scope
     self.class.all_in_review.find_by_id(self.id) ? true :false
@@ -181,23 +191,25 @@ class OrderDetail < ActiveRecord::Base
     :conditions => [
        "products.facility_id = :facility_id
        AND order_details.state = :state
+       AND problem = :problem
        AND reviewed_at <= :reviewed_at
        AND order_details.statement_id IS NULL
        AND order_details.price_policy_id IS NOT NULL
        AND accounts.type IN (:accounts)
        AND (dispute_at IS NULL OR dispute_resolved_at IS NOT NULL)",
-       { :facility_id => facility.id, :state =>'complete', :reviewed_at => Time.zone.now, :accounts => AccountManager::STATEMENT_ACCOUNT_CLASSES }
+       { :facility_id => facility.id, :state =>'complete', :problem => false, :reviewed_at => Time.zone.now, :accounts => AccountManager::STATEMENT_ACCOUNT_CLASSES }
     ]
   }}
 
   scope :need_journal, lambda { {
     :joins => [:product, :account],
     :conditions => ['order_details.state = ?
+                     AND problem = ?
                      AND reviewed_at <= ?
                      AND accounts.type = ?
                      AND journal_id IS NULL
                      AND order_details.price_policy_id IS NOT NULL
-                     AND (dispute_at IS NULL OR dispute_resolved_at IS NOT NULL)', 'complete', Time.zone.now, 'NufsAccount']
+                     AND (dispute_at IS NULL OR dispute_resolved_at IS NOT NULL)', 'complete', false, Time.zone.now, 'NufsAccount']
   } }
 
   scope :statemented, lambda {|facility| {
@@ -691,14 +703,13 @@ class OrderDetail < ActiveRecord::Base
     actual_subsidy.to_f > 0 || estimated_subsidy.to_f > 0
   end
 
-
   #
   # If this +OrderDetail+ is #complete? and either:
   #   A) Does not have a +PricePolicy+ or
   #   B) Has a reservation with missing usage information
   # the method will return true, otherwise false
   def problem_order?
-    !!(complete? && (price_policy.nil? || reservation.try(:requires_but_missing_actuals?)))
+    self.problem
   end
 
   def missing_price_policy?
