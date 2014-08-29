@@ -13,7 +13,7 @@ financial:
     xml: true
 
 statement_pdf:
-  class_name: StatementPdf
+  class_name: Nu::StatementPdf
 
 validator:
   class_name: NucsValidator
