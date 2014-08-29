@@ -12,6 +12,9 @@ financial:
     csv: false
     xml: true
 
+statement_pdf:
+  class_name: StatementPdf
+
 validator:
   class_name: NucsValidator
   test:
