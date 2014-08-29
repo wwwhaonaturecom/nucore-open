@@ -1,49 +1,5 @@
 module Nu
-  class StatementPdf
-    include ActionView::Helpers::NumberHelper
-    include DateHelper
-
-    LABEL_ROW_STYLE = { font_style: :bold, background_color: 'cccccc' }
-
-    DEFAULT_OPTIONS = {
-      left_margin: 50,
-      right_margin: 50,
-      top_margin: 50,
-      bottom_margin: 75,
-    }
-
-    def options
-      if download?
-        DEFAULT_OPTIONS.merge(filename: filename, force_download: true)
-      else
-        DEFAULT_OPTIONS
-      end
-    end
-
-    def initialize(statement, download = false)
-      @statement = statement
-      @account = statement.account
-      @facility = statement.facility
-      @download = download
-    end
-
-    def download?
-      @download
-    end
-
-    def filename
-      "Statement-#{date_stamp}.pdf"
-    end
-
-    def date_stamp
-      I18n.l(@statement.created_at.to_date, format: :usa_filename_safe)
-    end
-
-    def render
-      pdf = Prawn::Document.new(options)
-      generate(pdf)
-      pdf.render
-    end
+  class StatementPdf < ::StatementPdf
 
     def generate(pdf)
       initialize_document(pdf)
