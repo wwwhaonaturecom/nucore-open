@@ -75,8 +75,8 @@ ActiveRecord::Schema.define(:version => 20140908192950) do
   end
 
   create_table "delayed_jobs", :force => true do |t|
-    t.integer  "priority",   :default => 0, :null => false
-    t.integer  "attempts",   :default => 0, :null => false
+    t.integer  "priority",   :precision => 38, :scale => 0, :default => 0, :null => false
+    t.integer  "attempts",   :precision => 38, :scale => 0, :default => 0, :null => false
     t.text     "handler",                   :null => false
     t.text     "last_error"
     t.datetime "run_at"
