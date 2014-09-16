@@ -17,7 +17,7 @@ statement_pdf:
 
 reports:
   export_raw:
-    class_name: Reports::ExportRaw
+    class_name: Pmu::Reports::ExportRaw
 
 validator:
   class_name: NucsValidator
