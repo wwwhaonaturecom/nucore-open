@@ -46,6 +46,7 @@ gem 'prawn_rails',      '0.0.11'
 gem 'newrelic_rpm',     '~> 3.6'
 
 ## other
+gem 'delayed_job_active_record', '~> 4.0.1'
 gem 'rake'
 gem 'spreadsheet',      '~> 0.6.5.5'
 gem 'fast-aes',         '0.1.1'

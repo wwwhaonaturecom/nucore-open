@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20140831183702) do
+ActiveRecord::Schema.define(:version => 20140908192950) do
 
   create_table "account_users", :force => true do |t|
     t.integer  "account_id",               :precision => 38, :scale => 0, :null => false
@@ -73,6 +73,22 @@ ActiveRecord::Schema.define(:version => 20140831183702) do
     t.integer "product_id",        :precision => 38, :scale => 0, :null => false
     t.integer "quantity",          :precision => 38, :scale => 0, :null => false
   end
+
+  create_table "delayed_jobs", :force => true do |t|
+    t.integer  "priority",   :precision => 38, :scale => 0, :default => 0, :null => false
+    t.integer  "attempts",   :precision => 38, :scale => 0, :default => 0, :null => false
+    t.text     "handler",                   :null => false
+    t.text     "last_error"
+    t.datetime "run_at"
+    t.datetime "locked_at"
+    t.datetime "failed_at"
+    t.string   "locked_by"
+    t.string   "queue"
+    t.datetime "created_at",                :null => false
+    t.datetime "updated_at",                :null => false
+  end
+
+  add_index "delayed_jobs", ["priority", "run_at"], :name => "delayed_jobs_priority"
 
   create_table "external_service_passers", :force => true do |t|
     t.integer  "external_service_id", :precision => 38, :scale => 0
