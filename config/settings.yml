@@ -15,6 +15,10 @@ financial:
 statement_pdf:
   class_name: Nu::StatementPdf
 
+reports:
+  export_raw:
+    class_name: Reports::ExportRaw
+
 validator:
   class_name: NucsValidator
   test:
