@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20140908192950) do
+ActiveRecord::Schema.define(:version => 20140917204555) do
 
   create_table "account_users", :force => true do |t|
     t.integer  "account_id",               :precision => 38, :scale => 0, :null => false
@@ -313,7 +313,7 @@ ActiveRecord::Schema.define(:version => 20140908192950) do
   create_table "order_imports", :force => true do |t|
     t.integer  "upload_file_id", :precision => 38, :scale => 0,                    :null => false
     t.integer  "error_file_id",  :precision => 38, :scale => 0
-    t.boolean  "fail_on_error",  :precision => 1,  :scale => 0, :default => false
+    t.boolean  "fail_on_error",  :precision => 1,  :scale => 0, :default => true
     t.boolean  "send_receipts",  :precision => 1,  :scale => 0, :default => false
     t.integer  "created_by",     :precision => 38, :scale => 0,                    :null => false
     t.datetime "created_at"
