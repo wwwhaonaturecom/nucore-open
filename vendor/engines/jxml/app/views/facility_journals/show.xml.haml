@@ -20,16 +20,16 @@
       %LINE_DESCR=h line_desc
       %FUND_CODE= row.fund
       %DEPTID= row.dept
-      - if row.project
+      - if row.project.present?
         %PROJECT_ID= row.project # optional
-      - if row.activity
+      - if row.activity.present?
         %ACTIVITY_ID= row.activity # optional
-      - if row.program
+      - if row.program.present?
         %PROGRAM_CODE= row.program # optional
-      - if row.chart_field1
+      - if row.chart_field1.present?
         %CHARTFIELD1= row.chart_field1
-      - if row.reference
-        %JRNL_LN_REF= row.reference #optional
+      - if row.fulfilled_at.present?
+        %JRNL_LN_REF= row.fulfilled_at.strftime("%Y%m%d") # optional
 
   %NU_JRNL_TRL_IMP
     %RECORD_COUNT= @journal_rows.length
