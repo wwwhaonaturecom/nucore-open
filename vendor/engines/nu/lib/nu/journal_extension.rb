@@ -89,7 +89,7 @@ module Nu
         line[6] = row.account
         line[7] = sprintf("%.2f", row.amount)
         line[8] = row.description
-        line[9] = row.reference
+        line[9] = row.fulfilled_at
       end
 
       # add/import journal spreadsheet
