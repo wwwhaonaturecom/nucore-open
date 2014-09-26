@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20140924211413) do
+ActiveRecord::Schema.define(:version => 20140924222724) do
 
   create_table "account_users", :force => true do |t|
     t.integer  "account_id",               :precision => 38, :scale => 0, :null => false
@@ -77,15 +77,15 @@ ActiveRecord::Schema.define(:version => 20140924211413) do
   create_table "delayed_jobs", :force => true do |t|
     t.integer  "priority",   :precision => 38, :scale => 0, :default => 0, :null => false
     t.integer  "attempts",   :precision => 38, :scale => 0, :default => 0, :null => false
-    t.text     "handler",                   :null => false
+    t.text     "handler",                                                  :null => false
     t.text     "last_error"
     t.datetime "run_at"
     t.datetime "locked_at"
     t.datetime "failed_at"
     t.string   "locked_by"
     t.string   "queue"
-    t.datetime "created_at",                :null => false
-    t.datetime "updated_at",                :null => false
+    t.datetime "created_at",                                               :null => false
+    t.datetime "updated_at",                                               :null => false
   end
 
   add_index "delayed_jobs", ["priority", "run_at"], :name => "delayed_jobs_priority"
@@ -160,15 +160,11 @@ ActiveRecord::Schema.define(:version => 20140924211413) do
     t.integer "order_detail_id",                :precision => 38, :scale => 0
     t.decimal "amount",                         :precision => 9,  :scale => 2, :null => false
     t.string  "description",     :limit => 200
-<<<<<<< HEAD
-    t.string  "reference",       :limit => 50
     t.string  "fund",            :limit => 3,                                  :null => false
     t.string  "dept",            :limit => 7,                                  :null => false
     t.string  "project",         :limit => 8
     t.string  "activity",        :limit => 2
     t.string  "program",         :limit => 4
-=======
->>>>>>> upstream/master
     t.string  "account",         :limit => 5
     t.string  "chart_field1",    :limit => 4
   end
@@ -291,7 +287,6 @@ ActiveRecord::Schema.define(:version => 20140924211413) do
     t.decimal  "estimated_subsidy",                      :precision => 10, :scale => 2
     t.integer  "account_id",                             :precision => 38, :scale => 0
     t.datetime "dispute_at"
-    t.integer  "dispute_by_id"
     t.string   "dispute_reason",          :limit => 200
     t.datetime "dispute_resolved_at"
     t.string   "dispute_resolved_reason", :limit => 200
@@ -312,20 +307,9 @@ ActiveRecord::Schema.define(:version => 20140924211413) do
     t.integer  "parent_order_detail_id",                 :precision => 38, :scale => 0
     t.integer  "product_accessory_id",                   :precision => 38, :scale => 0
     t.boolean  "problem",                                :precision => 1,  :scale => 0, :default => false, :null => false
+    t.integer  "dispute_by_id",                          :precision => 38, :scale => 0
   end
 
-<<<<<<< HEAD
-=======
-  add_index "order_details", ["account_id"], :name => "fk_od_accounts"
-  add_index "order_details", ["bundle_product_id"], :name => "fk_bundle_prod_id"
-  add_index "order_details", ["dispute_by_id"], :name => "order_details_dispute_by_id_fk"
-  add_index "order_details", ["order_id"], :name => "sys_c009172"
-  add_index "order_details", ["parent_order_detail_id"], :name => "order_details_parent_order_detail_id_fk"
-  add_index "order_details", ["price_policy_id"], :name => "sys_c009175"
-  add_index "order_details", ["product_accessory_id"], :name => "order_details_product_accessory_id_fk"
-  add_index "order_details", ["product_id"], :name => "sys_c009173"
-
->>>>>>> upstream/master
   create_table "order_imports", :force => true do |t|
     t.integer  "upload_file_id", :precision => 38, :scale => 0,                    :null => false
     t.integer  "error_file_id",  :precision => 38, :scale => 0
@@ -480,6 +464,7 @@ ActiveRecord::Schema.define(:version => 20140924211413) do
     t.string   "contact_email"
     t.integer  "schedule_id",                            :precision => 38, :scale => 0
     t.integer  "reserve_interval",                       :precision => 38, :scale => 0
+    t.integer  "lock_window",                            :precision => 38, :scale => 0, :default => 0,     :null => false
   end
 
   add_index "products", ["schedule_id"], :name => "i_instruments_schedule_id", :tablespace => "bc_nucore"
@@ -638,6 +623,7 @@ ActiveRecord::Schema.define(:version => 20140924211413) do
   add_foreign_key "order_details", "product_accessories", :name => "ord_det_pro_acc_id_fk", :column => nil, :primary_key => nil
   add_foreign_key "order_details", "products", :name => "fk_bundle_prod_id", :column => nil, :primary_key => nil
   add_foreign_key "order_details", "products", :name => "sys_c009173", :column => nil, :primary_key => nil
+  add_foreign_key "order_details", "users", :name => "order_details_dispute_by_id_fk", :column => nil, :primary_key => nil
 
   add_foreign_key "orders", "accounts", :name => "sys_c008808", :column => nil, :primary_key => nil
   add_foreign_key "orders", "facilities", :name => "orders_facility_id_fk", :column => nil, :primary_key => nil
@@ -679,7 +665,6 @@ ActiveRecord::Schema.define(:version => 20140924211413) do
 
   add_foreign_key "instrument_statuses", "products", :name => "fk_int_stats_product", :column => nil, :primary_key => nil
 
-<<<<<<< HEAD
   add_foreign_key "order_details", "accounts", :name => "fk_od_accounts", :column => nil, :primary_key => nil
   add_foreign_key "order_details", "order_details", :name => "ord_det_par_ord_det_id_fk", :column => nil, :primary_key => nil
   add_foreign_key "order_details", "orders", :name => "sys_c009172", :column => nil, :primary_key => nil
@@ -687,16 +672,7 @@ ActiveRecord::Schema.define(:version => 20140924211413) do
   add_foreign_key "order_details", "product_accessories", :name => "ord_det_pro_acc_id_fk", :column => nil, :primary_key => nil
   add_foreign_key "order_details", "products", :name => "fk_bundle_prod_id", :column => nil, :primary_key => nil
   add_foreign_key "order_details", "products", :name => "sys_c009173", :column => nil, :primary_key => nil
-=======
-  add_foreign_key "order_details", "accounts", :name => "fk_od_accounts"
-  add_foreign_key "order_details", "order_details", :name => "order_details_parent_order_detail_id_fk", :column => "parent_order_detail_id"
-  add_foreign_key "order_details", "orders", :name => "sys_c009172"
-  add_foreign_key "order_details", "price_policies", :name => "sys_c009175"
-  add_foreign_key "order_details", "product_accessories", :name => "order_details_product_accessory_id_fk"
-  add_foreign_key "order_details", "products", :name => "fk_bundle_prod_id", :column => "bundle_product_id"
-  add_foreign_key "order_details", "products", :name => "sys_c009173"
-  add_foreign_key "order_details", "users", :name => "order_details_dispute_by_id_fk", :column => "dispute_by_id"
->>>>>>> upstream/master
+  add_foreign_key "order_details", "users", :name => "order_details_dispute_by_id_fk", :column => nil, :primary_key => nil
 
   add_foreign_key "orders", "accounts", :name => "sys_c008808", :column => nil, :primary_key => nil
   add_foreign_key "orders", "facilities", :name => "orders_facility_id_fk", :column => nil, :primary_key => nil
