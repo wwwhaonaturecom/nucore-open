@@ -89,7 +89,12 @@ module Nu
         line[6] = row.account
         line[7] = sprintf("%.2f", row.amount)
         line[8] = row.description
-        line[9] = row.fulfilled_at
+        line[9] =
+          if row.fulfilled_at.present?
+            I18n.l(row.fulfilled_at.to_date, format: :journal_line_reference)
+          else
+            ""
+          end
       end
 
       # add/import journal spreadsheet
