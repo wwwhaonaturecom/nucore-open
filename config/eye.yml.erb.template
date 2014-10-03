@@ -1,0 +1,46 @@
+<%
+@domain = if ENV["RAILS_ENV"] == "production"
+  "nucore.northwestern.edu"
+else
+  "nucore-staging.nubic.northwestern.edu"
+end
+%>
+name: NUCoreNU_<%= ENV["RAILS_ENV"] %>
+
+config:
+  logger: /home/nucore/<%= @domain %>/current/log/eye.log
+
+application:
+  working_dir: /home/nucore/<%= @domain %>/current
+
+notifications:
+  - name: admin
+    type: mail
+    level: error
+    contact: sysadmins@tablexi.com
+    config:
+      from_mail: noreply@tablexi.com
+      host: Your+host
+      port: Your+port
+      user: Your+user
+      password: Your+password
+      domain: Your+domain
+
+processes:
+  - name: auto_cancel
+    config:
+      start_command: bundle exec ruby lib/daemons/auto_cancel.rb start
+      stop_command: bundle exec ruby lib/daemons/auto_cancel.rb stop
+      stdall: log/auto_cancel.log
+      pid_file: tmp/pids/auto_cancel.pid
+      daemonize: true
+      smart_pid: true
+
+  - name: delayed_job
+    config:
+      start_command: ./script/delayed_job start
+      stop_command: ./script/delayed_job stop
+      stdall: log/delayed_job.log
+      pid_file: /home/nucore/<%= @domain %>/shared/pids/delayed_job.pid
+      daemonize: true
+      smart_pid: true
