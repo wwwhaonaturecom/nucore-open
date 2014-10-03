@@ -19,7 +19,7 @@ class Daemons::Base
     self.name=name
     self.daemon_opts={
       :dir_mode => :normal,
-      :dir => @rails_root,
+      :dir => File.join(@rails_root, 'tmp/pids'),
       :backtrace => true,
       :log_output => true,
       :log_dir => File.join(@rails_root, 'log')
