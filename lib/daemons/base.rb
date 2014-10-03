@@ -21,7 +21,6 @@ class Daemons::Base
       :dir_mode => :normal,
       :dir => @rails_root,
       :backtrace => true,
-      :monitor => true,
       :log_output => true,
       :log_dir => File.join(@rails_root, 'log')
     }
