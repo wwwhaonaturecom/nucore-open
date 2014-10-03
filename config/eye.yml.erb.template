@@ -1,0 +1,34 @@
+<%
+@domain = if ENV["RAILS_ENV"] == "production"
+  "nucore.northwestern.edu"
+else
+  "nucore-staging.nubic.northwestern.edu"
+end
+%>
+name: NUCoreNU_<%= ENV["RAILS_ENV"] %>
+
+config:
+  logger: /home/nucore/<%= @domain %>/current/log/eye.log
+
+application:
+  working_dir: /home/nucore/<%= @domain %>/current
+
+notifications:
+  - name: admin
+    type: ses
+    level: error
+    contact: sysadmins@tablexi.com
+    config:
+      from: noreply@tablexi.com
+      access_key_id: Your+AWS+Access+Key+ID
+      secret_access_key: Your+AWS+Secret+Access+Key
+
+processes:
+  - name: auto_cancel
+    config:
+      start_command: bundle exec ruby lib/daemons/auto_cancel.rb start
+      stop_command: bundle exec ruby lib/daemons/auto_cancel.rb stop
+      stdall: log/auto_cancel.log
+      pid_file: tmp/pids/auto_cancel.pid
+      daemonize: true
+      smart_pid: true
