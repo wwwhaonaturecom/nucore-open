@@ -29,11 +29,6 @@ default_environment["ORACLE_HOME"] = "/usr/lib/oracle/11.2/client64/lib"
 after 'deploy:finalize_update', 'deploy:symlink_configs', 'deploy:symlink_revision'
 
 namespace :deploy do
-  task :restart, :except => { :no_release => true } do
-    run "bash -l -c \"cd #{release_path} && RAILS_ENV=production bundle exec rake daemon:stop[auto_cancel]\""
-    run "bash -l -c \"cd #{release_path} && RAILS_ENV=production bundle exec rake daemon:start[auto_cancel]\""
-  end
-
   task :symlink_configs do
     run "ln -nfs #{deploy_to}/shared/config/database.yml #{release_path}/config/database.yml"
     run "ln -nfs #{deploy_to}/shared/config/settings.local.yml #{release_path}/config/settings.local.yml"
