@@ -36,6 +36,7 @@ namespace :deploy do
     run "ln -nfs #{deploy_to}/shared/config/newrelic.yml #{release_path}/config/newrelic.yml"
     run "ln -nfs #{deploy_to}/database.yml #{release_path}/vendor/engines/nucs/config/database.yml"
     run "ln -nfs #{deploy_to}/settings.pmu.yml #{release_path}/vendor/engines/pmu/config/settings.yml"
+    run "ln -nfs #{deploy_to}/shared/config/eye.yml.erb #{release_path}/config/eye.yml.erb"
 
     # wrong path?
     run "ln -nfs #{deploy_to}/files #{release_path}/public/files"
