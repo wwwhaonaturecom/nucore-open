@@ -35,3 +35,12 @@ processes:
       pid_file: tmp/pids/auto_cancel.pid
       daemonize: true
       smart_pid: true
+
+  - name: delayed_job
+    config:
+      start_command: ./script/delayed_job start
+      stop_command: ./script/delayed_job stop
+      stdall: log/delayed_job.log
+      pid_file: /home/nucore/<%= @domain %>/shared/pids/delayed_job.pid
+      daemonize: true
+      smart_pid: true
