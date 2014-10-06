@@ -14,7 +14,7 @@ application:
   working_dir: /home/nucore/<%= @domain %>/current
 
 notifications:
-  - name: admin
+  - name: crash
     type: ses
     level: error
     contact: sysadmins@tablexi.com
@@ -32,6 +32,8 @@ processes:
       pid_file: tmp/pids/auto_cancel.pid
       daemonize: true
       smart_pid: true
+      notify:
+        crash: error
 
   - name: delayed_job
     config:
@@ -45,3 +47,5 @@ processes:
       stop_grace: 30 seconds
       daemonize: true
       smart_pid: true
+      notify:
+        crash: error
