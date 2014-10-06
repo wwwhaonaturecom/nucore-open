@@ -45,7 +45,5 @@ processes:
       start_grace: 30 seconds
       stop_timeout: 40 seconds
       stop_grace: 30 seconds
-      daemonize: true
-      smart_pid: true
       notify:
         crash: error
