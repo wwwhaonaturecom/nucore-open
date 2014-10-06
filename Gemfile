@@ -45,6 +45,7 @@ gem 'prawn_rails',      '0.0.11'
 ## monitoring
 gem 'newrelic_rpm',     '~> 3.6'
 gem 'eye-patch'
+gem 'aws-ses'
 
 ## other
 gem 'delayed_job_active_record', '~> 4.0.1'
