@@ -39,5 +39,9 @@ processes:
       stop_command: ./script/delayed_job stop
       stdall: log/delayed_job.log
       pid_file: tmp/pids/delayed_job.pid
+      start_timeout: 40 seconds
+      start_grace: 30 seconds
+      stop_timeout: 40 seconds
+      stop_grace: 30 seconds
       daemonize: true
       smart_pid: true
