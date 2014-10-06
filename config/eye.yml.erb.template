@@ -15,16 +15,13 @@ application:
 
 notifications:
   - name: admin
-    type: mail
+    type: ses
     level: error
     contact: sysadmins@tablexi.com
     config:
-      from_mail: noreply@tablexi.com
-      host: Your+host
-      port: Your+port
-      user: Your+user
-      password: Your+password
-      domain: Your+domain
+      from: nucore+noreply@tablexi.com
+      access_key_id: Your+AWS+Access+Key+ID
+      secret_access_key: Your+AWS+Secret+Access+Key
 
 processes:
   - name: auto_cancel
