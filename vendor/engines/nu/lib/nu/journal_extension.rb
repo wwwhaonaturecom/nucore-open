@@ -67,7 +67,7 @@ module Nu
         )
       end
 
-      OrderDetail.update_all(['journal_id = ?', self.id], ['id IN (?)', order_detail_ids]) unless row_errors.present?
+      set_journal_for_order_details(order_detail_ids) if row_errors.blank?
 
       return row_errors
     end
