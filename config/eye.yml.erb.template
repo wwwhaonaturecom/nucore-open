@@ -30,6 +30,8 @@ processes:
       stop_command: bundle exec ruby lib/daemons/auto_cancel.rb stop
       stdall: log/auto_cancel.log
       pid_file: tmp/pids/auto_cancel.pid
+      daemon: true
+      smart_pid: true
       notify:
         crash: error
 
