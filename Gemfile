@@ -44,7 +44,7 @@ gem 'prawn_rails',      '0.0.11'
 
 ## monitoring
 gem 'newrelic_rpm',     '~> 3.6'
-gem 'eye-patch'
+gem 'eye-patch', require: false
 gem 'aws-ses'
 
 ## other
