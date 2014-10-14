@@ -76,7 +76,9 @@ group :development, :test do
   gem 'awesome_print',     '1.1.0'
   gem 'ci_reporter'
   gem 'factory_girl_rails','4.2.1'
+  gem 'guard-rspec', require: false
   gem 'pry-rails',         '~> 0.3.2'
+  gem 'pry-byebug',        '~> 2.0.0'
   gem 'quiet_assets'
   gem 'rspec-rails',       '2.14.0'
   gem 'shoulda-matchers',  '2.4'
