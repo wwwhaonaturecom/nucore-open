@@ -1,6 +1,10 @@
-77599|Other Capital Equipment|77501|Capital Equipment, Restricted|70000|Non-Personnel Expenses|2008-12-01|NU_GM_BUDGET|1901-01-01
-77550|Other Capital Office Equipment|77501|Capital Equipment, Restricted|70000|Non-Personnel Expenses|1901-01-01|NU_GM_BUDGET|1901-01-01
-77545|AV Equipment-Capital|77501|Capital Equipment, Restricted|70000|Non-Personnel Expenses|1901-01-01|NU_GM_BUDGET|1901-01-01
-77520|Typewriter-Capital|77501|Capital Equipment, Restricted|70000|Non-Personnel Expenses|2008-12-01|NU_GM_BUDGET|1901-01-01
-77510|Furniture-Capital|77501|Capital Equipment, Restricted|70000|Non-Personnel Expenses|1901-01-01|NU_GM_BUDGET|1901-01-01
-78740|Uncollectible Expense|78700|F&A|70000|Non-Personnel Expenses|1901-01-01|NU_GM_BUDGET|1901-01-01
+77572|Quest - High Perf Comp CAP|77500|Capital Equipment|70000|Non-Personnel Expenses|2010-09-01|NU_GM_BUDGET|1901-01-01
+75280|Internal-Security Services|75002|Services, Restricted|70000|Non-Personnel Expenses|1901-01-01|NU_GM_BUDGET|1901-01-01
+75315|External Animal Care|75300|Animal Care|70000|Non-Personnel Expenses|1901-01-01|NU_GM_BUDGET|1901-01-01
+75320|Radiation Safety|73351|Radioactive|70000|Non-Personnel Expenses|1901-01-01|NU_GM_BUDGET|1901-01-01
+75493|Internal Space Rental|75491|Space Rental|70000|Non-Personnel Expenses|1901-01-01|NU_GM_BUDGET|1901-01-01
+75495|Externl Furniture-Equip Rental|75002|Services, Restricted|70000|Non-Personnel Expenses|1901-01-01|NU_GM_BUDGET|1901-01-01
+75670|Internal Laundry Services|75002|Services, Restricted|70000|Non-Personnel Expenses|1901-01-01|NU_GM_BUDGET|1901-01-01
+73595|Artwork for Display/Collection|73001|Supplies, Restricted|70000|Non-Personnel Expenses|2011-09-01|NU_GM_BUDGET|1901-01-01
+73590|Art Preservation Supplies|73001|Supplies, Restricted|70000|Non-Personnel Expenses|2011-09-01|NU_GM_BUDGET|1901-01-01
+78642|Subcontracts to $25,000 Waived|78643|Subcontract < 25000 Waived F&A|70000|Non-Personnel Expenses|2012-09-01|NU_GM_BUDGET|2012-09-01
