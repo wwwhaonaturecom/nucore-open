@@ -32,7 +32,7 @@ namespace :nucs do
 
       files=[
           File.join(dir, 'GL066-BudgetedChartStrings.txt'),
-          File.join(dir, 'GrantsBudgetTree.txt'),
+          File.join(dir, 'NU_GM_BUDGET_TREE.txt'),
           File.join(dir, 'GE001-#1Fund.txt'),
           File.join(dir, 'GE001-#2Dept.txt'),
           File.join(dir, 'GE001-#3ProjectActivity.txt'),
