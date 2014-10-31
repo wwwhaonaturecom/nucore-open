@@ -7,7 +7,7 @@ describe NucsGrantsBudgetTree do
     source=File.join(File.dirname(__FILE__), '..', 'files', 'grants_budget_tree.txt')
     gbt=FactoryGirl.create(:nucs_grants_budget_tree)
     NucsGrantsBudgetTree.source(source)
-    NucsGrantsBudgetTree.count.should == 6
+    NucsGrantsBudgetTree.count.should == 10
     assert !NucsGrantsBudgetTree.exists?(gbt.id)
   end
 
