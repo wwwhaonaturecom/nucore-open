@@ -1,21 +1,27 @@
-require 'spec_helper'
+require "spec_helper"
 
 describe NufsAccount do
+  subject(:account) do
+    create(:nufs_account,
+      account_users_attributes: account_users_attributes_hash(user: user)
+    )
+  end
+
+  let(:pmu_dept) { double "pmu" }
+  let(:user) { create(:user) }
+
   before(:each) do
-    @facility          = FactoryGirl.create(:facility)
-    @user              = FactoryGirl.create(:user)
-    @nufs_account      = FactoryGirl.create(:nufs_account, :account_users_attributes => account_users_attributes_hash(:user => @user))
-
-    @pmu_dept = stub 'pmu'
-    @pmu_dept.stub(:pmu).and_return 'Best Department Ever'
-    PmuDepartment.stub(:find_by_nufin_id).and_return @pmu_dept
+    pmu_dept.stub(:pmu).and_return "Best Department Ever"
+    PmuDepartment.stub(:find_by_nufin_id).and_return pmu_dept
   end
 
-  it 'should return pmu description' do
-    @nufs_account.pmu_description.should == @pmu_dept.pmu
+  it_should_behave_like "an Account"
+
+  it "returns pmu description" do
+    expect(account.pmu_description).to eq pmu_dept.pmu
   end
 
-  it 'should include pmu in description' do
-    @nufs_account.to_s.should include(@pmu_dept.pmu)
+  it "includes pmu in description" do
+    expect(account.to_s).to include pmu_dept.pmu
   end
 end
