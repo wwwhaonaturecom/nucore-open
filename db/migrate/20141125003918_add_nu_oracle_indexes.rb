@@ -10,7 +10,6 @@ class AddNuOracleIndexes < ActiveRecord::Migration
     add_index :account_users, :account_id
     add_index :facility_accounts, :facility_id
     add_index :price_policies, :price_group_id
-    add_index :versions, [:versioned_id, :versioned_type]
     add_index :order_details, :product_accessory_id
     add_index :order_details, :parent_order_detail_id
     add_index :order_details, :product_id
