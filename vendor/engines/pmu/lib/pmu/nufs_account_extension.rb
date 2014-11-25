@@ -9,7 +9,7 @@ module Pmu
       desc = super(with_owner, false)
       pmu_desc = pmu_description
       desc += " / #{pmu_desc}" if pmu_desc
-      desc += " (suspended)" if flag_suspended && suspended?
+      desc += " (SUSPENDED)" if flag_suspended && suspended?
       desc
     end
 
