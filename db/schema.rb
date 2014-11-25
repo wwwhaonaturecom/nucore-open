@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20140924222724) do
+ActiveRecord::Schema.define(:version => 20141125002918) do
 
   create_table "account_users", :force => true do |t|
     t.integer  "account_id",               :precision => 38, :scale => 0, :null => false
@@ -189,6 +189,8 @@ ActiveRecord::Schema.define(:version => 20140924222724) do
     t.datetime "date", :null => false
   end
 
+  add_index "journals", ["facility_id"], :name => "index_journals_on_facility_id"
+
   create_table "notifications", :force => true do |t|
     t.string    "type",                                                     :null => false
     t.integer   "subject_id",                :precision => 38, :scale => 0, :null => false
@@ -310,6 +312,23 @@ ActiveRecord::Schema.define(:version => 20140924222724) do
     t.integer  "dispute_by_id",                          :precision => 38, :scale => 0
   end
 
+  add_index "order_details", ["account_id"], :name => "fk_od_accounts"
+  add_index "order_details", ["assigned_user_id"], :name => "index_order_details_on_assigned_user_id"
+  add_index "order_details", ["bundle_product_id"], :name => "fk_bundle_prod_id"
+  add_index "order_details", ["dispute_by_id"], :name => "order_details_dispute_by_id_fk"
+  add_index "order_details", ["group_id"], :name => "index_order_details_on_group_id"
+  add_index "order_details", ["journal_id"], :name => "index_order_details_on_journal_id"
+  add_index "order_details", ["order_id"], :name => "sys_c009172"
+  add_index "order_details", ["order_status_id"], :name => "index_order_details_on_order_status_id"
+  add_index "order_details", ["parent_order_detail_id"], :name => "order_details_parent_order_detail_id_fk"
+  add_index "order_details", ["price_policy_id"], :name => "sys_c009175"
+  add_index "order_details", ["problem"], :name => "index_order_details_on_problem"
+  add_index "order_details", ["product_accessory_id"], :name => "order_details_product_accessory_id_fk"
+  add_index "order_details", ["product_id"], :name => "sys_c009173"
+  add_index "order_details", ["response_set_id"], :name => "index_order_details_on_response_set_id"
+  add_index "order_details", ["state"], :name => "index_order_details_on_state"
+  add_index "order_details", ["statement_id"], :name => "index_order_details_on_statement_id"
+
   create_table "order_imports", :force => true do |t|
     t.integer  "upload_file_id", :precision => 38, :scale => 0,                    :null => false
     t.integer  "error_file_id",  :precision => 38, :scale => 0
@@ -348,6 +367,12 @@ ActiveRecord::Schema.define(:version => 20140924222724) do
   end
 
   add_index "orders", ["order_import_id"], :name => "i_orders_order_import_id", :tablespace => "bc_nucore"
+  add_index "orders", ["account_id"], :name => "sys_c008808"
+  add_index "orders", ["facility_id"], :name => "index_orders_on_facility_id"
+  add_index "orders", ["facility_id"], :name => "orders_facility_id_fk"
+  add_index "orders", ["order_import_id"], :name => "index_orders_on_order_import_id"
+  add_index "orders", ["state"], :name => "index_orders_on_state"
+  add_index "orders", ["user_id"], :name => "index_orders_on_user_id"
 
   create_table "pmu_departments", :force => true do |t|
     t.string   "unit_id",           :limit => 32
@@ -371,6 +396,9 @@ ActiveRecord::Schema.define(:version => 20140924222724) do
     t.integer "user_id",                      :precision => 38, :scale => 0
     t.integer "account_id",                   :precision => 38, :scale => 0
   end
+
+  add_index "price_group_members", ["price_group_id"], :name => "sys_c008583"
+  add_index "price_group_members", ["user_id"], :name => "index_price_group_members_on_user_id"
 
   create_table "price_group_products", :force => true do |t|
     t.integer  "price_group_id",     :precision => 38, :scale => 0, :null => false
@@ -441,6 +469,10 @@ ActiveRecord::Schema.define(:version => 20140924222724) do
     t.datetime "approved_at",                                            :null => false
     t.integer  "product_access_group_id", :precision => 38, :scale => 0
   end
+
+  add_index "product_users", ["product_access_group_id"], :name => "index_product_users_on_product_access_group_id"
+  add_index "product_users", ["product_id"], :name => "fk_products"
+  add_index "product_users", ["user_id"], :name => "index_product_users_on_user_id"
 
   create_table "products", :force => true do |t|
     t.string   "type",                    :limit => 50,                                                    :null => false
