@@ -1,6 +1,6 @@
 namespace :order_details  do
   desc "mark order_details with past reservations as complete"
-  task :expire_reservations => :environment do
+  task expire_reservations: :environment do
     complete    = OrderStatus.find_by_name!('Complete')
     order_details = OrderDetail.where("(state = 'new' OR state = 'inprocess') AND order_status_id IS NOT NULL AND reservations.reserve_end_at < ? AND canceled_at IS NULL", Time.zone.now - 12.hours).
                                joins(:reservation).readonly(false).all
@@ -24,7 +24,7 @@ namespace :order_details  do
   end
 
   desc "automatically switch off auto_logout instrument"
-  task :auto_logout => :environment do
+  task auto_logout: :environment do
     complete    = OrderStatus.find_by_name!('Complete')
     order_details = OrderDetail.where("(state = 'new' OR state = 'inprocess') AND reservations.actual_end_at IS NULL AND canceled_at IS NULL AND reserve_end_at < ?", Time.zone.now - 1.hour).
                                joins(:reservation).
@@ -52,7 +52,7 @@ namespace :order_details  do
   end
 
   desc "remove list of BIF order details"
-  task :clean_bif_orders => :environment do
+  task clean_bif_orders: :environment do
     class OrderDetailCleaner
       def self.remove_order(order_detail)
         order = order_detail.order
@@ -87,26 +87,36 @@ namespace :order_details  do
   end
 
   desc "task to remove merge orders that have been abandoned. See Task #48377"
-  task :remove_merge_orders => :environment do
-    stale_merge_orders=Order.where("merge_with_order_id IS NOT NULL AND created_at <= ?", Time.zone.now - 4.weeks).all
+  task remove_merge_orders: :environment do
+    stale_merge_orders = Order.where("merge_with_order_id IS NOT NULL AND created_at <= ?", Time.zone.now - 4.weeks).all
     stale_merge_orders.each{|order| order.destroy }
   end
 
+
   desc "Retouch all complete order details and recalculate pricing"
-  task :recalculate_prices, [:facility_slug] => :environment do |t, args|
-    Facility.find_by_url_name('flow')
-      .order_details
-      .where(:state => 'complete', :journal_id => nil, :statement_id => nil)
-      .where('fulfilled_at >= ?', Date.civil(2014,3,1))
-      .joins(:order).where(:orders => {:state => 'purchased'}).each do |od|
+  task recalculate_prices: :environment do
+    # Change this query for when we need to recalculate prices for just a subset of Order details
+    # Changes to this should be marked with the ticket number in the git commit message
+    query = OrderDetail.where('fulfilled_at >= ? and fulfilled_at < ?',
+      Time.zone.local(2014, 9, 1), Time.zone.local(2015, 1, 7).end_of_day)
+
+    only_completed = query.where(state: 'complete', journal_id: nil, statement_id: nil)
+      .joins(:order).where(orders: { state: 'purchased' })
+
+    only_completed.each do |od|
       old_cost = od.actual_cost
       old_subsidy = od.actual_subsidy
       old_total = od.actual_total
       old_price_group = od.price_policy.try(:price_group)
-      od.assign_price_policy(od.fulfilled_at)
-      puts "#{od}|#{od.order_status}|#{od.account}|#{od.user}|#{od.product}|#{od.fulfilled_at}|#{old_price_group}|#{old_cost}|#{old_subsidy}|#{old_total}|#{od.price_policy.try(:price_group)}|#{od.actual_cost}|#{od.actual_subsidy}|#{od.actual_total}|#{od.actual_total == old_total}"
-    end
+      od.assign_price_policy(od.fulfilled_at || Time.zone.now)
 
+
+      if od.price_group && (od.price_group != old_price_group)
+        # Manually uncomment this line on the server before running to save changes
+        # od.save!
+        puts "#{od.facility.name}|#{od}|#{od.order_status}|#{od.account}|#{od.user}|#{od.product}|#{od.fulfilled_at}|#{old_price_group}|#{old_cost}|#{old_subsidy}|#{old_total}|#{od.price_policy.try(:price_group)}|#{od.actual_cost}|#{od.actual_subsidy}|#{od.actual_total}"
+      end
+    end
   end
 
   desc "Uncancels a list of order details. The file should contain just the OD ID, one per line"
