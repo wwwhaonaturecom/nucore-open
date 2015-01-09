@@ -103,7 +103,7 @@ namespace :order_details  do
     only_completed = query.where(state: 'complete', journal_id: nil, statement_id: nil)
       .joins(:order).where(orders: { state: 'purchased' })
 
-    only_completed.each do |od|
+    only_completed.readonly(false).each do |od|
       old_cost = od.actual_cost
       old_subsidy = od.actual_subsidy
       old_total = od.actual_total
