@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20141125002918) do
+ActiveRecord::Schema.define(:version => 20150121202952) do
 
   create_table "account_users", :force => true do |t|
     t.integer  "account_id",               :precision => 38, :scale => 0, :null => false
@@ -22,6 +22,9 @@ ActiveRecord::Schema.define(:version => 20141125002918) do
     t.datetime "deleted_at"
     t.integer  "deleted_by",               :precision => 38, :scale => 0
   end
+
+  add_index "account_users", ["account_id"], :name => "i_account_users_account_id", :tablespace => "bc_nucore"
+  add_index "account_users", ["user_id"], :name => "index_account_users_on_user_id", :tablespace => "bc_nucore"
 
   create_table "accounts", :force => true do |t|
     t.string   "type",                   :limit => 50,                                 :null => false
@@ -43,6 +46,7 @@ ActiveRecord::Schema.define(:version => 20141125002918) do
   end
 
   add_index "accounts", ["affiliate_id"], :name => "index_accounts_on_affiliate_id", :tablespace => "bc_nucore"
+  add_index "accounts", ["facility_id"], :name => "index_accounts_on_facility_id", :tablespace => "bc_nucore"
 
   create_table "affiliates", :force => true do |t|
     t.string   "name"
@@ -88,7 +92,7 @@ ActiveRecord::Schema.define(:version => 20141125002918) do
     t.datetime "updated_at",                                               :null => false
   end
 
-  add_index "delayed_jobs", ["priority", "run_at"], :name => "delayed_jobs_priority"
+  add_index "delayed_jobs", ["priority", "run_at"], :name => "delayed_jobs_priority", :tablespace => "bc_nucore"
 
   create_table "external_service_passers", :force => true do |t|
     t.integer  "external_service_id", :precision => 38, :scale => 0
@@ -99,6 +103,9 @@ ActiveRecord::Schema.define(:version => 20141125002918) do
     t.datetime "updated_at"
   end
 
+  add_index "external_service_passers", ["external_service_id"], :name => "i_ext_ser_pas_ext_ser_id", :tablespace => "bc_nucore"
+  add_index "external_service_passers", ["passer_id", "passer_type"], :name => "i_external_passer_id", :tablespace => "bc_nucore"
+
   create_table "external_service_receivers", :force => true do |t|
     t.integer  "external_service_id", :precision => 38, :scale => 0
     t.integer  "receiver_id",         :precision => 38, :scale => 0
@@ -108,6 +115,9 @@ ActiveRecord::Schema.define(:version => 20141125002918) do
     t.string   "external_id"
     t.text     "response_data"
   end
+
+  add_index "external_service_receivers", ["external_service_id"], :name => "i_ext_ser_rec_ext_ser_id", :tablespace => "bc_nucore"
+  add_index "external_service_receivers", ["receiver_id", "receiver_type"], :name => "i_external_receiver_id", :tablespace => "bc_nucore"
 
   create_table "external_services", :force => true do |t|
     t.string   "type"
@@ -149,11 +159,15 @@ ActiveRecord::Schema.define(:version => 20141125002918) do
     t.integer  "revenue_account",               :precision => 38, :scale => 0, :null => false
   end
 
+  add_index "facility_accounts", ["facility_id"], :name => "i_fac_acc_fac_id", :tablespace => "bc_nucore"
+
   create_table "instrument_statuses", :force => true do |t|
     t.integer  "instrument_id", :precision => 38, :scale => 0, :null => false
     t.boolean  "is_on",         :precision => 1,  :scale => 0, :null => false
     t.datetime "created_at",                                   :null => false
   end
+
+  add_index "instrument_statuses", ["instrument_id"], :name => "i_ins_sta_ins_id", :tablespace => "bc_nucore"
 
   create_table "journal_rows", :force => true do |t|
     t.integer "journal_id",                     :precision => 38, :scale => 0, :null => false
@@ -168,6 +182,9 @@ ActiveRecord::Schema.define(:version => 20141125002918) do
     t.string  "account",         :limit => 5
     t.string  "chart_field1",    :limit => 4
   end
+
+  add_index "journal_rows", ["journal_id"], :name => "i_journal_rows_journal_id", :tablespace => "bc_nucore"
+  add_index "journal_rows", ["order_detail_id"], :name => "i_journal_rows_order_detail_id", :tablespace => "bc_nucore"
 
   create_table "journals", :force => true do |t|
     t.integer  "facility_id",                      :precision => 38, :scale => 0
@@ -185,11 +202,11 @@ ActiveRecord::Schema.define(:version => 20141125002918) do
     t.datetime "journal_date",                                                    :null => false
   end
 
+  add_index "journals", ["facility_id"], :name => "index_journals_on_facility_id", :tablespace => "bc_nucore"
+
   create_table "jxml_holidays", :force => true do |t|
     t.datetime "date", :null => false
   end
-
-  add_index "journals", ["facility_id"], :name => "index_journals_on_facility_id"
 
   create_table "notifications", :force => true do |t|
     t.string    "type",                                                     :null => false
@@ -201,6 +218,8 @@ ActiveRecord::Schema.define(:version => 20141125002918) do
     t.datetime  "created_at"
     t.datetime  "updated_at"
   end
+
+  add_index "notifications", ["user_id"], :name => "index_notifications_on_user_id", :tablespace => "bc_nucore"
 
   create_table "nucs_accounts", :force => true do |t|
     t.string "value",     :limit => 16,  :null => false
@@ -312,35 +331,37 @@ ActiveRecord::Schema.define(:version => 20141125002918) do
     t.integer  "dispute_by_id",                          :precision => 38, :scale => 0
   end
 
-  add_index "order_details", ["account_id"], :name => "fk_od_accounts"
-  add_index "order_details", ["assigned_user_id"], :name => "index_order_details_on_assigned_user_id"
-  add_index "order_details", ["bundle_product_id"], :name => "fk_bundle_prod_id"
-  add_index "order_details", ["dispute_by_id"], :name => "order_details_dispute_by_id_fk"
-  add_index "order_details", ["group_id"], :name => "index_order_details_on_group_id"
-  add_index "order_details", ["journal_id"], :name => "index_order_details_on_journal_id"
-  add_index "order_details", ["order_id"], :name => "sys_c009172"
-  add_index "order_details", ["order_status_id"], :name => "index_order_details_on_order_status_id"
-  add_index "order_details", ["parent_order_detail_id"], :name => "order_details_parent_order_detail_id_fk"
-  add_index "order_details", ["price_policy_id"], :name => "sys_c009175"
-  add_index "order_details", ["problem"], :name => "index_order_details_on_problem"
-  add_index "order_details", ["product_accessory_id"], :name => "order_details_product_accessory_id_fk"
-  add_index "order_details", ["product_id"], :name => "sys_c009173"
-  add_index "order_details", ["response_set_id"], :name => "index_order_details_on_response_set_id"
-  add_index "order_details", ["state"], :name => "index_order_details_on_state"
-  add_index "order_details", ["statement_id"], :name => "index_order_details_on_statement_id"
+  add_index "order_details", ["account_id"], :name => "i_order_details_account_id", :tablespace => "bc_nucore"
+  add_index "order_details", ["assigned_user_id"], :name => "i_ord_det_ass_use_id", :tablespace => "bc_nucore"
+  add_index "order_details", ["bundle_product_id"], :name => "i_ord_det_bun_pro_id", :tablespace => "bc_nucore"
+  add_index "order_details", ["group_id"], :name => "i_order_details_group_id", :tablespace => "bc_nucore"
+  add_index "order_details", ["journal_id"], :name => "i_order_details_journal_id", :tablespace => "bc_nucore"
+  add_index "order_details", ["order_id"], :name => "i_order_details_order_id", :tablespace => "bc_nucore"
+  add_index "order_details", ["order_status_id"], :name => "i_ord_det_ord_sta_id", :tablespace => "bc_nucore"
+  add_index "order_details", ["parent_order_detail_id"], :name => "i_ord_det_par_ord_det_id", :tablespace => "bc_nucore"
+  add_index "order_details", ["price_policy_id"], :name => "i_ord_det_pri_pol_id", :tablespace => "bc_nucore"
+  add_index "order_details", ["problem"], :name => "index_order_details_on_problem", :tablespace => "bc_nucore"
+  add_index "order_details", ["product_accessory_id"], :name => "i_ord_det_pro_acc_id", :tablespace => "bc_nucore"
+  add_index "order_details", ["product_id"], :name => "i_order_details_product_id", :tablespace => "bc_nucore"
+  add_index "order_details", ["response_set_id"], :name => "i_ord_det_res_set_id", :tablespace => "bc_nucore"
+  add_index "order_details", ["state"], :name => "index_order_details_on_state", :tablespace => "bc_nucore"
+  add_index "order_details", ["statement_id"], :name => "i_order_details_statement_id", :tablespace => "bc_nucore"
 
   create_table "order_imports", :force => true do |t|
-    t.integer  "upload_file_id", :precision => 38, :scale => 0,                    :null => false
-    t.integer  "error_file_id",  :precision => 38, :scale => 0
-    t.boolean  "fail_on_error",  :precision => 1,  :scale => 0, :default => true
-    t.boolean  "send_receipts",  :precision => 1,  :scale => 0, :default => false
-    t.integer  "created_by",     :precision => 38, :scale => 0,                    :null => false
-    t.datetime "created_at"
-    t.datetime "updated_at"
+    t.integer   "upload_file_id",              :precision => 38, :scale => 0,                    :null => false
+    t.integer   "error_file_id",               :precision => 38, :scale => 0
+    t.boolean   "fail_on_error",               :precision => 1,  :scale => 0, :default => true
+    t.boolean   "send_receipts",               :precision => 1,  :scale => 0, :default => false
+    t.integer   "created_by",                  :precision => 38, :scale => 0,                    :null => false
+    t.datetime  "created_at"
+    t.datetime  "updated_at"
+    t.integer   "facility_id",                 :precision => 38, :scale => 0
+    t.timestamp "processed_at",   :limit => 6
   end
 
   add_index "order_imports", ["created_by"], :name => "i_order_imports_created_by", :tablespace => "bc_nucore"
   add_index "order_imports", ["error_file_id"], :name => "i_order_imports_error_file_id", :tablespace => "bc_nucore"
+  add_index "order_imports", ["facility_id"], :name => "i_order_imports_facility_id"
   add_index "order_imports", ["upload_file_id"], :name => "i_order_imports_upload_file_id", :tablespace => "bc_nucore"
 
   create_table "order_statuses", :force => true do |t|
@@ -366,13 +387,12 @@ ActiveRecord::Schema.define(:version => 20141125002918) do
     t.integer  "order_import_id",                   :precision => 38, :scale => 0
   end
 
+  add_index "orders", ["account_id"], :name => "index_orders_on_account_id", :tablespace => "bc_nucore"
+  add_index "orders", ["facility_id"], :name => "index_orders_on_facility_id", :tablespace => "bc_nucore"
+  add_index "orders", ["merge_with_order_id"], :name => "i_orders_merge_with_order_id", :tablespace => "bc_nucore"
   add_index "orders", ["order_import_id"], :name => "i_orders_order_import_id", :tablespace => "bc_nucore"
-  add_index "orders", ["account_id"], :name => "sys_c008808"
-  add_index "orders", ["facility_id"], :name => "index_orders_on_facility_id"
-  add_index "orders", ["facility_id"], :name => "orders_facility_id_fk"
-  add_index "orders", ["order_import_id"], :name => "index_orders_on_order_import_id"
-  add_index "orders", ["state"], :name => "index_orders_on_state"
-  add_index "orders", ["user_id"], :name => "index_orders_on_user_id"
+  add_index "orders", ["state"], :name => "index_orders_on_state", :tablespace => "bc_nucore"
+  add_index "orders", ["user_id"], :name => "index_orders_on_user_id", :tablespace => "bc_nucore"
 
   create_table "pmu_departments", :force => true do |t|
     t.string   "unit_id",           :limit => 32
@@ -397,8 +417,9 @@ ActiveRecord::Schema.define(:version => 20141125002918) do
     t.integer "account_id",                   :precision => 38, :scale => 0
   end
 
-  add_index "price_group_members", ["price_group_id"], :name => "sys_c008583"
-  add_index "price_group_members", ["user_id"], :name => "index_price_group_members_on_user_id"
+  add_index "price_group_members", ["account_id"], :name => "i_pri_gro_mem_acc_id", :tablespace => "bc_nucore"
+  add_index "price_group_members", ["price_group_id"], :name => "i_pri_gro_mem_pri_gro_id", :tablespace => "bc_nucore"
+  add_index "price_group_members", ["user_id"], :name => "i_price_group_members_user_id", :tablespace => "bc_nucore"
 
   create_table "price_group_products", :force => true do |t|
     t.integer  "price_group_id",     :precision => 38, :scale => 0, :null => false
@@ -443,6 +464,9 @@ ActiveRecord::Schema.define(:version => 20141125002918) do
     t.string   "charge_for"
   end
 
+  add_index "price_policies", ["price_group_id"], :name => "i_pri_pol_pri_gro_id", :tablespace => "bc_nucore"
+  add_index "price_policies", ["product_id"], :name => "i_price_policies_product_id", :tablespace => "bc_nucore"
+
   create_table "product_access_groups", :force => true do |t|
     t.integer  "product_id", :precision => 38, :scale => 0, :null => false
     t.string   "name"
@@ -450,10 +474,15 @@ ActiveRecord::Schema.define(:version => 20141125002918) do
     t.datetime "updated_at"
   end
 
+  add_index "product_access_groups", ["product_id"], :name => "i_pro_acc_gro_pro_id", :tablespace => "bc_nucore"
+
   create_table "product_access_schedule_rules", :id => false, :force => true do |t|
     t.integer "product_access_group_id", :precision => 38, :scale => 0, :null => false
     t.integer "schedule_rule_id",        :precision => 38, :scale => 0, :null => false
   end
+
+  add_index "product_access_schedule_rules", ["product_access_group_id"], :name => "ia58c53a0f332be5a5ff9cae48e120", :tablespace => "bc_nucore"
+  add_index "product_access_schedule_rules", ["schedule_rule_id"], :name => "i_pro_acc_sch_rul_sch_rul_id", :tablespace => "bc_nucore"
 
   create_table "product_accessories", :force => true do |t|
     t.integer  "product_id",   :precision => 38, :scale => 0,                         :null => false
@@ -461,6 +490,9 @@ ActiveRecord::Schema.define(:version => 20141125002918) do
     t.string   "scaling_type",                                :default => "quantity", :null => false
     t.datetime "deleted_at"
   end
+
+  add_index "product_accessories", ["accessory_id"], :name => "i_pro_acc_acc_id", :tablespace => "bc_nucore"
+  add_index "product_accessories", ["product_id"], :name => "i_pro_acc_pro_id", :tablespace => "bc_nucore"
 
   create_table "product_users", :force => true do |t|
     t.integer  "product_id",              :precision => 38, :scale => 0, :null => false
@@ -470,9 +502,9 @@ ActiveRecord::Schema.define(:version => 20141125002918) do
     t.integer  "product_access_group_id", :precision => 38, :scale => 0
   end
 
-  add_index "product_users", ["product_access_group_id"], :name => "index_product_users_on_product_access_group_id"
-  add_index "product_users", ["product_id"], :name => "fk_products"
-  add_index "product_users", ["user_id"], :name => "index_product_users_on_user_id"
+  add_index "product_users", ["product_access_group_id"], :name => "i_pro_use_pro_acc_gro_id", :tablespace => "bc_nucore"
+  add_index "product_users", ["product_id"], :name => "i_product_users_product_id", :tablespace => "bc_nucore"
+  add_index "product_users", ["user_id"], :name => "index_product_users_on_user_id", :tablespace => "bc_nucore"
 
   create_table "products", :force => true do |t|
     t.string   "type",                    :limit => 50,                                                    :null => false
@@ -499,7 +531,10 @@ ActiveRecord::Schema.define(:version => 20141125002918) do
     t.integer  "lock_window",                            :precision => 38, :scale => 0, :default => 0,     :null => false
   end
 
+  add_index "products", ["facility_account_id"], :name => "i_products_facility_account_id", :tablespace => "bc_nucore"
+  add_index "products", ["facility_id"], :name => "index_products_on_facility_id", :tablespace => "bc_nucore"
   add_index "products", ["schedule_id"], :name => "i_instruments_schedule_id", :tablespace => "bc_nucore"
+  add_index "products", ["url_name"], :name => "index_products_on_url_name", :tablespace => "bc_nucore"
 
   create_table "relays", :force => true do |t|
     t.integer  "instrument_id",               :precision => 38, :scale => 0
@@ -527,6 +562,10 @@ ActiveRecord::Schema.define(:version => 20141125002918) do
     t.string   "canceled_reason",  :limit => 50
     t.string   "admin_note"
   end
+
+  add_index "reservations", ["order_detail_id"], :name => "i_reservations_order_detail_id", :tablespace => "bc_nucore"
+  add_index "reservations", ["product_id", "reserve_start_at"], :name => "i_res_pro_id_res_sta_at", :tablespace => "bc_nucore"
+  add_index "reservations", ["product_id"], :name => "i_reservations_product_id", :tablespace => "bc_nucore"
 
   create_table "schedule_rules", :force => true do |t|
     t.integer "instrument_id",    :precision => 38, :scale => 0,                  :null => false
@@ -560,12 +599,18 @@ ActiveRecord::Schema.define(:version => 20141125002918) do
     t.datetime "updated_at"
   end
 
+  add_index "statement_rows", ["order_detail_id"], :name => "i_sta_row_ord_det_id", :tablespace => "bc_nucore"
+  add_index "statement_rows", ["statement_id"], :name => "i_statement_rows_statement_id", :tablespace => "bc_nucore"
+
   create_table "statements", :force => true do |t|
     t.integer  "facility_id", :precision => 38, :scale => 0, :null => false
     t.integer  "created_by",  :precision => 38, :scale => 0, :null => false
     t.datetime "created_at",                                 :null => false
     t.integer  "account_id",  :precision => 38, :scale => 0, :null => false
   end
+
+  add_index "statements", ["account_id"], :name => "index_statements_on_account_id", :tablespace => "bc_nucore"
+  add_index "statements", ["facility_id"], :name => "i_statements_facility_id", :tablespace => "bc_nucore"
 
   create_table "stored_files", :force => true do |t|
     t.integer  "order_detail_id",                  :precision => 38, :scale => 0
@@ -579,6 +624,10 @@ ActiveRecord::Schema.define(:version => 20141125002918) do
     t.integer  "file_file_size",                   :precision => 38, :scale => 0
     t.datetime "file_updated_at"
   end
+
+  add_index "stored_files", ["created_by"], :name => "i_stored_files_created_by", :tablespace => "bc_nucore"
+  add_index "stored_files", ["order_detail_id"], :name => "i_stored_files_order_detail_id", :tablespace => "bc_nucore"
+  add_index "stored_files", ["product_id"], :name => "i_stored_files_product_id", :tablespace => "bc_nucore"
 
   create_table "user_roles", :force => true do |t|
     t.integer "user_id",     :precision => 38, :scale => 0, :null => false
@@ -639,7 +688,7 @@ ActiveRecord::Schema.define(:version => 20141125002918) do
 
   add_foreign_key "accounts", "facilities", :name => "fk_account_facility_id", :column => nil, :primary_key => nil
 
-  add_foreign_key "bi_netids", "facilities", :name => "sys_c00345154", :column => nil, :primary_key => nil
+  add_foreign_key "bi_netids", "facilities", :name => "sys_c00365629", :column => nil, :primary_key => nil
 
   add_foreign_key "bundle_products", "products", :name => "fk_bundle_prod_bundle", :column => nil, :primary_key => nil
   add_foreign_key "bundle_products", "products", :name => "fk_bundle_prod_prod", :column => nil, :primary_key => nil
@@ -656,6 +705,8 @@ ActiveRecord::Schema.define(:version => 20141125002918) do
   add_foreign_key "order_details", "products", :name => "fk_bundle_prod_id", :column => nil, :primary_key => nil
   add_foreign_key "order_details", "products", :name => "sys_c009173", :column => nil, :primary_key => nil
   add_foreign_key "order_details", "users", :name => "order_details_dispute_by_id_fk", :column => nil, :primary_key => nil
+
+  add_foreign_key "order_imports", "facilities", :name => "fk_order_imports_facilities", :column => nil, :primary_key => nil
 
   add_foreign_key "orders", "accounts", :name => "sys_c008808", :column => nil, :primary_key => nil
   add_foreign_key "orders", "facilities", :name => "orders_facility_id_fk", :column => nil, :primary_key => nil
@@ -688,7 +739,7 @@ ActiveRecord::Schema.define(:version => 20141125002918) do
 
   add_foreign_key "accounts", "facilities", :name => "fk_account_facility_id", :column => nil, :primary_key => nil
 
-  add_foreign_key "bi_netids", "facilities", :name => "sys_c00345154", :column => nil, :primary_key => nil
+  add_foreign_key "bi_netids", "facilities", :name => "sys_c00365629", :column => nil, :primary_key => nil
 
   add_foreign_key "bundle_products", "products", :name => "fk_bundle_prod_bundle", :column => nil, :primary_key => nil
   add_foreign_key "bundle_products", "products", :name => "fk_bundle_prod_prod", :column => nil, :primary_key => nil
@@ -705,6 +756,8 @@ ActiveRecord::Schema.define(:version => 20141125002918) do
   add_foreign_key "order_details", "products", :name => "fk_bundle_prod_id", :column => nil, :primary_key => nil
   add_foreign_key "order_details", "products", :name => "sys_c009173", :column => nil, :primary_key => nil
   add_foreign_key "order_details", "users", :name => "order_details_dispute_by_id_fk", :column => nil, :primary_key => nil
+
+  add_foreign_key "order_imports", "facilities", :name => "fk_order_imports_facilities", :column => nil, :primary_key => nil
 
   add_foreign_key "orders", "accounts", :name => "sys_c008808", :column => nil, :primary_key => nil
   add_foreign_key "orders", "facilities", :name => "orders_facility_id_fk", :column => nil, :primary_key => nil
