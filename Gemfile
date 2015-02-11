@@ -62,7 +62,6 @@ gem 'nu',               '~> 1.0.0', path: 'vendor/engines/nu'
 gem 'nucs',             '~> 1.0.0', path: 'vendor/engines/nucs'
 gem 'pmu',              '~> 1.0.0', path: 'vendor/engines/pmu'
 gem 'jxml',             '~> 1.0.0', path: 'vendor/engines/jxml'
-gem 'nu_cancer_center', '~> 1.0.0', path: 'vendor/engines/nu_cancer_center'
 
 gem 'dataprobe',        '~> 1.0.0', path: 'vendor/engines/dataprobe'
 gem 'synaccess_connect', '0.2.2', github: 'tablexi/synaccess'
