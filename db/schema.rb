@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20150121202952) do
+ActiveRecord::Schema.define(:version => 20150204174650) do
 
   create_table "account_users", :force => true do |t|
     t.integer  "account_id",               :precision => 38, :scale => 0, :null => false
@@ -433,10 +433,11 @@ ActiveRecord::Schema.define(:version => 20150121202952) do
   add_index "price_group_products", ["product_id"], :name => "i_pri_gro_pro_pro_id", :tablespace => "bc_nucore"
 
   create_table "price_groups", :force => true do |t|
-    t.integer "facility_id",                 :precision => 38, :scale => 0
-    t.string  "name",          :limit => 50,                                :null => false
-    t.integer "display_order",               :precision => 38, :scale => 0, :null => false
-    t.boolean "is_internal",                 :precision => 1,  :scale => 0, :null => false
+    t.integer "facility_id",                  :precision => 38, :scale => 0
+    t.string  "name",           :limit => 50,                                                  :null => false
+    t.integer "display_order",                :precision => 38, :scale => 0,                   :null => false
+    t.boolean "is_internal",                  :precision => 1,  :scale => 0,                   :null => false
+    t.boolean "admin_editable",               :precision => 1,  :scale => 0, :default => true, :null => false
   end
 
   add_index "price_groups", ["facility_id", "name"], :name => "sys_c008577", :unique => true, :tablespace => "bc_nucore"
@@ -660,8 +661,7 @@ ActiveRecord::Schema.define(:version => 20150121202952) do
   add_index "users", ["uid"], :name => "index_users_on_uid", :tablespace => "bc_nucore"
   add_index "users", ["username"], :name => "index_users_on_username", :unique => true, :tablespace => "bc_nucore"
 
-  create_table "versions", :id => false, :force => true do |t|
-    t.integer  "id",                :precision => 38, :scale => 0, :null => false
+  create_table "versions", :force => true do |t|
     t.integer  "versioned_id",      :precision => 38, :scale => 0
     t.string   "versioned_type"
     t.integer  "user_id",           :precision => 38, :scale => 0
@@ -678,11 +678,12 @@ ActiveRecord::Schema.define(:version => 20150121202952) do
   end
 
   add_index "versions", ["commit_label"], :name => "index_versions_on_commit_label", :tablespace => "bc_nucore"
-  add_index "versions", ["created_at"], :name => "index_versions_on_created_at", :tablespace => "bc_nucore"
+  add_index "versions", ["created_at"], :name => "index_versions_on_created_at"
   add_index "versions", ["tag"], :name => "index_versions_on_tag", :tablespace => "bc_nucore"
   add_index "versions", ["user_id", "user_type"], :name => "i_versions_user_id_user_type", :tablespace => "bc_nucore"
   add_index "versions", ["user_name"], :name => "index_versions_on_user_name", :tablespace => "bc_nucore"
-  add_index "versions", ["version_number"], :name => "index_versions_on_number", :tablespace => "bc_nucore"
+  add_index "versions", ["version_number"], :name => "index_versions_on_number"
+  add_index "versions", ["versioned_id", "versioned_type"], :name => "i_ver_ver_id_ver_typ"
 
   add_foreign_key "account_users", "accounts", :name => "fk_accounts", :column => nil, :primary_key => nil
 
