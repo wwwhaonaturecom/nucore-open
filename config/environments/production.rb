@@ -39,7 +39,7 @@ Nucore::Application.configure do
   config.action_mailer.delivery_method       = :smtp
   config.action_mailer.default_url_options   = { :host => "nucore.northwestern.edu", :protocol => 'https' }
   config.action_mailer.smtp_settings         = {
-    :address        => 'ns.northwestern.edu',
+    :address        => 'smtprelay.northwestern.edu',
     :port           => 25,
     :domain         => 'northwestern.edu',
   }
