@@ -105,5 +105,5 @@ end
 
 group :production, :staging do
   gem 'dispatcher'
-  gem 'passenger'
+  gem 'unicorn'
 end

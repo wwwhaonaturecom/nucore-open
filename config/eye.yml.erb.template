@@ -24,6 +24,7 @@ notifications:
       secret_access_key: Your+AWS+Secret+Access+Key
 
 processes:
+  # only run on 1 instance
   - name: auto_cancel
     config:
       start_command: bundle exec ruby lib/daemons/auto_cancel.rb start
@@ -45,5 +46,23 @@ processes:
       start_grace: 30 seconds
       stop_timeout: 40 seconds
       stop_grace: 30 seconds
+      notify:
+        crash: error
+
+  - name: unicorn
+    config:
+      pid_file: tmp/pids/unicorn.pid
+      start_command: bundle exec unicorn -c config/unicorn/<%= ENV["RAILS_ENV"] %>.rb -D
+      restart_command: "kill -USR2 {PID}"
+      user_commands:
+        rotate: "kill -USR1 {PID}"
+      start_timeout: 40 seconds
+      start_grace: 30 seconds
+      restart_timeout: 40 seconds
+      restart_grace: 30 seconds
+      stdout: log/unicorn.stdout.log
+      stderr: log/unicorn.stderr.log
+      monitor_children:
+        stop_command: "kill -QUIT {PID}"
       notify:
         crash: error
