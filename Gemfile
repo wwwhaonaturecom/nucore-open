@@ -9,10 +9,6 @@ gem 'foreigner',        '1.1.1'
 gem 'activerecord-oracle_enhanced-adapter', '1.4.2'
 gem 'ruby-oci8',        '2.1.7'
 
-## deployment
-gem 'capistrano',       '2.15.4'
-gem 'rvm-capistrano',   '1.3.1'
-
 ## auth
 gem 'devise',           '~>2.2.8'
 gem 'devise-encryptable', '0.1.2'
@@ -93,6 +89,14 @@ group :development, :test do
 
   # NU specific
   gem 'simplecov', :platforms => [:ruby_19]
+end
+
+# deployment
+group :development, :deployment do
+  gem "capistrano", "~> 3.2.0"
+  gem "capistrano-rvm"
+  gem "capistrano-bundler"
+  gem "capistrano-rails"
 end
 
 group :assets do
