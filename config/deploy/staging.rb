@@ -1,4 +1,4 @@
-set :deploy_to, "/home/nucore/nucore-staging.nubic.northwestern.edu"
+set :deploy_to, "/home/nucore/nucore-test.nubic.northwestern.edu"
 set :rails_env, "staging"
 set :branch, "develop"
 
