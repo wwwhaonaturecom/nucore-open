@@ -22,6 +22,11 @@ pid               "tmp/pids/unicorn.pid"
 stderr_path "log/unicorn.stderr.log"
 stdout_path "log/unicorn.stdout.log"
 
+# use correct Gemfile
+before_exec do |server|
+  ENV['BUNDLE_GEMFILE'] = "#{app_path}/current/Gemfile"
+end
+
 # zero downtime
 before_fork do |server, worker|
   # the following is highly recomended for Rails + "preload_app true"
