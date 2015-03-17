@@ -53,4 +53,11 @@ if defined?(NewRelic::Agent)
     ApplicationController.send(:include, NewRelicExtensions)
   end
 
+  ActiveSupport::Notifications.subscribe('background_error') do |_name, _start, _finish, _id, payload|
+    # Dup so other subscribers don't lose pieces of the payload, but
+    # :exception doesn't need to be part of the new relic payload
+    notify_payload = payload.dup
+    exception = notify_payload.delete :exception
+    NewRelic::Agent.notice_error(exception, notify_payload)
+  end
 end
