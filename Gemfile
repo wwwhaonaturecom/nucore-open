@@ -18,7 +18,7 @@ gem 'cancancan',        '1.10'
 ## models
 gem 'aasm',             '2.2.0'
 gem 'paperclip',        '~> 4.2.0'
-gem 'vestal_versions',  '1.2.4.3', github: 'elzoiddy/vestal_versions'
+gem 'vestal_versions',  '1.2.4.3', git: 'git@github.com:elzoiddy/vestal_versions.git'
 gem 'awesome_nested_set', '2.1.6'
 gem 'nokogiri',         '~> 1.6.1'
 
@@ -60,7 +60,7 @@ gem 'pmu',              '~> 1.0.0', path: 'vendor/engines/pmu'
 gem 'jxml',             '~> 1.0.0', path: 'vendor/engines/jxml'
 
 gem 'dataprobe',        '~> 1.0.0', path: 'vendor/engines/dataprobe'
-gem 'synaccess_connect', '0.2.2', github: 'tablexi/synaccess'
+gem 'synaccess_connect', '0.2.2', git: 'git@github.com:tablexi/synaccess.git'
 
 group :development do
   gem 'better_errors'
