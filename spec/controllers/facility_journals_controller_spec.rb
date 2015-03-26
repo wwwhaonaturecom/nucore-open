@@ -226,7 +226,7 @@ describe FacilityJournalsController do
 
         it 'is valid' do
           do_request
-          expect(assigns(:journal).errors).to be_empty
+          expect(assigns(:journal).errors.full_messages).to eq([])
         end
       end
 
