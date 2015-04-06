@@ -8,13 +8,13 @@ env = ENV['RAILS_ENV'] || "stage"
 worker_processes 2
 
 # listen
-listen "/tmp/unicorn-nucore-staging.nubic.northwestern.edu.socket", :backlog => 64
+listen "/tmp/unicorn-nucore-test.northwestern.edu.socket", :backlog => 64
 
 # preload
 preload_app true
 
 # paths
-app_path = "/home/nucore/nucore-staging.nubic.northwestern.edu"
+app_path = "/home/nucore/nucore-test.northwestern.edu"
 working_directory "#{app_path}/current"
 pid               "tmp/pids/unicorn.pid"
 
