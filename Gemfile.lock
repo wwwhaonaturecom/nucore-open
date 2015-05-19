@@ -343,7 +343,7 @@ GEM
       tilt (~> 1.3)
     shoulda-matchers (2.4.0)
       activesupport (>= 3.0.0)
-    sigar (0.7.2)
+    sigar (0.7.3)
     simple_form (2.1.1)
       actionpack (~> 3.0)
       activemodel (~> 3.0)
