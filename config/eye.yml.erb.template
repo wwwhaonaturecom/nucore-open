@@ -2,7 +2,7 @@
 @domain = if ENV["RAILS_ENV"] == "production"
   "nucore.northwestern.edu"
 else
-  "nucore-test.northwestern.edu"
+  "nucore-staging.northwestern.edu"
 end
 %>
 name: NUCoreNU_<%= ENV["RAILS_ENV"] %>
