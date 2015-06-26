@@ -8,7 +8,6 @@ class AccountsController < ApplicationController
   include AccountSuspendActions
   load_and_authorize_resource :only => [:show, :user_search, :transactions, :transactions_in_review, :suspend, :unsuspend ]
 
-
   def initialize
     @active_tab = 'accounts'
     super
@@ -29,7 +28,9 @@ class AccountsController < ApplicationController
   end
 
   def transactions_with_search
+    set_default_start_date
     @order_details = @order_details.where(:account_id => @account.id)
+    @export_enabled = true
     paginate_order_details
     @active_tab = 'accounts'
   end

@@ -821,6 +821,10 @@ en:
       fail_immediately: "The import failed. %{successes} line item(s) would have been created successfully, but %{failures} failed. Please download the error report below, view each error message, correct the error, and try to import again."
       fail_continue_on_error: "The import failed. %{successes} line item(s) created successfully, %{failures} failed. Please download the error report below, view each error message, correct the error, and try to import again."
       success: "The import completed successfully. %{successes} line items were created."
+    account_transactions:
+      export: Export as CSV
+      subject: NUCore Transaction Export
+      body: Your export is ready. Please see the attached file.
 
   users:
     index:
@@ -931,6 +935,16 @@ en:
       head:
         h1: "Notices"
 
+  training_requests:
+    create:
+      success: A request that the core contact you regarding access or training for %{product} has been submitted.
+      failure: Your request regarding access or training for %{product} was not able to be submitted.
+    delete: Remove
+    destroy:
+      success: "The request from %{user} for %{product} has been removed."
+      failure: "The request from %{user} for %{product} was not able to be removed."
+    no_requests: There are no outstanding training requests.
+
   activerecord:
     errors:
       models:
@@ -942,6 +956,9 @@ en:
           move_failed: Sorry, but your reservation could not be moved. Please try again later.
           change_reserve_start_at: cannot change once the reservation has started
           shorten_reserve_end_at: cannot be shortened once the reservation has started
+        training_request:
+          product:
+            requires_no_approval: This product does not require approval
 
   devise:
     failure:

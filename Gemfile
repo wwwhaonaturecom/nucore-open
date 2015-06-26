@@ -73,7 +73,6 @@ end
 
 group :development, :test do
   gem 'awesome_print',     '1.1.0'
-  gem 'ci_reporter'
   gem 'factory_girl_rails', '~> 4.5.0'
   gem 'guard-rspec', require: false
   gem 'pry-rails',         '~> 0.3.2'
@@ -94,6 +93,11 @@ group :development, :test do
 
   # NU specific
   gem 'simplecov', :platforms => [:ruby_19]
+end
+
+group :test do
+  gem 'rspec_junit_formatter', '0.2.2'
+  gem 'ci_reporter'
 end
 
 group :assets do
