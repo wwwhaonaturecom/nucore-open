@@ -5,9 +5,8 @@ gem 'rails',            '3.2.21'
 gem 'rails_config',     '0.3.3'
 
 ## database
-gem 'foreigner',        '1.1.1'
-gem 'activerecord-oracle_enhanced-adapter', '1.4.2'
-gem 'ruby-oci8',        '2.1.7'
+gem 'activerecord-oracle_enhanced-adapter', '1.4.3'
+gem 'ruby-oci8',        '2.1.8'
 
 ## deployment
 gem 'capistrano',       '2.15.4'
