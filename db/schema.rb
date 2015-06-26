@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20150204174650) do
+ActiveRecord::Schema.define(:version => 20150611175130) do
 
   create_table "account_users", :force => true do |t|
     t.integer  "account_id",               :precision => 38, :scale => 0, :null => false
@@ -501,6 +501,7 @@ ActiveRecord::Schema.define(:version => 20150204174650) do
     t.integer  "approved_by",             :precision => 38, :scale => 0, :null => false
     t.datetime "approved_at",                                            :null => false
     t.integer  "product_access_group_id", :precision => 38, :scale => 0
+    t.datetime "requested_at"
   end
 
   add_index "product_users", ["product_access_group_id"], :name => "i_pro_use_pro_acc_gro_id", :tablespace => "bc_nucore"
@@ -538,15 +539,16 @@ ActiveRecord::Schema.define(:version => 20150204174650) do
   add_index "products", ["url_name"], :name => "index_products_on_url_name", :tablespace => "bc_nucore"
 
   create_table "relays", :force => true do |t|
-    t.integer  "instrument_id",               :precision => 38, :scale => 0
-    t.string   "ip",            :limit => 15
-    t.integer  "port",                        :precision => 38, :scale => 0
-    t.string   "username",      :limit => 50
-    t.string   "password",      :limit => 50
-    t.boolean  "auto_logout",                 :precision => 1,  :scale => 0
+    t.integer  "instrument_id",                     :precision => 38, :scale => 0
+    t.string   "ip",                  :limit => 15
+    t.integer  "port",                              :precision => 38, :scale => 0
+    t.string   "username",            :limit => 50
+    t.string   "password",            :limit => 50
+    t.boolean  "auto_logout",                       :precision => 1,  :scale => 0
     t.string   "type"
     t.datetime "created_at"
     t.datetime "updated_at"
+    t.integer  "auto_logout_minutes",               :precision => 38, :scale => 0, :default => 60
   end
 
   add_index "relays", ["instrument_id"], :name => "index_relays_on_instrument_id", :tablespace => "bc_nucore"
@@ -630,6 +632,16 @@ ActiveRecord::Schema.define(:version => 20150204174650) do
   add_index "stored_files", ["order_detail_id"], :name => "i_stored_files_order_detail_id", :tablespace => "bc_nucore"
   add_index "stored_files", ["product_id"], :name => "i_stored_files_product_id", :tablespace => "bc_nucore"
 
+  create_table "training_requests", :force => true do |t|
+    t.integer  "user_id",    :precision => 38, :scale => 0
+    t.integer  "product_id", :precision => 38, :scale => 0
+    t.datetime "created_at",                                :null => false
+    t.datetime "updated_at",                                :null => false
+  end
+
+  add_index "training_requests", ["product_id"], :name => "i_training_requests_product_id"
+  add_index "training_requests", ["user_id"], :name => "i_training_requests_user_id"
+
   create_table "user_roles", :force => true do |t|
     t.integer "user_id",     :precision => 38, :scale => 0, :null => false
     t.integer "facility_id", :precision => 38, :scale => 0
@@ -676,6 +688,14 @@ ActiveRecord::Schema.define(:version => 20150204174650) do
     t.integer  "reverted_from",     :precision => 38, :scale => 0
     t.string   "commit_label"
   end
+
+  add_index "versions", ["commit_label"], :name => "index_versions_on_commit_label"
+  add_index "versions", ["created_at"], :name => "index_versions_on_created_at"
+  add_index "versions", ["tag"], :name => "index_versions_on_tag"
+  add_index "versions", ["user_id", "user_type"], :name => "i_versions_user_id_user_type"
+  add_index "versions", ["user_name"], :name => "index_versions_on_user_name"
+  add_index "versions", ["version_number"], :name => "index_versions_on_number"
+  add_index "versions", ["versioned_id", "versioned_type"], :name => "i_ver_ver_id_ver_typ"
 
   add_foreign_key "account_users", "accounts", :name => "fk_accounts", :column => nil, :primary_key => nil
 
