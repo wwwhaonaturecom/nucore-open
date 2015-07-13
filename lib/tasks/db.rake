@@ -1,5 +1,5 @@
 namespace :db do
-  def allow_task?
+  def db_allow_task?
     if Rails.env.test? || Rails.env.development?
       true
     else
@@ -10,7 +10,7 @@ namespace :db do
 
   desc "Drop database for current RAILS_ENV"
   task :oracle_drop => :environment do
-    next unless allow_task?
+    next unless db_allow_task?
     config= Rails.configuration.database_configuration[Rails.env]
     connect_string = "#{config["username"]}/#{config["password"]}@#{config["database"]}"
     system "bash -lc 'cd #{Rails.root}/db && ./generate_drops.sh | sqlplus #{connect_string}'"
@@ -25,7 +25,7 @@ namespace :db do
 
   desc "Remove the DMRS tables from a production DB dump"
   task :drop_dmrs => :environment do
-    next unless allow_task?
+    next unless db_allow_task?
 
     table_names = ActiveRecord::Base.connection.select_rows(
       "select table_name from all_tables where table_name like 'DMRS_%'").map(&:first)
