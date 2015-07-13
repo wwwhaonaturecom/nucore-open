@@ -48,6 +48,7 @@ gem 'aws-ses'
 
 ## other
 gem 'delayed_job_active_record', '~> 4.0.1'
+gem 'fog'
 gem 'rake'
 gem 'spreadsheet',      '~> 0.6.5.5'
 gem 'fast-aes',         '0.1.1'
