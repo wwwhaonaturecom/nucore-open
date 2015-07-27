@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20150204174650) do
+ActiveRecord::Schema.define(:version => 20150611175130) do
 
   create_table "account_users", :force => true do |t|
     t.integer  "account_id",               :precision => 38, :scale => 0, :null => false
@@ -361,7 +361,7 @@ ActiveRecord::Schema.define(:version => 20150204174650) do
 
   add_index "order_imports", ["created_by"], :name => "i_order_imports_created_by", :tablespace => "bc_nucore"
   add_index "order_imports", ["error_file_id"], :name => "i_order_imports_error_file_id", :tablespace => "bc_nucore"
-  add_index "order_imports", ["facility_id"], :name => "i_order_imports_facility_id"
+  add_index "order_imports", ["facility_id"], :name => "i_order_imports_facility_id", :tablespace => "bc_nucore"
   add_index "order_imports", ["upload_file_id"], :name => "i_order_imports_upload_file_id", :tablespace => "bc_nucore"
 
   create_table "order_statuses", :force => true do |t|
@@ -501,6 +501,7 @@ ActiveRecord::Schema.define(:version => 20150204174650) do
     t.integer  "approved_by",             :precision => 38, :scale => 0, :null => false
     t.datetime "approved_at",                                            :null => false
     t.integer  "product_access_group_id", :precision => 38, :scale => 0
+    t.datetime "requested_at"
   end
 
   add_index "product_users", ["product_access_group_id"], :name => "i_pro_use_pro_acc_gro_id", :tablespace => "bc_nucore"
@@ -538,15 +539,16 @@ ActiveRecord::Schema.define(:version => 20150204174650) do
   add_index "products", ["url_name"], :name => "index_products_on_url_name", :tablespace => "bc_nucore"
 
   create_table "relays", :force => true do |t|
-    t.integer  "instrument_id",               :precision => 38, :scale => 0
-    t.string   "ip",            :limit => 15
-    t.integer  "port",                        :precision => 38, :scale => 0
-    t.string   "username",      :limit => 50
-    t.string   "password",      :limit => 50
-    t.boolean  "auto_logout",                 :precision => 1,  :scale => 0
+    t.integer  "instrument_id",                     :precision => 38, :scale => 0
+    t.string   "ip",                  :limit => 15
+    t.integer  "port",                              :precision => 38, :scale => 0
+    t.string   "username",            :limit => 50
+    t.string   "password",            :limit => 50
+    t.boolean  "auto_logout",                       :precision => 1,  :scale => 0
     t.string   "type"
     t.datetime "created_at"
     t.datetime "updated_at"
+    t.integer  "auto_logout_minutes",               :precision => 38, :scale => 0, :default => 60
   end
 
   add_index "relays", ["instrument_id"], :name => "index_relays_on_instrument_id", :tablespace => "bc_nucore"
@@ -630,6 +632,16 @@ ActiveRecord::Schema.define(:version => 20150204174650) do
   add_index "stored_files", ["order_detail_id"], :name => "i_stored_files_order_detail_id", :tablespace => "bc_nucore"
   add_index "stored_files", ["product_id"], :name => "i_stored_files_product_id", :tablespace => "bc_nucore"
 
+  create_table "training_requests", :force => true do |t|
+    t.integer  "user_id",    :precision => 38, :scale => 0
+    t.integer  "product_id", :precision => 38, :scale => 0
+    t.datetime "created_at",                                :null => false
+    t.datetime "updated_at",                                :null => false
+  end
+
+  add_index "training_requests", ["product_id"], :name => "i_training_requests_product_id"
+  add_index "training_requests", ["user_id"], :name => "i_training_requests_user_id"
+
   create_table "user_roles", :force => true do |t|
     t.integer "user_id",     :precision => 38, :scale => 0, :null => false
     t.integer "facility_id", :precision => 38, :scale => 0
@@ -677,114 +689,63 @@ ActiveRecord::Schema.define(:version => 20150204174650) do
     t.string   "commit_label"
   end
 
-  add_index "versions", ["commit_label"], :name => "index_versions_on_commit_label", :tablespace => "bc_nucore"
+  add_index "versions", ["commit_label"], :name => "index_versions_on_commit_label"
   add_index "versions", ["created_at"], :name => "index_versions_on_created_at"
-  add_index "versions", ["tag"], :name => "index_versions_on_tag", :tablespace => "bc_nucore"
-  add_index "versions", ["user_id", "user_type"], :name => "i_versions_user_id_user_type", :tablespace => "bc_nucore"
-  add_index "versions", ["user_name"], :name => "index_versions_on_user_name", :tablespace => "bc_nucore"
+  add_index "versions", ["tag"], :name => "index_versions_on_tag"
+  add_index "versions", ["user_id", "user_type"], :name => "i_versions_user_id_user_type"
+  add_index "versions", ["user_name"], :name => "index_versions_on_user_name"
   add_index "versions", ["version_number"], :name => "index_versions_on_number"
   add_index "versions", ["versioned_id", "versioned_type"], :name => "i_ver_ver_id_ver_typ"
 
-  add_foreign_key "account_users", "accounts", :name => "fk_accounts", :column => nil, :primary_key => nil
+  add_foreign_key "account_users", "accounts", :name => "fk_accounts"
 
-  add_foreign_key "accounts", "facilities", :name => "fk_account_facility_id", :column => nil, :primary_key => nil
+  add_foreign_key "accounts", "facilities", :name => "fk_account_facility_id"
 
-  add_foreign_key "bi_netids", "facilities", :name => "sys_c00365629", :column => nil, :primary_key => nil
+  add_foreign_key "bi_netids", "facilities", :name => "sys_c00372604"
 
-  add_foreign_key "bundle_products", "products", :name => "fk_bundle_prod_bundle", :column => nil, :primary_key => nil
-  add_foreign_key "bundle_products", "products", :name => "fk_bundle_prod_prod", :column => nil, :primary_key => nil
+  add_foreign_key "bundle_products", "products", :column => "bundle_product_id", :name => "fk_bundle_prod_prod"
+  add_foreign_key "bundle_products", "products", :name => "fk_bundle_prod_bundle"
 
-  add_foreign_key "facility_accounts", "facilities", :name => "fk_facilities", :column => nil, :primary_key => nil
+  add_foreign_key "facility_accounts", "facilities", :name => "fk_facilities"
 
-  add_foreign_key "instrument_statuses", "products", :name => "fk_int_stats_product", :column => nil, :primary_key => nil
+  add_foreign_key "instrument_statuses", "products", :column => "instrument_id", :name => "fk_int_stats_product"
 
-  add_foreign_key "order_details", "accounts", :name => "fk_od_accounts", :column => nil, :primary_key => nil
-  add_foreign_key "order_details", "order_details", :name => "ord_det_par_ord_det_id_fk", :column => nil, :primary_key => nil
-  add_foreign_key "order_details", "orders", :name => "sys_c009172", :column => nil, :primary_key => nil
-  add_foreign_key "order_details", "price_policies", :name => "sys_c009175", :column => nil, :primary_key => nil
-  add_foreign_key "order_details", "product_accessories", :name => "ord_det_pro_acc_id_fk", :column => nil, :primary_key => nil
-  add_foreign_key "order_details", "products", :name => "fk_bundle_prod_id", :column => nil, :primary_key => nil
-  add_foreign_key "order_details", "products", :name => "sys_c009173", :column => nil, :primary_key => nil
-  add_foreign_key "order_details", "users", :name => "order_details_dispute_by_id_fk", :column => nil, :primary_key => nil
+  add_foreign_key "order_details", "accounts", :name => "fk_od_accounts"
+  add_foreign_key "order_details", "order_details", :column => "parent_order_detail_id", :name => "ord_det_par_ord_det_id_fk"
+  add_foreign_key "order_details", "orders", :name => "sys_c009172"
+  add_foreign_key "order_details", "price_policies", :name => "sys_c009175"
+  add_foreign_key "order_details", "product_accessories", :name => "ord_det_pro_acc_id_fk"
+  add_foreign_key "order_details", "products", :column => "bundle_product_id", :name => "fk_bundle_prod_id"
+  add_foreign_key "order_details", "products", :name => "sys_c009173"
+  add_foreign_key "order_details", "users", :column => "dispute_by_id", :name => "order_details_dispute_by_id_fk"
 
-  add_foreign_key "order_imports", "facilities", :name => "fk_order_imports_facilities", :column => nil, :primary_key => nil
+  add_foreign_key "order_imports", "facilities", :name => "fk_order_imports_facilities"
 
-  add_foreign_key "orders", "accounts", :name => "sys_c008808", :column => nil, :primary_key => nil
-  add_foreign_key "orders", "facilities", :name => "orders_facility_id_fk", :column => nil, :primary_key => nil
+  add_foreign_key "orders", "accounts", :name => "sys_c008808"
+  add_foreign_key "orders", "facilities", :name => "orders_facility_id_fk"
 
-  add_foreign_key "price_group_members", "price_groups", :name => "sys_c008583", :column => nil, :primary_key => nil
+  add_foreign_key "price_group_members", "price_groups", :name => "sys_c008583"
 
-  add_foreign_key "price_groups", "facilities", :name => "sys_c008578", :column => nil, :primary_key => nil
+  add_foreign_key "price_groups", "facilities", :name => "sys_c008578"
 
-  add_foreign_key "price_policies", "price_groups", :name => "sys_c008589", :column => nil, :primary_key => nil
+  add_foreign_key "price_policies", "price_groups", :name => "sys_c008589"
 
-  add_foreign_key "product_users", "products", :name => "fk_products", :column => nil, :primary_key => nil
+  add_foreign_key "product_users", "products", :name => "fk_products"
 
-  add_foreign_key "products", "facilities", :name => "sys_c008556", :column => nil, :primary_key => nil
-  add_foreign_key "products", "facility_accounts", :name => "fk_facility_accounts", :column => nil, :primary_key => nil
-  add_foreign_key "products", "schedules", :name => "fk_instruments_schedule", :column => nil, :primary_key => nil
+  add_foreign_key "products", "facilities", :name => "sys_c008556"
+  add_foreign_key "products", "facility_accounts", :name => "fk_facility_accounts"
+  add_foreign_key "products", "schedules", :name => "fk_instruments_schedule"
 
-  add_foreign_key "reservations", "order_details", :name => "res_ord_det_id_fk", :column => nil, :primary_key => nil
-  add_foreign_key "reservations", "products", :name => "reservations_product_id_fk", :column => nil, :primary_key => nil
+  add_foreign_key "reservations", "order_details", :name => "res_ord_det_id_fk"
+  add_foreign_key "reservations", "products", :name => "reservations_product_id_fk"
 
-  add_foreign_key "schedule_rules", "products", :name => "sys_c008573", :column => nil, :primary_key => nil
+  add_foreign_key "schedule_rules", "products", :column => "instrument_id", :name => "sys_c008573"
 
-  add_foreign_key "schedules", "facilities", :name => "fk_schedules_facility", :column => nil, :primary_key => nil
+  add_foreign_key "schedules", "facilities", :name => "fk_schedules_facility"
 
-  add_foreign_key "statements", "facilities", :name => "fk_statement_facilities", :column => nil, :primary_key => nil
+  add_foreign_key "statements", "facilities", :name => "fk_statement_facilities"
 
-  add_foreign_key "stored_files", "order_details", :name => "fk_files_od", :column => nil, :primary_key => nil
-  add_foreign_key "stored_files", "products", :name => "fk_files_product", :column => nil, :primary_key => nil
-
-  add_foreign_key "account_users", "accounts", :name => "fk_accounts", :column => nil, :primary_key => nil
-
-  add_foreign_key "accounts", "facilities", :name => "fk_account_facility_id", :column => nil, :primary_key => nil
-
-  add_foreign_key "bi_netids", "facilities", :name => "sys_c00365629", :column => nil, :primary_key => nil
-
-  add_foreign_key "bundle_products", "products", :name => "fk_bundle_prod_bundle", :column => nil, :primary_key => nil
-  add_foreign_key "bundle_products", "products", :name => "fk_bundle_prod_prod", :column => nil, :primary_key => nil
-
-  add_foreign_key "facility_accounts", "facilities", :name => "fk_facilities", :column => nil, :primary_key => nil
-
-  add_foreign_key "instrument_statuses", "products", :name => "fk_int_stats_product", :column => nil, :primary_key => nil
-
-  add_foreign_key "order_details", "accounts", :name => "fk_od_accounts", :column => nil, :primary_key => nil
-  add_foreign_key "order_details", "order_details", :name => "ord_det_par_ord_det_id_fk", :column => nil, :primary_key => nil
-  add_foreign_key "order_details", "orders", :name => "sys_c009172", :column => nil, :primary_key => nil
-  add_foreign_key "order_details", "price_policies", :name => "sys_c009175", :column => nil, :primary_key => nil
-  add_foreign_key "order_details", "product_accessories", :name => "ord_det_pro_acc_id_fk", :column => nil, :primary_key => nil
-  add_foreign_key "order_details", "products", :name => "fk_bundle_prod_id", :column => nil, :primary_key => nil
-  add_foreign_key "order_details", "products", :name => "sys_c009173", :column => nil, :primary_key => nil
-  add_foreign_key "order_details", "users", :name => "order_details_dispute_by_id_fk", :column => nil, :primary_key => nil
-
-  add_foreign_key "order_imports", "facilities", :name => "fk_order_imports_facilities", :column => nil, :primary_key => nil
-
-  add_foreign_key "orders", "accounts", :name => "sys_c008808", :column => nil, :primary_key => nil
-  add_foreign_key "orders", "facilities", :name => "orders_facility_id_fk", :column => nil, :primary_key => nil
-
-  add_foreign_key "price_group_members", "price_groups", :name => "sys_c008583", :column => nil, :primary_key => nil
-
-  add_foreign_key "price_groups", "facilities", :name => "sys_c008578", :column => nil, :primary_key => nil
-
-  add_foreign_key "price_policies", "price_groups", :name => "sys_c008589", :column => nil, :primary_key => nil
-
-  add_foreign_key "product_users", "products", :name => "fk_products", :column => nil, :primary_key => nil
-
-  add_foreign_key "products", "facilities", :name => "sys_c008556", :column => nil, :primary_key => nil
-  add_foreign_key "products", "facility_accounts", :name => "fk_facility_accounts", :column => nil, :primary_key => nil
-  add_foreign_key "products", "schedules", :name => "fk_instruments_schedule", :column => nil, :primary_key => nil
-
-  add_foreign_key "reservations", "order_details", :name => "res_ord_det_id_fk", :column => nil, :primary_key => nil
-  add_foreign_key "reservations", "products", :name => "reservations_product_id_fk", :column => nil, :primary_key => nil
-
-  add_foreign_key "schedule_rules", "products", :name => "sys_c008573", :column => nil, :primary_key => nil
-
-  add_foreign_key "schedules", "facilities", :name => "fk_schedules_facility", :column => nil, :primary_key => nil
-
-  add_foreign_key "statements", "facilities", :name => "fk_statement_facilities", :column => nil, :primary_key => nil
-
-  add_foreign_key "stored_files", "order_details", :name => "fk_files_od", :column => nil, :primary_key => nil
-  add_foreign_key "stored_files", "products", :name => "fk_files_product", :column => nil, :primary_key => nil
+  add_foreign_key "stored_files", "order_details", :name => "fk_files_od"
+  add_foreign_key "stored_files", "products", :name => "fk_files_product"
 
 end

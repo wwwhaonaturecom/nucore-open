@@ -91,7 +91,7 @@ class ReservationsController < ApplicationController
   # POST /orders/1/order_details/1/reservations
   def create
     raise ActiveRecord::RecordNotFound unless @reservation.nil?
-    @reservation = @order_detail.build_reservation(params[:reservation].merge(:product => @instrument))
+    @reservation = @order_detail.build_reservation(reservation_create_params)
 
     if !@order_detail.bundled? && params[:order_account].blank?
       flash.now[:error]=I18n.t 'controllers.reservations.create.no_selection'
@@ -183,7 +183,9 @@ class ReservationsController < ApplicationController
       return
     end
 
-    @reservation.assign_times_from_params(params[:reservation])
+    @reservation.assign_times_from_params(reservation_params)
+
+    render_edit and return unless duration_change_valid?
 
     Reservation.transaction do
       begin
@@ -204,8 +206,7 @@ class ReservationsController < ApplicationController
         raise ActiveRecord::Rollback
       end
     end
-    set_windows
-    render :action => "edit"
+    render_edit
   end
 
   # POST /orders/:order_id/order_details/:order_detail_id/reservations/:reservation_id/move
@@ -264,9 +265,31 @@ class ReservationsController < ApplicationController
 
   private
 
+  def reservation_params
+    reservation_params = params[:reservation].except(
+      :actual_start_date,
+      :actual_start_hour,
+      :actual_start_min,
+      :actual_start_meridian
+    )
+
+    if !@reservation.reserve_start_at_editable?
+      reservation_params.tap do |p|
+        p[:reserve_start_date] = @reservation.reserve_start_date
+        p[:reserve_start_hour] = @reservation.reserve_start_hour
+        p[:reserve_start_min] = @reservation.reserve_start_min
+        p[:reserve_start_meridian] = @reservation.reserve_start_meridian
+      end
+    end
+
+    reservation_params
+  end
+
   def switch_instrument_off!
-    ReservationInstrumentSwitcher.new(@reservation).switch_off!
-    flash[:notice] = 'The instrument has been deactivated successfully'
+    unless @reservation.other_reservation_using_relay?
+      ReservationInstrumentSwitcher.new(@reservation).switch_off!
+      flash[:notice] = 'The instrument has been deactivated successfully'
+    end
     session[:reservation_ended] = true if params[:reservation_ended].present?
   end
 
@@ -295,10 +318,11 @@ class ReservationsController < ApplicationController
 
   # TODO you shouldn't be able to edit reservations that have passed or are outside of the cancellation period (check to make sure order has been placed)
   def invalid_for_update?
+    can_edit = @reservation.can_edit?
+    can_edit &&= @reservation.can_customer_edit? unless current_user.administrator?
     params[:id].to_i != @reservation.id ||
-    @reservation.actual_start_at ||
     @reservation.actual_end_at ||
-    !(@reservation.can_edit? || @reservation.can_customer_edit?)
+    !can_edit
   end
 
   def save_reservation_and_order_detail
@@ -367,5 +391,21 @@ class ReservationsController < ApplicationController
     # 1.week causes a problem with daylight saving week since it's technically longer
     # than a week
     @end_at - @start_at > 8.days
+  end
+
+  def render_edit
+    set_windows
+    render :action => "edit"
+  end
+
+  def duration_change_valid?
+    validator = Reservations::DurationChangeValidations.new(@reservation)
+    validator.valid?
+  end
+
+  def reservation_create_params
+    params[:reservation]
+    .except(:reserve_end_date, :reserve_end_hour, :reserve_end_min, :reserve_end_meridian)
+    .merge(product: @instrument)
   end
 end

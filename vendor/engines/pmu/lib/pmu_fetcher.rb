@@ -8,7 +8,7 @@ private
 
   def fetch_from_cognos
     puts "Fetching data from Cognos..."
-    uri = URI("https://reporting.northwestern.edu/sso/app/cgi-bin/cognosisapi.dll?b_action=cognosViewer&&CAMUsername=#{Settings.pmu.username}&CAMPassword=#{Settings.pmu.password}&CAMNamespace=ADS&ui.action=run&ui.object=%2fcontent%2ffolder[%40name%3d'PMU']%2freport[%40name%3d'PMU%20Organizational%20Data']&ui.name=PMU%20Organizational%20Data&run.outputFormat=XML&run.prompt=false&cv.header=false&cv.toolbar=false")
+    uri = URI("https://reporting.northwestern.edu/sso/app/cgi-bin/cognosisapi.dll?b_action=cognosViewer&&CAMUsername=#{Settings.pmu.username}&CAMPassword=#{Settings.pmu.password}&CAMNamespace=ADS&ui.action=run&ui.object=%2fcontent%2ffolder%5b%40name%3d%27PMU%27%5d%2ffolder%5b%40name%3d%27WebServices%27%5d%2freport%5b%40name%3d%27PMU%20Organizational%20Data%27%5d&ui.name=PMU%20Organizational%20Data%27%5d&ui.name=PMU%20Organizational%20Data&run.outputFormat=XML&run.prompt=false")
 
     http = Net::HTTP.new uri.host, uri.port
     http.use_ssl = true

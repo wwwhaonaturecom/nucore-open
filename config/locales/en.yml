@@ -807,8 +807,9 @@ en:
 
   reports:
     fields:
+      between: between
       instrument_reports:
-        date_start: Fulfilled Start Date
+        between: Fulfilled between
       date_start: Start Date
       date_end: End Date
       auto_cancel_name: 'Auto Cancel'
@@ -821,6 +822,10 @@ en:
       fail_immediately: "The import failed. %{successes} line item(s) would have been created successfully, but %{failures} failed. Please download the error report below, view each error message, correct the error, and try to import again."
       fail_continue_on_error: "The import failed. %{successes} line item(s) created successfully, %{failures} failed. Please download the error report below, view each error message, correct the error, and try to import again."
       success: "The import completed successfully. %{successes} line items were created."
+    account_transactions:
+      export: Export as CSV
+      subject: NUCore Transaction Export
+      body: Your export is ready. Please see the attached file.
 
   users:
     index:
@@ -836,9 +841,11 @@ en:
         username: "Username or NetID"
         email: "Email"
     access_list:
+      head: "%{name} Access List"
       no_products: "%{name} does not have any available products."
       th:
         approval_received: "Approved?"
+      training_requested: Training Requested
       update_approvals:
         submit: "Update Access List"
     new_external:
@@ -904,7 +911,8 @@ en:
         intro: "(Optional) If the instrument is connected to an approved power relay, please enter the information below. Power relays must be purchased separately."
         label:
           relay: "Power Relay Information"
-          auto_logout: "Automatically power off the relay 60 minutes after the reservation is scheduled to end"
+          auto_logout_1: "Automatically power off the relay"
+          auto_logout_2: "minutes after the reservation is scheduled to end"
       reservation:
         instruct:
           reserve_interval: "The minutes of an hour on which a reservation is allowed to begin (e.g. if 5 reservations can be scheduled every 5 minutes)"
@@ -930,6 +938,16 @@ en:
       head:
         h1: "Notices"
 
+  training_requests:
+    create:
+      success: A request that the core contact you regarding access or training for %{product} has been submitted.
+      failure: Your request regarding access or training for %{product} was not able to be submitted.
+    delete: Remove
+    destroy:
+      success: "The request from %{user} for %{product} has been removed."
+      failure: "The request from %{user} for %{product} was not able to be removed."
+    no_requests: There are no outstanding training requests.
+
   activerecord:
     errors:
       models:
@@ -939,6 +957,11 @@ en:
         reservation:
           cannot_move: Sorry, but your reservation can no longer be moved.
           move_failed: Sorry, but your reservation could not be moved. Please try again later.
+          change_reserve_start_at: cannot change once the reservation has started
+          shorten_reserve_end_at: cannot be shortened once the reservation has started
+        training_request:
+          product:
+            requires_no_approval: This product does not require approval
 
   devise:
     failure:

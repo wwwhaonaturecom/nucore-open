@@ -22,13 +22,17 @@ shared_context "feature disabled" do |feature|
   end
 end
 
+def add_account_for_user(user_sym, product)
+  nufs_account = create_nufs_account_with_owner(user_sym)
+  define_open_account(product.account, nufs_account.account_number)
+end
 
 #
 # Call this method in a before(:all) block at the top of your +describe+
 def create_users
   @users=[]
 
-  [ 'admin', 'director', 'staff', 'guest', 'owner', 'purchaser', 'business_admin', 'senior_staff', 'billing_admin' ].each do |name|
+  [ 'admin', 'facility_admin', 'director', 'staff', 'guest', 'owner', 'purchaser', 'business_admin', 'senior_staff', 'billing_admin' ].each do |name|
     user=FactoryGirl.create(:user, :username => name)
     instance_variable_set("@#{name}".to_sym, user)
     @users << user
@@ -256,6 +260,9 @@ def grant_role(user, authable=nil)
   end
 
   case user.username
+    when 'facility_admin'
+      UserRole.grant(user, UserRole::FACILITY_ADMINISTRATOR, authable)
+      user.reload.should be_facility_administrator_of(authable)
     when 'director'
       UserRole.grant(user, UserRole::FACILITY_DIRECTOR, authable)
       user.reload.should be_facility_director_of(authable)

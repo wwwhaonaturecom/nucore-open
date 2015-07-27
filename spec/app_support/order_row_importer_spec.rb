@@ -22,16 +22,32 @@ describe OrderRowImporter do
   end
   let(:user) { create(:user) }
 
-  let(:row) {{
-    "Netid / Email" => username,
-    "Chart String" => chart_string,
-    "Product Name" => product_name,
-    "Quantity" => quantity,
-    "Order Date" => order_date,
-    "Fulfillment Date" => fulfillment_date,
-    "Errors" => errors,
-    "Note" => notes,
-  }}
+  shared_context "valid row values" do
+    let(:username) { user.username }
+    let(:chart_string) { account.account_number }
+    let(:product_name) { service.name }
+    let(:quantity) { 1 }
+    let(:order_date) { "1/1/2015" }
+    let(:fulfillment_date) { "1/2/2015" }
+
+    before(:each) do
+      Product.any_instance.stub(:can_purchase?).and_return(true)
+    end
+  end
+
+  let(:row) do
+    ref = {
+      "Netid / Email" => username,
+      "Chart String" => chart_string,
+      "Product Name" => product_name,
+      "Quantity" => quantity,
+      "Order Date" => order_date,
+      "Fulfillment Date" => fulfillment_date,
+      "Errors" => errors,
+      "Note" => notes,
+    }
+    CSV::Row.new(ref.keys, ref.values)
+  end
 
   let(:username) { "column1" }
   let(:chart_string) { "column2" }
@@ -81,23 +97,12 @@ describe OrderRowImporter do
       before { subject.import }
 
       it "has the error message '#{message}'" do
-        expect(subject.errors.any? { |error| error.include?(message) })
-          .to be_true
+        expect(subject.errors).to include(match /#{message}/)
       end
     end
 
     context "with a valid row" do
-      let(:username) { user.username }
-      let(:chart_string) { account.account_number }
-      let(:product_name) { service.name }
-      let(:quantity) { 1 }
-      let(:order_date) { "1/1/2015" }
-      let(:fulfillment_date) { "1/2/2015" }
-
-      before(:each) do
-        Product.any_instance.stub(:can_purchase?).and_return(true)
-      end
-
+      include_context "valid row values"
       it_behaves_like "an order was created"
 
       it "has no errors" do
@@ -129,6 +134,22 @@ describe OrderRowImporter do
 
         it_behaves_like "an invalid fulfillment_date"
       end
+
+      context "is nil" do
+        let(:fulfillment_date) { nil }
+
+        it_behaves_like "an invalid fulfillment_date"
+      end
+    end
+
+    context "when the chart string" do
+      context "is nil" do
+        let(:username) { user.username }
+        let(:product_name) { service.name }
+        let(:chart_string) { nil }
+
+        it_behaves_like "it has an error message", "Can't find account"
+      end
     end
 
     context "when the order date is invalid" do
@@ -154,6 +175,12 @@ describe OrderRowImporter do
 
         it_behaves_like "an invalid order_date"
       end
+
+      context "is nil" do
+        let(:order_date) { nil }
+
+        it_behaves_like "an invalid order_date"
+      end
     end
 
     context "when the user is invalid" do
@@ -166,11 +193,25 @@ describe OrderRowImporter do
         it_behaves_like "an order was not created"
         it_behaves_like "it has an error message", "Invalid username"
       end
+
+      context "is nil" do
+        let(:username) { nil }
+
+        it_behaves_like "an order was not created"
+        it_behaves_like "it has an error message", "Invalid username"
+      end
     end
 
     context "when the product name is invalid" do
       it_behaves_like "an order was not created"
       it_behaves_like "it has an error message", "Couldn't find product by name"
+
+      context "is nil" do
+        let(:product_name) { nil }
+
+        it_behaves_like "an order was not created"
+        it_behaves_like "it has an error message", "Couldn't find product by name"
+      end
     end
 
     context "when the product is a service" do
@@ -285,6 +326,47 @@ describe OrderRowImporter do
 
         it_behaves_like "an order was not created"
         it_behaves_like "it has an error message", "Can't find account"
+      end
+    end
+
+    context "when the headers are invalid" do
+      let(:row) do
+        ref = {
+          "Netid / Email" => username,
+          "acct" => chart_string,
+          "Product Name" => product_name,
+          "Quantity" => quantity,
+          "Order Date" => order_date,
+          "Fulfillment Date" => fulfillment_date,
+          "Errors" => errors,
+          "Note" => notes,
+        }
+        CSV::Row.new(ref.keys, ref.values)
+      end
+
+      let(:username) { user.username }
+      let(:chart_string) { account.account_number }
+      let(:product_name) { service.name }
+      let(:quantity) { 1 }
+      let(:order_date) { "1/1/2015" }
+      let(:fulfillment_date) { "1/2/2015" }
+
+      before(:each) do
+        Product.any_instance.stub(:can_purchase?).and_return(true)
+      end
+
+      it_behaves_like "an order was not created"
+      it_behaves_like "it has an error message", "Missing headers: Chart String"
+    end
+
+    context "when the note field is invalid" do
+      include_context "valid row values"
+
+      context "it is too long" do
+        let(:notes) { "a" * 101 }
+
+        it_behaves_like "an order was not created"
+        it_behaves_like "it has an error message", "Note is too long"
       end
     end
   end

@@ -5,9 +5,8 @@ gem 'rails',            '3.2.21'
 gem 'rails_config',     '0.3.3'
 
 ## database
-gem 'foreigner',        '1.1.1'
-gem 'activerecord-oracle_enhanced-adapter', '1.4.2'
-gem 'ruby-oci8',        '2.1.7'
+gem 'activerecord-oracle_enhanced-adapter', '1.4.3'
+gem 'ruby-oci8',        '2.1.8'
 
 ## auth
 gem 'devise',           '~>2.2.8'
@@ -69,7 +68,6 @@ end
 
 group :development, :test do
   gem 'awesome_print',     '1.1.0'
-  gem 'ci_reporter'
   gem 'factory_girl_rails', '~> 4.5.0'
   gem 'guard-rspec', require: false
   gem 'pry-rails',         '~> 0.3.2'
@@ -80,6 +78,7 @@ group :development, :test do
   gem 'single_test',       '0.4.0'
   gem 'spring'
   gem 'spring-commands-rspec'
+  gem 'teaspoon-jasmine'
   gem 'timecop',           '~> 0.6.3'
   gem 'thin'
 
@@ -97,6 +96,11 @@ group :development, :deployment do
   gem "capistrano-rvm"
   gem "capistrano-bundler"
   gem "capistrano-rails"
+end
+
+group :test do
+  gem 'rspec_junit_formatter', '0.2.2'
+  gem 'ci_reporter'
 end
 
 group :assets do

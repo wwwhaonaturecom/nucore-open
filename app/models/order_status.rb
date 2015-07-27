@@ -20,6 +20,18 @@ class OrderStatus < ActiveRecord::Base
   scope :complete, conditions: { name: 'Complete' }, limit: 1
   scope :reconciled, conditions: { name: 'Reconciled' }, limit: 1
 
+  def self.complete_status
+    complete.first
+  end
+
+  def self.canceled_status
+    canceled.first
+  end
+
+  def self.reconciled_status
+    reconciled.first
+  end
+
   def editable?
     !!facility
   end

@@ -29,4 +29,16 @@ module Reservations::RelaySupport
     true
   end
   deprecate :can_kill_power? => 'Most likely not used anywhere'
+
+  def other_reservations_using_relay
+    order_detail.reservation.product.schedule.reservations
+      .active
+      .relay_in_progress
+      .where(order_details: { state: ['new', 'inprocess', nil]})
+      .not_this_reservation(self)
+  end
+
+  def other_reservation_using_relay?
+    !order_detail.reservation.can_switch_instrument_off? || order_detail.reservation.other_reservations_using_relay.count > 0
+  end
 end

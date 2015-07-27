@@ -12,6 +12,7 @@ class Reservation < ActiveRecord::Base
   #####
   belongs_to :product
   belongs_to :order_detail, :inverse_of => :reservation
+  has_one :order, through: :order_detail
   belongs_to :canceled_by_user, :foreign_key => :canceled_by, :class_name => 'User'
 
   ## Virtual attributes
@@ -28,7 +29,7 @@ class Reservation < ActiveRecord::Base
   # Delegations
   #####
   delegate :note, :ordered_on_behalf_of?, :complete?, :account, :order,
-      :to => :order_detail, :allow_nil => true
+      :problem?, :complete!, :to => :order_detail, :allow_nil => true
 
   delegate :user, :account, :to => :order, :allow_nil => true
   delegate :facility, :to => :product, :allow_nil => true
@@ -42,10 +43,11 @@ class Reservation < ActiveRecord::Base
 
   # Scopes
   #####
+
   def self.active
-    not_canceled.
-    where("(orders.state = 'purchased' OR orders.state IS NULL)").
-    joins_order
+    not_canceled
+      .where({orders: { state: ['purchased', nil] }})
+      .joins_order
   end
 
   def self.joins_order
@@ -111,10 +113,15 @@ class Reservation < ActiveRecord::Base
           :start => tstart_at, :end => tend_at)
   end
 
+  def self.relay_in_progress
+    where("actual_start_at IS NOT NULL AND actual_end_at IS NULL")
+  end
+
   # Instance Methods
   #####
 
   def start_reservation!
+    product.schedule.products.map(&:started_reservations).flatten.each(&:complete!)
     self.actual_start_at = Time.zone.now
     save!
   end
@@ -124,13 +131,15 @@ class Reservation < ActiveRecord::Base
     save!
     # reservation is done, now give the best price
     order_detail.assign_price_policy
-    order_detail.save!
+    order_detail.complete!
   end
 
 
   def round_reservation_times
-    self.reserve_start_at = time_ceil(self.reserve_start_at) if self.reserve_start_at
-    self.reserve_end_at   = time_ceil(self.reserve_end_at) if self.reserve_end_at
+    interval = product.reserve_interval.minutes # Round to the nearest reservation interval
+    self.reserve_start_at = time_ceil(self.reserve_start_at, interval) if self.reserve_start_at
+    self.reserve_end_at   = time_ceil(self.reserve_end_at, interval) if self.reserve_end_at
+    self
   end
 
   def assign_actuals_off_reserve
@@ -184,11 +193,34 @@ class Reservation < ActiveRecord::Base
   end
 
   def can_customer_edit?
-    !canceled? && !complete? && before_lock_window?
+    !canceled? && !complete? && (reserve_start_at_editable? || reserve_end_at_editable?)
+  end
+
+  def reserve_start_at_editable?
+    before_lock_window? && actual_start_at.blank?
+  end
+
+  def reserve_end_at_editable?
+    outside_lock_window? && Time.zone.now <= reserve_end_at && next_duration_available? && actual_end_at.blank?
+  end
+
+  def next_duration_available?
+    next_available = product.next_available_reservation(reserve_end_at)
+
+    return false unless next_available
+
+    current_end_at = reserve_end_at.change(:sec => 0)
+    next_start_at = next_available.reserve_start_at.change(sec: 0)
+
+    current_end_at == next_start_at
   end
 
   def before_lock_window?
     Time.zone.now < reserve_start_at - product_lock_window.hours
+  end
+
+  def outside_lock_window?
+    before_lock_window? || Time.zone.now >= reserve_start_at
   end
 
   # can the ADMIN edit the reservation?

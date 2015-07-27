@@ -14,6 +14,15 @@ class OrderRowImporter
     errors: "Errors",
   }
 
+  REQUIRED_HEADERS = [
+    :user,
+    :chart_string,
+    :product_name,
+    :quantity,
+    :order_date,
+    :fulfillment_date
+    ].map{ |k| HEADERS[k] }
+
   def self.order_key_for_row(row)
     self.new(row, nil).order_key
   end
@@ -45,7 +54,7 @@ class OrderRowImporter
   end
 
   def import
-    add_product_to_order if has_valid_fields?
+    add_product_to_order if has_valid_headers? && has_valid_fields?
   end
 
   def order_date
@@ -71,20 +80,28 @@ class OrderRowImporter
       User.find_by_username(user_field) || User.find_by_email(user_field)
   end
 
-  private
-
-  def account_number
-    @account_number ||= @row[HEADERS[:chart_string]].strip
-  end
 
   def add_error(message)
     @errors.add(message) if message.present?
   end
 
+  private
+
+  def account_number
+    @account_number ||= @row[HEADERS[:chart_string]].try(:strip)
+  end
+
   def add_product_to_order
-    @order_details = order.add(product, quantity, note: note)
-    purchase_order! unless order.purchased?
-    backdate_order_details_to_complete!
+    ActiveRecord::Base.transaction do
+      begin
+        @order_details = order.add(product, quantity, note: note)
+        purchase_order! unless order.purchased?
+        backdate_order_details_to_complete!
+      rescue ActiveRecord::RecordInvalid => e
+        add_error(e.message)
+        raise ActiveRecord::Rollback
+      end
+    end
   end
 
   def backdate_order_details_to_complete!
@@ -94,7 +111,7 @@ class OrderRowImporter
   end
 
   def chart_string_field
-    @chart_string_field ||= @row[HEADERS[:chart_string]].strip
+    @chart_string_field ||= @row[HEADERS[:chart_string]].try(:strip)
   end
 
   def fulfillment_date
@@ -102,7 +119,12 @@ class OrderRowImporter
   end
 
   def fulfillment_date_field
-    @fulfillment_date_field ||= @row[HEADERS[:fulfillment_date]].strip
+    @fulfillment_date_field ||= @row[HEADERS[:fulfillment_date]].try(:strip)
+  end
+
+  def has_valid_headers?
+    validate_headers
+    !errors?
   end
 
   def has_valid_fields?
@@ -119,7 +141,7 @@ class OrderRowImporter
   end
 
   def order_date_field
-    @order_date_field ||= @row[HEADERS[:order_date]].strip
+    @order_date_field ||= @row[HEADERS[:order_date]].try(:strip)
   end
 
   def product
@@ -132,7 +154,7 @@ class OrderRowImporter
   end
 
   def product_field
-    @product_field ||= @row[HEADERS[:product_name]].strip
+    @product_field ||= @row[HEADERS[:product_name]].try(:strip)
   end
 
   def purchase_order!
@@ -148,7 +170,7 @@ class OrderRowImporter
   end
 
   def user_field
-    @user_field ||= @row[HEADERS[:user]].strip
+    @user_field ||= @row[HEADERS[:user]].try(:strip)
   end
 
   def validate_account
@@ -158,6 +180,11 @@ class OrderRowImporter
     else
       add_error("Can't find account")
     end
+  end
+
+  def validate_headers
+    missing_headers = REQUIRED_HEADERS - @row.headers
+    add_error("Missing headers: #{missing_headers.join(' | ')}") if missing_headers.present?
   end
 
   def validate_fields

@@ -601,24 +601,47 @@ describe ReservationsController do
       end
 
       context 'next reservation is between 5 minutes' do
-        let(:next_reservation) do
-          Reservation.new :reserve_start_at => Time.zone.parse('2013-08-15 12:02'),
-                          :reserve_end_at   => Time.zone.parse('2013-08-15 12:17')
-        end
+        let(:reserve_interval) { 1 }
 
-        it 'should round up to the nearest 5 minutes' do
-          assigns(:reservation).reserve_start_min.should == 5
+        let(:next_reservation) do
+          Reservation.new reserve_start_at: Time.zone.parse('2013-08-15 12:02'),
+                          reserve_end_at: Time.zone.parse('2013-08-15 12:17'),
+                          product: create(:setup_instrument, reserve_interval: reserve_interval)
         end
 
         it 'should default the duration mins to minimum duration' do
           assigns(:reservation).duration_mins.should == 15
         end
+
+        describe 'and the instrument has a one minute interval' do
+          let(:reserve_interval) { 1 }
+
+          it 'should not do any additional rounding' do
+            expect(assigns(:reservation).reserve_start_min).to eq(2)
+          end
+        end
+
+        describe 'and the instrument has a 5 minute interval' do
+          let(:reserve_interval) { 5 }
+
+          it 'should round up to the nearest 5 minutes' do
+            expect(assigns(:reservation).reserve_start_min).to eq(5)
+          end
+        end
+
+        describe 'and the instrument has a 15 minute interval' do
+          let(:reserve_interval) { 15 }
+          it 'should round up to the nearest 15 minutes' do
+            expect(assigns(:reservation).reserve_start_min).to eq(15)
+          end
+        end
       end
 
       context 'next reservation is on a 5 minute, but with seconds' do
         let(:next_reservation) do
-          Reservation.new :reserve_start_at => Time.zone.parse('2013-08-15 12:05:30'),
-                          :reserve_end_at   => Time.zone.parse('2013-08-15 12:20:30')
+          Reservation.new reserve_start_at: Time.zone.parse('2013-08-15 12:05:30'),
+                          reserve_end_at: Time.zone.parse('2013-08-15 12:20:30'),
+                          product: create(:setup_instrument)
         end
 
         it 'should round up to the nearest 5 minutes' do
@@ -730,20 +753,27 @@ describe ReservationsController do
         expect(response).to redirect_to [@order, @order_detail, @reservation]
       end
 
-      it "redirects to show page if reservation happened" do
-        @reservation.update_attributes(:actual_start_at => Time.zone.now - 1.day)
-        sign_in @admin
-        do_request
-        expect(response).to redirect_to [@order, @order_detail, @reservation]
-      end
+      context "with a past reservation" do
+        before do
+          @reservation.assign_attributes(
+            reserve_start_at: Time.zone.now - 1.day,
+            reserve_end_at: Time.zone.now - 1.day + 1.hour
+          )
+          @reservation.save(validate: false)
+        end
 
-      it "allows editing of reservations in the past by an admin" do
-        expect(@reservation.update_attribute :reserve_start_at, Time.zone.now - 1.day).to be_true
-        sign_in @admin
-        do_request
-        expect(response.response_code).to eq 200
-      end
+        it "allows editing by an admin" do
+          sign_in @admin
+          do_request
+          expect(response.response_code).to eq 200
+        end
 
+        it "redirects non-admins" do
+          sign_in @staff
+          do_request
+          expect(response.response_code).to eq 302
+        end
+      end
     end
 
 
@@ -781,7 +811,7 @@ describe ReservationsController do
         assert_redirected_to cart_url
       end
 
-      describe 'trying to update a started reservation' do
+      describe 'trying to update a past reservation' do
         before :each do
           sign_in @admin
           expect(controller).to receive(:invalid_for_update?).and_return true
@@ -792,7 +822,44 @@ describe ReservationsController do
           expect(response).to redirect_to [@order, @order_detail, @reservation]
           expect(flash[:notice]).to be_present
         end
+      end
 
+      describe 'update a running reservation' do
+        context 'with staff' do
+          before do
+            sign_in @staff
+            @reservation.actual_start_at = @start.to_date
+            @reservation.save(validate: false)
+          end
+
+          it 'runs validations' do
+            expect_any_instance_of(Reservations::DurationChangeValidations)
+              .to receive(:valid?)
+              .and_return(false)
+            do_request
+          end
+
+          it 'ignores start fields' do
+            expect_any_instance_of(Reservations::DurationChangeValidations)
+              .to receive(:valid?)
+              .and_return(false)
+            do_request
+            expect(@reservation.reload.reserve_start_date).to eq(@start.strftime('%m/%d/%Y'))
+            expect(@reservation.reload.reserve_start_hour).to eq(9)
+            expect(@reservation.reload.reserve_start_min).to eq(0)
+            expect(@reservation.reload.reserve_start_meridian).to eq('AM')
+          end
+
+          context 'with errors' do
+            it 'renders edit' do
+              expect_any_instance_of(Reservations::DurationChangeValidations)
+                .to receive(:valid?)
+                .and_return(true)
+              do_request
+              expect(response).to render_template :edit
+            end
+          end
+        end
       end
 
       context 'creating a reservation in the future' do
@@ -1062,6 +1129,7 @@ describe ReservationsController do
           assigns(:reservation).should == @reservation
           assigns(:reservation).order_detail.price_policy.should_not be_nil
           assigns(:reservation).actual_end_at.should < Time.zone.now
+          assigns(:reservation).should be_complete
           assigns(:instrument).instrument_statuses.size.should == 1
           assigns(:instrument).instrument_statuses[0].is_on.should == false
           should set_the_flash
@@ -1087,6 +1155,21 @@ describe ReservationsController do
 
           it_should_allow :guest, "it redirects to the accessories" do
             should redirect_to new_order_order_detail_accessory_path(@order, @order_detail)
+          end
+        end
+
+        context 'and a reservation using the same relay as another running reservation' do
+          let!(:reservation_running) { create(:purchased_reservation, product: @instrument,
+            actual_start_at: 30.minutes.ago, reserve_start_at: 30.minutes.ago,
+            reserve_end_at: 30.minutes.from_now) }
+
+          before { @params[:reservation_id] = reservation_running.id }
+
+          it 'does not switch off the relay' do
+            expect_any_instance_of(ReservationInstrumentSwitcher).to_not receive(:switch_off!)
+
+            sign_in @guest
+            do_request
           end
         end
       end

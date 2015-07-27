@@ -110,15 +110,21 @@ class OrderImport < ActiveRecord::Base
 
   def handle_save_nothing_on_error # TODO refactor and rename
     Order.transaction do
-      CSV.open(upload_file_path, headers: true).each do |row|
-        row_importer = import_row(row)
-        self.error_report += row_importer.row_with_errors.to_csv
+      begin
+        CSV.open(upload_file_path, headers: true, skip_lines: /^,*$/).each do |row|
+          row_importer = import_row(row)
+          self.error_report += row_importer.row_with_errors.to_csv
 
-        if row_importer.errors?
-          result.failures += 1
-        else
-          result.successes += 1
+          if row_importer.errors?
+            result.failures += 1
+          else
+            result.successes += 1
+          end
         end
+      rescue => e
+        set_error_mode
+        result.failures += 1
+        self.error_report += "Unable to open CSV File: #{e.message}"
       end
 
       raise ActiveRecord::Rollback if result.failed?
@@ -131,8 +137,14 @@ class OrderImport < ActiveRecord::Base
   end
 
   def import_row(row) # TODO refactor
-    row_importer = OrderRowImporter.new(row, self)
-    row_importer.import
+    begin
+      row_importer = OrderRowImporter.new(row, self)
+      row_importer.import
+    rescue => e
+      ActiveSupport::Notifications.instrument('background_error',
+        exception: e, information: "Failed to bulk import: #{upload_file_path}")
+      row_importer.add_error("Failed to import row")
+    end
     if row_importer.errors?
       set_error_mode
     else
@@ -164,7 +176,7 @@ class OrderImport < ActiveRecord::Base
 
   def rows_by_order_key # TODO refactor
     rows = Hash.new { |hash, key| hash[key] = [] }
-    CSV.open(upload_file_path, headers: true).each do |row|
+    CSV.open(upload_file_path, headers: true, skip_lines: /^,*$/).each do |row|
       order_key = OrderRowImporter.order_key_for_row(row)
       rows[order_key] << row
     end

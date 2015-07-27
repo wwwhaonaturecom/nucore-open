@@ -18,7 +18,7 @@ module Reservations::Validations
     end
 
     validate :starts_before_ends
-    validate :duration_is_interval, on: :create
+    validate :duration_is_interval
   end
 
   # Validation Methods
@@ -146,7 +146,9 @@ module Reservations::Validations
   end
 
   def in_the_future
-    errors.add(:reserve_start_at, "The reservation must start at a future time") unless in_the_future?
+    if reserve_start_at_changed?
+      errors.add(:reserve_start_at, "The reservation must start at a future time") unless in_the_future?
+    end
   end
 
   # checks that the reservation is within the longest window for the groups the user is in

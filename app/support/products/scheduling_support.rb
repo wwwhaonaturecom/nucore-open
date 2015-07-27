@@ -25,6 +25,13 @@ module Products::SchedulingSupport
     self.reservations.admin
   end
 
+  def started_reservations
+    self.purchased_reservations
+      .not_canceled
+      .merge(OrderDetail.unreconciled)
+      .merge(Reservation.relay_in_progress)
+  end
+
   def visible_reservations(date = nil)
     purchased = self.purchased_reservations.order(:reserve_start_at)
     admin = self.admin_reservations
