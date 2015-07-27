@@ -69,7 +69,7 @@ relays:
   development:
     admin_enabled: false
     reservation_enabled: false
-  staging:
+  stage:
     admin_enabled: true
     reservation_enabled: false
   production:

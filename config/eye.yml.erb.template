@@ -2,7 +2,7 @@
 @domain = if ENV["RAILS_ENV"] == "production"
   "nucore.northwestern.edu"
 else
-  "nucore-staging.nubic.northwestern.edu"
+  "nucore-staging.northwestern.edu"
 end
 %>
 name: NUCoreNU_<%= ENV["RAILS_ENV"] %>
@@ -19,11 +19,12 @@ notifications:
     level: error
     contact: sysadmins@tablexi.com
     config:
-      from: nucore+noreply@tablexi.com
       access_key_id: Your+AWS+Access+Key+ID
       secret_access_key: Your+AWS+Secret+Access+Key
+      from: noreply+nucore@tablexi.com
 
 processes:
+  # only run on 1 instance
   - name: auto_cancel
     config:
       start_command: bundle exec ruby lib/daemons/auto_cancel.rb start
@@ -45,5 +46,23 @@ processes:
       start_grace: 30 seconds
       stop_timeout: 40 seconds
       stop_grace: 30 seconds
+      notify:
+        crash: error
+
+  - name: unicorn
+    config:
+      pid_file: tmp/pids/unicorn.pid
+      start_command: bundle exec unicorn -c config/unicorn/<%= ENV["RAILS_ENV"] %>.rb -D
+      restart_command: "kill -USR2 {PID}"
+      user_commands:
+        rotate: "kill -USR1 {PID}"
+      start_timeout: 40 seconds
+      start_grace: 30 seconds
+      restart_timeout: 40 seconds
+      restart_grace: 30 seconds
+      stdout: log/unicorn.stdout.log
+      stderr: log/unicorn.stderr.log
+      monitor_children:
+        stop_command: "kill -QUIT {PID}"
       notify:
         crash: error

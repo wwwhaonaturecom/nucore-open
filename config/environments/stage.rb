@@ -46,7 +46,7 @@ Nucore::Application.configure do
   # Disable delivery errors, bad email addresses will be ignored
   config.action_mailer.raise_delivery_errors = false
   config.action_mailer.delivery_method       = :smtp
-  config.action_mailer.default_url_options   = { :host => "nucore-staging.nubic.northwestern.edu", :protocol => 'https' }
+  config.action_mailer.default_url_options   = { :host => "nucore-staging.northwestern.edu", :protocol => 'https' }
   config.action_mailer.smtp_settings         = {
     :address        => 'smtprelay.northwestern.edu',
     :port           => 25,
@@ -84,7 +84,7 @@ Nucore::Application.configure do
 
 
   # Where a surveyor external service redirects to when a survey is completed
-  config.surveyor_redirects_to='https://nucore-staging.nubic.northwestern.edu'
+  config.surveyor_redirects_to='https://nucore-staging.northwestern.edu'
 end
 
 # What's this for?

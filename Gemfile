@@ -8,10 +8,6 @@ gem 'rails_config',     '0.3.3'
 gem 'activerecord-oracle_enhanced-adapter', '1.4.3'
 gem 'ruby-oci8',        '2.1.8'
 
-## deployment
-gem 'capistrano',       '2.15.4'
-gem 'rvm-capistrano',   '1.3.1'
-
 ## auth
 gem 'devise',           '~>2.2.8'
 gem 'devise-encryptable', '0.1.2'
@@ -21,7 +17,7 @@ gem 'cancancan',        '1.10'
 ## models
 gem 'aasm',             '2.2.0'
 gem 'paperclip',        '~> 4.2.0'
-gem 'vestal_versions',  '1.2.4.3', github: 'elzoiddy/vestal_versions'
+gem 'vestal_versions',  '1.2.4.3', git: 'git@github.com:elzoiddy/vestal_versions.git'
 gem 'awesome_nested_set', '2.1.6'
 gem 'nokogiri',         '~> 1.6.1'
 
@@ -64,7 +60,7 @@ gem 'pmu',              '~> 1.0.0', path: 'vendor/engines/pmu'
 gem 'jxml',             '~> 1.0.0', path: 'vendor/engines/jxml'
 
 gem 'dataprobe',        '~> 1.0.0', path: 'vendor/engines/dataprobe'
-gem 'synaccess_connect', '0.2.2', github: 'tablexi/synaccess'
+gem 'synaccess_connect', '0.2.2', git: 'git@github.com:tablexi/synaccess.git'
 
 group :development do
   gem 'better_errors'
@@ -95,6 +91,14 @@ group :development, :test do
   gem 'simplecov', :platforms => [:ruby_19]
 end
 
+# deployment
+group :development, :deployment do
+  gem "capistrano", "~> 3.2.0"
+  gem "capistrano-rvm"
+  gem "capistrano-bundler"
+  gem "capistrano-rails"
+end
+
 group :test do
   gem 'rspec_junit_formatter', '0.2.2'
   gem 'ci_reporter'
@@ -110,5 +114,5 @@ end
 
 group :production, :staging do
   gem 'dispatcher'
-  gem 'passenger'
+  gem 'unicorn'
 end

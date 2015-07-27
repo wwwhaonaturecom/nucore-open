@@ -1,16 +1,30 @@
-set :stages, %w(staging prod)
-require 'capistrano/ext/multistage'
-require 'bundler/capistrano'
-require 'rvm/capistrano'
+lock '3.2.1' # config valid only for Capistrano 3.2
 
-require "eye/patch/capistrano"
-set :eye_config, "config/eye.yml.erb"
-set(:eye_env) { fetch(:rails_env) }
+set :application, "nucore"
+set :repo_url, "git@github.com:tablexi/nucore-nu.git"
 
-namespace :eye do
-  desc "Start eye with the desired configuration file"
-  task :load_config, roles: -> { fetch(:eye_roles) } do
-    # force a full shell
-    run "bash -lc 'cd #{current_path} && #{fetch(:eye_bin)} q && #{fetch(:eye_bin)} l #{fetch(:eye_config)}'"
+set :linked_files, %w{config/database.yml config/settings.local.yml config/ldap.yml config/newrelic.yml config/eye.yml.erb }
+set :linked_dirs, %w{bin log tmp/pids tmp/cache tmp/sockets vendor/bundle public/system}
+
+namespace :deploy do
+  task :symlink_configs do
+    on roles :app do
+      execute "ln -nfs #{deploy_to}/shared/config/database.yml #{release_path}/vendor/engines/nucs/config/database.yml"
+      execute "ln -nfs #{deploy_to}/shared/config/settings.pmu.yml #{release_path}/vendor/engines/pmu/config/settings.yml"
+      execute "ln -nfs #{deploy_to}/shared/files #{release_path}/public/files"
+    end
+  end
+
+  task :symlink_revision do
+    on roles :app do
+      execute "ln -nfs #{release_path}/REVISION #{release_path}/public/REVISION.txt"
+    end
   end
 end
+
+after 'deploy:updated', 'deploy:symlink_configs', 'deploy:symlink_revision'
+
+after 'deploy:finished', 'deploy:cleanup'
+
+set :eye_config, "config/eye.yml.erb"
+set :eye_env, ->{ {rails_env: fetch(:rails_env)} }
