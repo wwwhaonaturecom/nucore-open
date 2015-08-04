@@ -343,7 +343,6 @@ GEM
     net-scp (1.2.1)
       net-ssh (>= 2.6.5)
     net-ssh (2.9.1)
-    newrelic_rpm (3.9.0.229)
     nio4r (1.1.1)
     nokogiri (1.6.4.1)
       mini_portile (~> 0.6.0)
@@ -554,7 +553,6 @@ DEPENDENCIES
   jquery-rails (~> 2.1.4)
   jquery-ui-sass-rails
   jxml (~> 1.0.0)!
-  newrelic_rpm (~> 3.6)
   nokogiri (~> 1.6.1)
   nu (~> 1.0.0)!
   nucs (~> 1.0.0)!
