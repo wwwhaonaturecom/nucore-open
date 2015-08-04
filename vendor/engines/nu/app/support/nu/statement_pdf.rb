@@ -25,6 +25,8 @@ module Nu
     end
 
     def generate_bill_to_bounding_box_content(pdf)
+      pdf.text "PLEASE MAKE ALL CHECKS PAYABLE TO:", style: :bold
+      pdf.text "NORTHWESTERN UNIVERSITY", style: :bold
       pdf.text 'NET 30', style: :bold
       generate_bill_to_table(pdf)
       pdf.move_down 5
@@ -46,7 +48,6 @@ module Nu
     end
 
     def generate_contact_info(pdf)
-      pdf.text "PLEASE MAKE ALL CHECKS PAYABLE TO: NORTHWESTERN UNIVERSITY", style: :bold
       pdf.text @facility.name
       pdf.text "Phone: #{@facility.phone_number}" if @facility.phone_number
       pdf.text "Fax: #{@facility.fax_number}" if @facility.fax_number
