@@ -1,23 +1,32 @@
 machine:
+  environment:
+    ORACLE_HOME: "/usr/lib/oracle/12.1/client64"
+    PATH: "$PATH:$ORACLE_HOME/bin"
+    LD_LIBRARY_PATH: "$LD_LIBRARY_PATH:$ORACLE_HOME/lib"
+    NLS_LANG: "AMERICAN_AMERICA.WE8MSWIN1252"
   ruby:
     version: 2.1.6
   timezone: "America/Chicago"
 
-
 dependencies:
-  bundler:
-    without: [oracle]
+  cache_directories:
+    - "~/instantclient_deb"
+  pre:
+    - bash config/circle/instantclient.sh
+
+database:
+  pre:
+    - bash config/circle/database_create.sh
+  override:
+    - export RAILS_ENV="test"; export RACK_ENV="test"; bundle exec rake db:schema:load
 
 test:
-  pre:
-    - bundle exec rake db:reset
   override:
     - bundle exec rspec --format RspecJunitFormatter --out $CIRCLE_TEST_REPORTS/rspec.xml --format progress:
         parallel: true
         files:
           - spec/**/*_spec.rb
           - vendor/engines/**/spec/**/*_spec.rb
+    - bundle exec teaspoon --suppress-log --format junit > $CIRCLE_TEST_REPORTS/teaspoon.xml
   post:
-    - bundle exec teaspoon
-      --suppress-log
-      --format junit > $CIRCLE_TEST_REPORTS/teaspoon.xml
+    - bash config/circle/database_delete.sh
