@@ -49,14 +49,14 @@ describe ItemsController do
     end
   end
 
-  context "show" do
-    before :each do
-      @method=:get
-      @action=:show
-      @block=Proc.new do
-        assigns[:item].should == @item
-        response.should be_success
-        response.should render_template('items/show')
+  describe "#show" do
+    before(:each) do
+      @method = :get
+      @action = :show
+      @block = Proc.new do # TODO: refactor as shared_examples
+        expect(assigns[:item]).to eq(item)
+        expect(response).to be_success
+        expect(response).to render_template("items/show")
       end
     end
 
@@ -69,12 +69,16 @@ describe ItemsController do
 
     it_should_allow_all(facility_operators) { @block.call }
 
-    it "should fail without a valid account" do
-      sign_in @guest
-      do_request
-      flash.should_not be_empty
-      assigns[:add_to_cart].should be_false
-      assigns[:error].should == 'no_accounts'
+    context "when the user is a guest" do
+      before(:each) do
+        sign_in @guest
+        do_request
+      end
+
+      it "fails" do
+        expect(flash[:notice]).to include("could not find a valid payment source")
+        expect(assigns[:add_to_cart]).to be false
+      end
     end
 
     context "when the item requires approval" do
