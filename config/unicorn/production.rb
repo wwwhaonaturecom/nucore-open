@@ -10,6 +10,9 @@ worker_processes 4
 # listen
 listen "/tmp/unicorn-nucore.northwestern.edu.socket", :backlog => 64
 
+# timeout
+timeout 240
+
 # preload
 preload_app true
 
