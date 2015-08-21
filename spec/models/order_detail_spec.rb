@@ -11,6 +11,7 @@ describe OrderDetail do
   let(:order_detail) { @order_detail }
   let(:price_group) { create(:price_group, facility: facility) }
   let(:user) { @user }
+  let(:user_accounts) { create_list(:nufs_account, 5, account_users_attributes: account_users_attributes_hash(user: @user)) }
 
   before(:each) do
     Settings.order_details.status_change_hooks = nil
@@ -19,8 +20,7 @@ describe OrderDetail do
     @user     = create(:user)
     @item     = @facility.items.create(attributes_for(:item, facility_account_id: @facility_account.id))
     @item.should be_valid
-    @user_accounts = create_list(:nufs_account, 5, account_users_attributes: account_users_attributes_hash(user: @user))
-    @account = @user_accounts.first
+    @account = user_accounts.first
     @order    = @user.orders.create(attributes_for(:order, created_by: @user.id, account: @account, facility: @facility))
     @order.should be_valid
     @order_detail = @order.order_details.create(attributes_for(:order_detail).update(product_id: @item.id, account_id: @account.id))
@@ -178,39 +178,43 @@ describe OrderDetail do
     end
   end
 
-  context 'account reassignment' do
+  context "account reassignment" do
     let(:unassociated_account) { build_stubbed(:setup_account) }
 
-    describe '#can_be_assigned_to_account?' do
-      it 'may be reassigned to its current account' do
-        expect(@order_detail.can_be_assigned_to_account?(@order_detail.account))
-          .to be_true
+    describe "#can_be_assigned_to_account?" do
+      it "may be reassigned to its current account" do
+        expect(order_detail.can_be_assigned_to_account?(order_detail.account))
+          .to be true
       end
 
       it "may assign to any of its user's accounts" do
-        @user_accounts.each do |account|
-          expect(@order_detail.can_be_assigned_to_account?(account)).to be_true
+        user_accounts.each do |account|
+          expect(order_detail.can_be_assigned_to_account?(account)).to be true
         end
       end
-      it 'may not assign to an account its user does not have' do
-        expect(@order_detail.can_be_assigned_to_account?(unassociated_account))
-          .to be_false
+
+      it "may not assign to an account its user does not have" do
+        expect(order_detail.can_be_assigned_to_account?(unassociated_account))
+          .to be false
       end
     end
 
-    describe '.reassign_account!' do
-      context 'the account is valid for all order_details' do
-        it 'reassigns them' do
-          @user_accounts.reverse.each do |account|
-            expect { OrderDetail.reassign_account!(account, [@order_detail]) }
-              .to change{@order_detail.account}.to account
+    describe ".reassign_account!" do
+      context "the account is valid for all order_details" do
+        it "reassigns them" do
+          user_accounts.reverse.each do |account|
+            expect { OrderDetail.reassign_account!(account, [order_detail]) }
+              .to change(order_detail, :account)
+              .to(account)
           end
         end
       end
-      context 'the account is not valid for all order_details' do
-        it 'raises ActiveRecord::RecordInvalid' do
-          expect { OrderDetail.reassign_account!(unassociated_account, [@order_detail]) }
-            .to raise_error ActiveRecord::RecordInvalid
+
+      context "the account is not valid for all order_details" do
+        it "raises ActiveRecord::RecordInvalid" do
+          expect {
+            OrderDetail.reassign_account!(unassociated_account, [order_detail])
+          }.to raise_error(ActiveRecord::RecordInvalid)
         end
       end
     end
