@@ -1,3 +1,4 @@
+# Put any locale overrides specific to your fork in this file
 en:
   activerecord:
     errors:
@@ -5,3 +6,7 @@ en:
       # The value :count is available when applicable. Can be used for pluralization.
       messages:
         bad_payment_source_format: "must be in format %{pattern_format}; project, activity, program, and chart field 1 are optional"
+
+  testing: # DO NOT DELETE: these are used to verify proper file loading in the specs
+    locale_loading: This is here to verify the file is loaded in the specs
+    overriding: This overrides the version in en.yml
