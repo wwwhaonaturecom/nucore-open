@@ -27,7 +27,7 @@ processes:
   # only run on 1 instance
   - name: auto_cancel
     config:
-      start_command: bundle exec ruby lib/daemons/auto_cancel.rb start
+      start_command: bundle exec ruby lib/daemons/auto_cancel.rb start -- --no-monitor
       stop_command: bundle exec ruby lib/daemons/auto_cancel.rb stop
       stdall: log/auto_cancel.log
       pid_file: tmp/pids/auto_cancel.pid
