@@ -56,13 +56,10 @@ class Daemons::Base
     end
   end
 
-<<<<<<< HEAD
-=======
   private
 
   # See usage notes in doc/HOWTO_daemons.txt
   def monitor?
     !ARGV.include?('--no-monitor')
   end
->>>>>>> upstream/allow_no_monitor_on_daemon
 end
