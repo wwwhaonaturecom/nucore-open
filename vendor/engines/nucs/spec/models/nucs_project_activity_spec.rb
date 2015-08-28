@@ -1,5 +1,5 @@
 require 'spec_helper'
-
+require 'nucs_spec_helper'
 
 describe NucsProjectActivity do
 
