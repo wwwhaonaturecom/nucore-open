@@ -17,6 +17,8 @@ namespace :jxml do
 
   desc 'meets needs of Task #32337'
   task :render_and_move, [:render_dir, :move_dir] => :environment do |t, args|
+    Rails.logger = Logger.new(STDOUT)
+    Rails.logger.level = Logger::INFO
     JxmlRenderer.render args.render_dir, args.move_dir
   end
 
