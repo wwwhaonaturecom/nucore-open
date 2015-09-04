@@ -37,7 +37,7 @@ describe FacilityAccountsController do
       end
 
       it 'should not save' do
-        assigns(:account).should_not be_persisted
+        expect(assigns(:account)).not_to be_persisted
         expect(assigns(:account).errors.full_messages).to include("Project is the wrong length (should be 8 characters)")
       end
     end
@@ -49,7 +49,7 @@ describe FacilityAccountsController do
       end
 
       it 'should not save' do
-        assigns(:account).should_not be_persisted
+        expect(assigns(:account)).not_to be_persisted
         expect(assigns(:account).errors.full_messages).to include("Project can't be blank")
       end
     end
@@ -65,15 +65,15 @@ describe FacilityAccountsController do
       end
 
       it 'should be persisted' do
-        assigns(:account).should be_persisted
+        expect(assigns(:account)).to be_persisted
       end
 
       it 'should set the number' do
-        assigns(:account).account_number.should == base_account_number
+        expect(assigns(:account).account_number).to eq(base_account_number)
       end
 
       it 'should set the display' do
-        assigns(:account).to_s.should include base_account_number
+        expect(assigns(:account).to_s).to include base_account_number
       end
     end
 
@@ -88,15 +88,15 @@ describe FacilityAccountsController do
       end
 
       it 'should be persisted' do
-        assigns(:account).should be_persisted
+        expect(assigns(:account)).to be_persisted
       end
 
       it 'should set the number' do
-        assigns(:account).account_number.should == base_account_number + "-1234"
+        expect(assigns(:account).account_number).to eq(base_account_number + "-1234")
       end
 
       it 'should set the display' do
-        assigns(:account).to_s.should include "#{base_account_number} (1234) ()"
+        expect(assigns(:account).to_s).to include "#{base_account_number} (1234) ()"
       end
     end
 
@@ -111,15 +111,15 @@ describe FacilityAccountsController do
       end
 
       it 'should be persisted' do
-        assigns(:account).should be_persisted
+        expect(assigns(:account)).to be_persisted
       end
 
       it 'should set the number' do
-        assigns(:account).account_number.should == base_account_number + "--1234"
+        expect(assigns(:account).account_number).to eq(base_account_number + "--1234")
       end
 
       it 'should set the display' do
-        assigns(:account).to_s.should include "#{base_account_number} () (1234)"
+        expect(assigns(:account).to_s).to include "#{base_account_number} () (1234)"
       end
     end
 
@@ -134,16 +134,16 @@ describe FacilityAccountsController do
       end
 
       it 'should be persisted' do
-        assigns(:account).should be_persisted
+        expect(assigns(:account)).to be_persisted
       end
 
 
       it 'should set the number' do
-        assigns(:account).account_number.should == base_account_number + "-6543-1234"
+        expect(assigns(:account).account_number).to eq(base_account_number + "-6543-1234")
       end
 
       it 'should set the display' do
-        assigns(:account).to_s.should include "#{base_account_number} (6543) (1234)"
+        expect(assigns(:account).to_s).to include "#{base_account_number} (6543) (1234)"
       end
     end
   end

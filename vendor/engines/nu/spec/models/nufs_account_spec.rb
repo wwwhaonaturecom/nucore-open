@@ -74,7 +74,7 @@ describe NufsAccount do
       @options[:account_number] = '123-1234567'
       @account = NufsAccount.create(@options)
       assert !@account.valid?
-      @account.errors[:account_number].should_not be_nil
+      expect(@account.errors[:account_number]).not_to be_nil
     end
 
     it "should not allow account that has not started" do
@@ -82,7 +82,7 @@ describe NufsAccount do
       @options[:account_number] = '123-1234567'
       @account = NufsAccount.create(@options)
       assert !@account.valid?
-      @account.errors[:account_number].should_not be_nil
+      expect(@account.errors[:account_number]).not_to be_nil
     end
 
     private
@@ -91,7 +91,7 @@ describe NufsAccount do
       @options[:account_number] = account_number
       define_gl066(gl066_override ? gl066_override : @options[:account_number])
       @account = NufsAccount.create(@options)
-      @account.valid?.should == valid
+      expect(@account.valid?).to eq(valid)
     end
   end
 end

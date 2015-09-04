@@ -1,10 +1,10 @@
 require 'spec_helper'
 require 'nucs_spec_helper'
 
-share_examples_for 'GE001' do
+shared_examples_for 'GE001' do
 
-  it { should_not allow_value(mkstr(513)).for(:auxiliary) }
-  it { should allow_value(nil).for(:auxiliary) }
+  it { is_expected.not_to allow_value(mkstr(513)).for(:auxiliary) }
+  it { is_expected.to allow_value(nil).for(:auxiliary) }
 
 
   it 'tokenizes. Should raise an error if there is no separator in the source line.' do
@@ -18,29 +18,29 @@ share_examples_for 'GE001' do
   it 'tokenizes. Should return the original source line minus the separator if separator is last char.' do
     source_line='000To be Eliminated in ConsolidatFNDS_ELIM|'
     tokens=described_class.tokenize_source_line(source_line)
-    tokens.should be_a_kind_of(Array)
-    tokens.size.should == 1
-    tokens[0].should == source_line[0...source_line.size-1]
+    expect(tokens).to be_a_kind_of(Array)
+    expect(tokens.size).to eq(1)
+    expect(tokens[0]).to eq(source_line[0...source_line.size-1])
   end
 
 
   it 'tokenizes. Should return an Array of size 2 if fed a valid source line.' do
     source_line='000|To be Eliminated in Consolidat|FNDS_ELIM'
     tokens=described_class.tokenize_source_line(source_line)
-    tokens.should be_a_kind_of(Array)
-    tokens.size.should == 2
-    tokens[0].should == source_line[0...source_line.index(NucsSourcedFromFile::NUCS_TOKEN_SEPARATOR)]
-    tokens[1].should == source_line[source_line.index(NucsSourcedFromFile::NUCS_TOKEN_SEPARATOR)+1..-1]
+    expect(tokens).to be_a_kind_of(Array)
+    expect(tokens.size).to eq(2)
+    expect(tokens[0]).to eq(source_line[0...source_line.index(NucsSourcedFromFile::NUCS_TOKEN_SEPARATOR)])
+    expect(tokens[1]).to eq(source_line[source_line.index(NucsSourcedFromFile::NUCS_TOKEN_SEPARATOR)+1..-1])
   end
 
 
   it 'creates. Should make a new record when fed a valid input line.' do
     tokens=described_class.tokenize_source_line(valid_source_line)
     ge=described_class.create_from_source(tokens)
-    ge.should be_a_kind_of(described_class)
-    ge.should_not be_new_record
-    ge.value.should == tokens[0]
-    ge.auxiliary.should == tokens[1]
+    expect(ge).to be_a_kind_of(described_class)
+    expect(ge).not_to be_new_record
+    expect(ge.value).to eq(tokens[0])
+    expect(ge.auxiliary).to eq(tokens[1])
   end
 
 
@@ -49,10 +49,10 @@ share_examples_for 'GE001' do
     source_line=source_line[0..source_line.index(NucsSourcedFromFile::NUCS_TOKEN_SEPARATOR)]
     tokens=described_class.tokenize_source_line(source_line)
     ge=described_class.create_from_source(tokens)
-    ge.should be_a_kind_of(described_class)
-    ge.should_not be_new_record
-    ge.value.should == tokens[0]
-    ge.auxiliary.should be_nil
+    expect(ge).to be_a_kind_of(described_class)
+    expect(ge).not_to be_new_record
+    expect(ge.value).to eq(tokens[0])
+    expect(ge.auxiliary).to be_nil
   end
 
 
@@ -61,8 +61,8 @@ share_examples_for 'GE001' do
     source_line=source_line[0..source_line.index(NucsSourcedFromFile::NUCS_TOKEN_SEPARATOR)] + mkstr(513)
     tokens=described_class.tokenize_source_line(source_line)
     ge=described_class.create_from_source(tokens)
-    ge.should be_a_kind_of(described_class)
-    ge.should be_new_record
+    expect(ge).to be_a_kind_of(described_class)
+    expect(ge).to be_new_record
   end
 
 
@@ -79,11 +79,11 @@ end
   describe k do
     min, max=v[0], v[1]
     it_should_behave_like 'GE001'
-    it { should_not allow_value(mkstr(min, 'a')).for(:value) }
-    it { should_not allow_value(mkstr(min, 'A')).for(:value) }
-    it { should_not allow_value(mkstr(min-1)).for(:value) }
-    it { should_not allow_value(mkstr(max+1)).for(:value) }
-    it { should allow_value(mkstr(min)).for(:value) }
+    it { is_expected.not_to allow_value(mkstr(min, 'a')).for(:value) }
+    it { is_expected.not_to allow_value(mkstr(min, 'A')).for(:value) }
+    it { is_expected.not_to allow_value(mkstr(min-1)).for(:value) }
+    it { is_expected.not_to allow_value(mkstr(max+1)).for(:value) }
+    it { is_expected.to allow_value(mkstr(min)).for(:value) }
   end
 end
 
@@ -92,12 +92,12 @@ end
   describe k do
     min, max=v[0], v[1]
     it_should_behave_like 'GE001'
-    it { should_not allow_value(mkstr(min, 'a')).for(:value) }
-    it { should_not allow_value(mkstr(min-1)).for(:value) }
-    it { should_not allow_value(mkstr(max+1)).for(:value) }
-    it { should allow_value(mkstr(min)).for(:value) }
-    it { should allow_value(mkstr(min, 'A')).for(:value) }
-    it { should allow_value(mkstr((min/2.0).ceil, 'A1')).for(:value) }
+    it { is_expected.not_to allow_value(mkstr(min, 'a')).for(:value) }
+    it { is_expected.not_to allow_value(mkstr(min-1)).for(:value) }
+    it { is_expected.not_to allow_value(mkstr(max+1)).for(:value) }
+    it { is_expected.to allow_value(mkstr(min)).for(:value) }
+    it { is_expected.to allow_value(mkstr(min, 'A')).for(:value) }
+    it { is_expected.to allow_value(mkstr((min/2.0).ceil, 'A1')).for(:value) }
   end
 end
 

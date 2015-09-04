@@ -24,7 +24,7 @@ describe Account do
 
     it "should return error if the product's account is not open for a chart string" do
       unopen_account(@nufs_account.account_number)
-      @nufs_account.validate_against_product(@item, @user).should_not be_nil
+      expect(@nufs_account.validate_against_product(@item, @user)).not_to be_nil
     end
 
     context 'bundles' do
@@ -40,7 +40,7 @@ describe Account do
         @nufs_account.account_number=cs
         assert @nufs_account.save
         define_open_account(@item.account, cs) # only one product of the bundle should be open
-        @nufs_account.validate_against_product(@bundle, @user).should_not be_nil
+        expect(@nufs_account.validate_against_product(@bundle, @user)).not_to be_nil
       end
     end
 

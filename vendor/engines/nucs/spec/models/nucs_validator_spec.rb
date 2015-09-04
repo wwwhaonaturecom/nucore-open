@@ -154,23 +154,23 @@ describe NucsValidator do
   context 'blank segments' do
     subject(:validator) { NucsValidator.new(chart_string, REVENUE_ACCT) }
     before :each do
-      NucsFund.stub(:find_by_value).with('110').and_return true
-      NucsDepartment.stub(:find_by_value).with('5432300').and_return true
-      NucsProjectActivity.stub(:find_by_project).with('10006385').and_return true
-      NucsProjectActivity.stub(:find_by_activity).with('01').and_return true
-      NucsChartField1.stub(:find_by_value).with('1025').and_return true
+      allow(NucsFund).to receive(:find_by_value).with('110').and_return true
+      allow(NucsDepartment).to receive(:find_by_value).with('5432300').and_return true
+      allow(NucsProjectActivity).to receive(:find_by_project).with('10006385').and_return true
+      allow(NucsProjectActivity).to receive(:find_by_activity).with('01').and_return true
+      allow(NucsChartField1).to receive(:find_by_value).with('1025').and_return true
     end
 
     context 'with several empty segments' do
       let(:chart_string) { '110-5432300----1025' }
-      it { should be_components_exist }
+      it { is_expected.to be_components_exist }
     end
 
     context 'with missing program' do
       let(:chart_string) { '110-5432300-10006385-01--1025' }
 
       it 'does finds the GE001 and never tries to find the blank program' do
-        NucsProgram.should_not_receive(:find_by_value)
+        expect(NucsProgram).not_to receive(:find_by_value)
         expect(validator).to be_components_exist
       end
     end
@@ -340,14 +340,14 @@ describe NucsValidator do
   it 'should confirm when all GE001 components are found' do
     define_ge001(NON_GRANT_CS)
     validator=NucsValidator.new(NON_GRANT_CS)
-    validator.should be_components_exist
+    expect(validator).to be_components_exist
   end
 
 
   it 'should acknowledge when a GE001 component is missing' do
     define_ge001(NON_GRANT_CS)
     validator=NucsValidator.new(NON_GRANT_CS.gsub('171-', '161-'))
-    validator.should_not be_components_exist
+    expect(validator).not_to be_components_exist
   end
 
 
@@ -356,19 +356,19 @@ describe NucsValidator do
     define_gl066(NON_GRANT_CS, :expires_at => three_year_later-2.year)
     define_gl066(NON_GRANT_CS, :expires_at => three_year_later-1.year)
     define_gl066(NON_GRANT_CS, :expires_at => three_year_later)
-    NucsValidator.new(NON_GRANT_CS).latest_expiration.year.should == three_year_later.year
+    expect(NucsValidator.new(NON_GRANT_CS).latest_expiration.year).to eq(three_year_later.year)
   end
 
 
   it 'should return nil when there is no match on components' do
     define_gl066(NON_GRANT_CS, :expires_at => Time.zone.now + 3.year)
-    NucsValidator.new(NON_GRANT_CS.gsub('171-', '161-')).latest_expiration.should be_nil
+    expect(NucsValidator.new(NON_GRANT_CS.gsub('171-', '161-')).latest_expiration).to be_nil
   end
 
 
   it 'should return nil when there is no project given, but one exists in the DB' do
     define_gl066(NON_GRANT_CS, :expires_at => Time.zone.now + 3.year)
-    NucsValidator.new(NON_GRANT_CS[0...NON_GRANT_CS.index('-10006385')]).latest_expiration.should be_nil
+    expect(NucsValidator.new(NON_GRANT_CS[0...NON_GRANT_CS.index('-10006385')]).latest_expiration).to be_nil
   end
 
 
@@ -379,19 +379,19 @@ describe NucsValidator do
       :activity => NucsValidator::NUCS_BLANK
     })
 
-    NucsValidator.new(NON_GRANT_CS[0...NON_GRANT_CS.index('-10006385')]).latest_expiration.should_not be_nil
+    expect(NucsValidator.new(NON_GRANT_CS[0...NON_GRANT_CS.index('-10006385')]).latest_expiration).not_to be_nil
   end
 
 
   it 'should return a date when there is no activity given and "-" exists in the DB' do
     define_gl066(NON_GRANT_CS, { :expires_at => Time.zone.now + 3.year, :activity => NucsValidator::NUCS_BLANK })
-    NucsValidator.new(NON_GRANT_CS[0...NON_GRANT_CS.index('-01')]).latest_expiration.should_not be_nil
+    expect(NucsValidator.new(NON_GRANT_CS[0...NON_GRANT_CS.index('-01')]).latest_expiration).not_to be_nil
   end
 
 
   it 'should return nil when the matching GL066 entry is expired' do
     define_gl066(NON_GRANT_CS, :expires_at => Time.zone.now-1.year)
-    NucsValidator.new(NON_GRANT_CS).latest_expiration.should be_nil
+    expect(NucsValidator.new(NON_GRANT_CS).latest_expiration).to be_nil
   end
 
 
@@ -452,7 +452,7 @@ describe NucsValidator do
       NucsValidator.new(chart_string, NON_REVENUE_ACCT).account_is_open!
     end
 
-    exception.message.should be_end_with 'activity'
+    expect(exception.message).to be_end_with 'activity'
   end
 
 
@@ -494,7 +494,7 @@ describe NucsValidator do
       NucsValidator.new(chart_string, NON_REVENUE_ACCT).account_is_open!
     end
 
-    exception.message.should be_end_with 'project'
+    expect(exception.message).to be_end_with 'project'
   end
 
 
@@ -517,7 +517,7 @@ describe NucsValidator do
     begin
       validator.account_is_open!
     rescue NucsErrors::UnknownGE001Error => e
-      e.message.should be_end_with(failed_component_name)
+      expect(e.message).to be_end_with(failed_component_name)
     else
       assert false
     end

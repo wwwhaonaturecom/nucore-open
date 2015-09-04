@@ -5,76 +5,76 @@ describe NucsGl066 do
 
   { :fund => [3, 5], :department => [7, 10] }.each do |k, v|
     min, max=v[0], v[1]
-    it { should_not allow_value(mkstr(min-1)).for(k) }
-    it { should_not allow_value(mkstr(max+1)).for(k) }
-    it { should_not allow_value(mkstr(min, 'a')).for(k) }
-    it { should_not allow_value('-').for(k) }
-    it { should allow_value(mkstr(min)).for(k) }
-    it { should allow_value(mkstr(min, 'B')).for(k) }
-    it { should allow_value(mkstr((min/2.0).ceil, 'A1')).for(k) }
+    it { is_expected.not_to allow_value(mkstr(min-1)).for(k) }
+    it { is_expected.not_to allow_value(mkstr(max+1)).for(k) }
+    it { is_expected.not_to allow_value(mkstr(min, 'a')).for(k) }
+    it { is_expected.not_to allow_value('-').for(k) }
+    it { is_expected.to allow_value(mkstr(min)).for(k) }
+    it { is_expected.to allow_value(mkstr(min, 'B')).for(k) }
+    it { is_expected.to allow_value(mkstr((min/2.0).ceil, 'A1')).for(k) }
   end
 
 
   { :budget_period => [4, 8], :project => [8, 15], :activity => [2, 15], :account => [5, 10] }.each do |k, v|
     min, max=v[0], v[1]
-    it { should_not allow_value('^').for(k) }
-    it { should_not allow_value(mkstr(min-1)).for(k) }
-    it { should_not allow_value(mkstr(max+1)).for(k) }
-    it { should_not allow_value(mkstr(min, 'a')).for(k) }
-    it { should allow_value('-').for(k) }
-    it { should allow_value(mkstr(min)).for(k) }
+    it { is_expected.not_to allow_value('^').for(k) }
+    it { is_expected.not_to allow_value(mkstr(min-1)).for(k) }
+    it { is_expected.not_to allow_value(mkstr(max+1)).for(k) }
+    it { is_expected.not_to allow_value(mkstr(min, 'a')).for(k) }
+    it { is_expected.to allow_value('-').for(k) }
+    it { is_expected.to allow_value(mkstr(min)).for(k) }
   end
 
 
   [ :starts_at, :expires_at ].each do |method|
-    it { should have_db_column(method).of_type(:datetime) }
-    it { should allow_value(nil).for(method) }
+    it { is_expected.to have_db_column(method).of_type(:datetime) }
+    it { is_expected.to allow_value(nil).for(method) }
   end
 
 
   it "should give a Time based on budget_period even when starts_at column value is null" do
     gl=FactoryGirl.create(:nucs_gl066_without_dates)
     date=gl.starts_at
-    date.should be_a_kind_of(Time)
-    date.should == Time.zone.parse("#{gl.budget_period}0901")-1.year
+    expect(date).to be_a_kind_of(Time)
+    expect(date).to eq(Time.zone.parse("#{gl.budget_period}0901")-1.year)
   end
 
 
   it "should give a Time based on starts_at even when expires_at column value is null" do
     gl=FactoryGirl.create(:nucs_gl066_without_dates)
     date=gl.expires_at
-    date.should be_a_kind_of(Time)
-    date.should == (gl.starts_at + 1.year - 1.second)
+    expect(date).to be_a_kind_of(Time)
+    expect(date).to eq(gl.starts_at + 1.year - 1.second)
   end
 
 
   it 'should tell us when now is before a starts_at date' do
     gl=FactoryGirl.create(:nucs_gl066_with_dates, { :starts_at => Time.zone.now+5.day, :expires_at => Time.zone.now+8.day})
-    gl.should be_expired
+    expect(gl).to be_expired
   end
 
 
   it 'should tell us when now is after a expires_at date' do
     gl=FactoryGirl.create(:nucs_gl066_with_dates, { :starts_at => Time.zone.now-5.day, :expires_at => Time.zone.now-2.day})
-    gl.should be_expired
+    expect(gl).to be_expired
   end
 
 
   it 'should tell us when now is in a starts_at and expires_at window' do
     gl=FactoryGirl.create(:nucs_gl066_with_dates, { :starts_at => Time.zone.now-3.day, :expires_at => Time.zone.now+3.day})
-    gl.should_not be_expired
+    expect(gl).not_to be_expired
   end
 
 
   it 'should tell us when now on starts_at' do
     gl=FactoryGirl.create(:nucs_gl066_with_dates, { :starts_at => Time.zone.now, :expires_at => Time.zone.now+3.day})
-    gl.should_not be_expired
+    expect(gl).not_to be_expired
   end
 
 
   it 'should tell us when now on expires_at' do
     gl=FactoryGirl.create(:nucs_gl066_with_dates, { :starts_at => Time.zone.now-3.day, :expires_at => Time.zone.now.end_of_day})
-    gl.should_not be_expired
+    expect(gl).not_to be_expired
   end
 
 
@@ -88,8 +88,8 @@ describe NucsGl066 do
   it "should return an invalid record when creating from a valid source line with invalid data" do
     tokens=NucsGl066.tokenize_source_line('2010|171|4011100|XXXXXXXX|-|-||')
     gl=NucsGl066.create_from_source(tokens)
-    gl.should be_new_record
-    gl.should_not be_valid
+    expect(gl).to be_new_record
+    expect(gl).not_to be_valid
   end
 
 
@@ -98,7 +98,7 @@ describe NucsGl066 do
     shared_context 'tokens' do |expected_count|
       it 'tokenizes without error' do
         expect(tokens).to be_a Array
-        expect(tokens).to have(expected_count).items
+        expect(tokens.size).to eq(expected_count)
       end
     end
 
@@ -150,7 +150,7 @@ describe NucsGl066 do
 
       assert_nothing_raised do
         tokens=NucsGl066.tokenize_source_line chart_string
-        tokens.first.should == expected_year
+        expect(tokens.first).to eq(expected_year)
       end
     end
 

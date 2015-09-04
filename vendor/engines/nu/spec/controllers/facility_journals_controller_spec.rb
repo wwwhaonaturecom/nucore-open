@@ -44,7 +44,7 @@ describe FacilityJournalsController do
         expect(assigns(:journal).journal_date).to eq(parse_usa_date(@journal_date))
         expect(assigns(:journal).journal_rows).not_to be_empty
 
-        should set_the_flash
+        is_expected.to set_the_flash
         assert_redirected_to facility_journals_path
       end
 

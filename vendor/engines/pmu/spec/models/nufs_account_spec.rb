@@ -11,8 +11,8 @@ describe NufsAccount do
   let(:user) { create(:user) }
 
   before(:each) do
-    pmu_dept.stub(:pmu).and_return "Best Department Ever"
-    PmuDepartment.stub(:find_by_nufin_id).and_return pmu_dept
+    allow(pmu_dept).to receive(:pmu).and_return "Best Department Ever"
+    allow(PmuDepartment).to receive(:find_by_nufin_id).and_return pmu_dept
   end
 
   it_should_behave_like "an Account"

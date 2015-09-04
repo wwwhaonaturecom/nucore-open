@@ -31,17 +31,17 @@ describe Order do
         place_and_complete_item_order(@user, @facility)
       end
 
-      pending 'should assign payment source if user has a valid account and has never placed an order' do
+      skip 'should assign payment source if user has a valid account and has never placed an order' do
         @nufs=FactoryGirl.create(:nufs_account, :account_users_attributes => [{:user => @user, :created_by => @user, :user_role => 'Owner'}])
         define_open_account(@item.account, @nufs.account_number)
         @user.reload
 
-        @order.account.should be_nil
+        expect(@order.account).to be_nil
         @order.auto_assign_account!(@item)
-        @order.account.should == @nufs
+        expect(@order.account).to eq(@nufs)
       end
 
-      pending 'should assign payment source if user has an old account that has orders, but a new one that does not' do
+      skip 'should assign payment source if user has an old account that has orders, but a new one that does not' do
         @nufs_inactive=FactoryGirl.create(:nufs_account, :account_users_attributes => [{:user => @user, :created_by => @user, :user_role => 'Owner'}], :suspended_at => 1.day.ago)
         place_and_complete_item_order(@user, @facility, @nufs_inactive)
         @order2 = @order
@@ -54,12 +54,12 @@ describe Order do
 
         @user.reload
 
-        @order3.account.should be_nil
+        expect(@order3.account).to be_nil
         @order3.auto_assign_account!(@item)
-        @order3.account.should == @nufs
+        expect(@order3.account).to eq(@nufs)
       end
 
-      pending 'should raise if an account cannot be found' do
+      skip 'should raise if an account cannot be found' do
         assert_raise RuntimeError do
           @order.auto_assign_account!(@item)
         end
