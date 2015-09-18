@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe FacilityAccount do
+RSpec.describe FacilityAccount do
   context 'revenue_account' do
     it 'should allow numbers starting with 4' do
       expect(subject).to allow_value('41234').for(:revenue_account)

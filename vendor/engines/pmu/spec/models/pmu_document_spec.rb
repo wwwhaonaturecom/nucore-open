@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe PmuDocument do
+RSpec.describe PmuDocument do
   let(:parser) { Nokogiri::XML::SAX::Parser.new(PmuDocument.new) }
   let(:document) do
     <<-XML

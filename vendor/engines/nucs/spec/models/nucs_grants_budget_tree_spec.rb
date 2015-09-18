@@ -1,7 +1,7 @@
 require 'spec_helper'
 require 'nucs_spec_helper'
 
-describe NucsGrantsBudgetTree do
+RSpec.describe NucsGrantsBudgetTree do
 
   { :account => [5, 10], :roll_up_node => [5, 20], :parent_node => [5, 20] }.each do |k, v|
     min, max=v[0], v[1]
@@ -15,7 +15,7 @@ describe NucsGrantsBudgetTree do
 
   { :account_desc => 30, :roll_up_node_desc => 30, :parent_node_desc => 30, :tree => 18 }.each do |k, v|
     it { is_expected.not_to allow_value(nil).for(k) }
-    it { is_expected.to ensure_length_of(k).is_at_most(v) }
+    it { is_expected.to validate_length_of(k).is_at_most(v) }
   end
 
 

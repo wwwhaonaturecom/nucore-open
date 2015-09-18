@@ -1,6 +1,6 @@
 require "spec_helper"
 
-describe NufsAccount do
+RSpec.describe NufsAccount do
   subject(:account) do
     create(:nufs_account,
       account_users_attributes: account_users_attributes_hash(user: user)

@@ -3,7 +3,7 @@ require_relative '../support/nucs_validator_helper'
 
 include NucsValidatorHelper
 
-describe NucsValidator do
+RSpec.describe NucsValidator do
 
   REVENUE_ACCT='50617'
   NON_REVENUE_ACCT='75340'

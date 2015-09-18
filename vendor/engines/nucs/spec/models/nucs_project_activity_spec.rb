@@ -1,7 +1,7 @@
 require 'spec_helper'
 require 'nucs_spec_helper'
 
-describe NucsProjectActivity do
+RSpec.describe NucsProjectActivity do
 
   { :project => [8, 15], :activity => [2, 15] }.each do |k, v|
     min, max=v[0], v[1]

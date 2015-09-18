@@ -1,7 +1,7 @@
 require 'spec_helper'
 require 'nucs_spec_helper'
 
-shared_examples_for 'GE001' do
+RSpec.shared_examples_for 'GE001' do
 
   it { is_expected.not_to allow_value(mkstr(513)).for(:auxiliary) }
   it { is_expected.to allow_value(nil).for(:auxiliary) }
@@ -76,7 +76,7 @@ end
 
 
 { NucsAccount => [5, 10], NucsProgram => [4, 5] }.each do |k, v|
-  describe k do
+  RSpec.describe k do
     min, max=v[0], v[1]
     it_should_behave_like 'GE001'
     it { is_expected.not_to allow_value(mkstr(min, 'a')).for(:value) }
@@ -89,7 +89,7 @@ end
 
 
 { NucsFund => [3, 5], NucsChartField1 => [4, 10], NucsDepartment => [7, 10] }.each do |k, v|
-  describe k do
+  RSpec.describe k do
     min, max=v[0], v[1]
     it_should_behave_like 'GE001'
     it { is_expected.not_to allow_value(mkstr(min, 'a')).for(:value) }

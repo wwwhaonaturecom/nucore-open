@@ -11,7 +11,7 @@ class JxmlRenderer
   end
 
   def render
-    raise 'Must specify a directory to render in' unless from_dir
+    raise ArgumentError.new('Must specify a directory to render in') unless from_dir
     return if JxmlHoliday.today?
     render!
   end

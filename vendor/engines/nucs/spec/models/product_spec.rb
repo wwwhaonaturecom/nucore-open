@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe Product do
+RSpec.describe Product do
   it 'should allow an expense account starting with a 7' do
     product = Product.new(:account => '71234')
     product.valid?

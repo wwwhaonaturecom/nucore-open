@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe PmuDepartment do
+RSpec.describe PmuDepartment do
 
   it { is_expected.to have_db_column(:unit_id).of_type :string }
   it { is_expected.to have_db_column(:pmu).of_type :string }

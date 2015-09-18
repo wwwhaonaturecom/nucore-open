@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe JxmlHoliday do
+RSpec.describe JxmlHoliday do
 
   it { is_expected.to validate_presence_of :date }
 

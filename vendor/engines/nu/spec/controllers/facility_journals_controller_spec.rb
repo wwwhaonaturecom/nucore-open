@@ -2,7 +2,7 @@ require 'spec_helper'
 require 'controller_spec_helper'
 require 'transaction_search_spec_helper'
 
-describe FacilityJournalsController do
+RSpec.describe FacilityJournalsController do
   include DateHelper
 
   render_views
@@ -44,7 +44,7 @@ describe FacilityJournalsController do
         expect(assigns(:journal).journal_date).to eq(parse_usa_date(@journal_date))
         expect(assigns(:journal).journal_rows).not_to be_empty
 
-        is_expected.to set_the_flash
+        is_expected.to set_flash
         assert_redirected_to facility_journals_path
       end
 

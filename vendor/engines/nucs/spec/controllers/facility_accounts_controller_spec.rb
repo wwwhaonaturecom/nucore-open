@@ -1,7 +1,7 @@
 require 'spec_helper'
 require 'controller_spec_helper'
 
-describe FacilityAccountsController do
+RSpec.describe FacilityAccountsController do
   before(:all) { create_users }
   before :each do
     @authable=FactoryGirl.create(:facility)

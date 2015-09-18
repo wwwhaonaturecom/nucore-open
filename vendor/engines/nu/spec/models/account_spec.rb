@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe Account do
+RSpec.describe Account do
   def unopen_account(account_number)
     components = ValidatorFactory.instance(account_number).components.reject do |k,v|
       v.nil?

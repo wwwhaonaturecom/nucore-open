@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe JxmlRenderer do
+RSpec.describe JxmlRenderer do
 
   let(:weekday) { Date.parse("2013-02-14") }
   let(:weekend) { Date.parse("2013-02-16") }
@@ -93,7 +93,7 @@ describe JxmlRenderer do
     end
 
     it 'raises an error if no from_dir is specified' do
-      expect { JxmlRenderer.render }.to raise_error
+      expect { JxmlRenderer.render }.to raise_error(ArgumentError)
     end
 
     it "creates an ActionView with this engine's template" do

@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 
-describe NucsGrantsBudgetTree do
+RSpec.describe NucsGrantsBudgetTree do
 
   it 'should delete all records in the DB and successfully ingest a source file' do
     source=File.join(File.dirname(__FILE__), '..', 'files', 'grants_budget_tree.txt')

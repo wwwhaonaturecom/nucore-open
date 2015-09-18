@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe Order do
+RSpec.describe Order do
 
   context 'add, clear, adjust' do
     before(:each) do

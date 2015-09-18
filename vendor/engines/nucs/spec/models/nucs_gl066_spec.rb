@@ -1,7 +1,7 @@
 require 'spec_helper'
 require 'nucs_spec_helper'
 
-describe NucsGl066 do
+RSpec.describe NucsGl066 do
 
   { :fund => [3, 5], :department => [7, 10] }.each do |k, v|
     min, max=v[0], v[1]

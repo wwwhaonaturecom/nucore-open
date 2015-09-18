@@ -1,7 +1,7 @@
 require 'spec_helper'
 require 'controller_spec_helper'
 
-describe InstrumentReportsController do
+RSpec.describe InstrumentReportsController do
   before(:all) { create_users }
 
   before :each do
