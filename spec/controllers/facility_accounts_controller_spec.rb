@@ -1,7 +1,7 @@
-require 'spec_helper'
+require "rails_helper"
 require 'controller_spec_helper'
 
-describe FacilityAccountsController do
+RSpec.describe FacilityAccountsController do
   render_views
 
   before(:all) { create_users }
@@ -122,7 +122,7 @@ describe FacilityAccountsController do
         expect(assigns(:account)).to eq(@account)
         expect(assigns(:account).affiliate).to be_nil
         expect(assigns(:account).affiliate_other).to be_nil
-        is_expected.to set_the_flash
+        is_expected.to set_flash
         assert_redirected_to facility_account_url
       end
 
@@ -158,7 +158,7 @@ describe FacilityAccountsController do
         assigns(:account).account_users[0] == @owner
         expect(assigns(:account).affiliate).to be_nil
         expect(assigns(:account).affiliate_other).to be_nil
-        is_expected.to set_the_flash
+        is_expected.to set_flash
         assert_redirected_to user_accounts_url(@authable, assigns(:account).owner_user)
       end
 
@@ -380,7 +380,7 @@ describe FacilityAccountsController do
 
       it_should_allow_all facility_managers do
         expect(assigns(:account)).to eq(@account)
-        is_expected.to set_the_flash
+        is_expected.to set_flash
         expect(assigns(:account)).to be_suspended
         assert_redirected_to facility_account_path(@authable, @account)
       end
@@ -402,7 +402,7 @@ describe FacilityAccountsController do
 
       it_should_allow_all facility_managers do
         expect(assigns(:account)).to eq(@account)
-        is_expected.to set_the_flash
+        is_expected.to set_flash
         expect(assigns(:account)).not_to be_suspended
         assert_redirected_to facility_account_path(@authable, @account)
       end
