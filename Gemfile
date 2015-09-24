@@ -97,6 +97,7 @@ group :development, :deployment do
   gem "capistrano-rvm"
   gem "capistrano-bundler"
   gem "capistrano-rails"
+  gem 'whenever', require: false
 end
 
 group :test do

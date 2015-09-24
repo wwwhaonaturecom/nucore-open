@@ -123,6 +123,7 @@ GEM
     celluloid-io (0.15.0)
       celluloid (>= 0.15.0)
       nio4r (>= 0.5.0)
+    chronic (0.10.2)
     chronic_duration (0.10.6)
       numerizer (~> 0.1.1)
     ci_reporter (1.9.2)
@@ -519,6 +520,8 @@ GEM
       raindrops (~> 0.7)
     warden (1.2.3)
       rack (>= 1.0)
+    whenever (0.9.4)
+      chronic (>= 0.6.3)
     will_paginate (3.0.7)
     xml-simple (1.1.4)
 
@@ -599,6 +602,7 @@ DEPENDENCIES
   uglifier (>= 2.1.1)
   unicorn
   vestal_versions (= 1.2.4.3)!
+  whenever
   will_paginate (~> 3.0.5)
 
 BUNDLED WITH
