@@ -12,7 +12,7 @@ unless Rails.root.to_s.include?('/vendor/engines/nucs')
         define_gl066 account
         account
       end
-      sequence(:description, 'a') { |n| "nufs account #{n}" }
+      sequence(:description, 'aaaaaaaa') { |n| "nufs account #{n}" }
       expires_at { Time.zone.now + 1.month }
       created_by 0
     end
