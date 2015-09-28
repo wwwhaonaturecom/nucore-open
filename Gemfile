@@ -9,9 +9,9 @@ gem 'activerecord-oracle_enhanced-adapter', '1.4.3'
 gem 'ruby-oci8',        '2.1.8'
 
 ## auth
-gem 'devise',           '~>2.2.8'
-gem 'devise-encryptable', '0.1.2'
-gem 'devise_ldap_authenticatable', '~>0.7.0'
+gem 'devise',           '~> 3.5.0'
+gem 'devise-encryptable', '~> 0.2.0'
+gem 'devise_ldap_authenticatable', '~> 0.8.5'
 gem 'cancancan',        '1.10'
 
 ## models
