@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20150611175130) do
+ActiveRecord::Schema.define(:version => 20150930213606) do
 
   create_table "account_users", :force => true do |t|
     t.integer  "account_id",               :precision => 38, :scale => 0, :null => false
@@ -147,6 +147,7 @@ ActiveRecord::Schema.define(:version => 20150611175130) do
   end
 
   add_index "facilities", ["abbreviation"], :name => "sys_c008532", :unique => true, :tablespace => "bc_nucore"
+  add_index "facilities", ["is_active", "name"], :name => "i_facilities_is_active_name"
   add_index "facilities", ["name"], :name => "sys_c008531", :unique => true, :tablespace => "bc_nucore"
   add_index "facilities", ["url_name"], :name => "sys_c008533", :unique => true, :tablespace => "bc_nucore"
 
