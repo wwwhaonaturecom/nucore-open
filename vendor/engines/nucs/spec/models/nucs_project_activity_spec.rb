@@ -1,4 +1,4 @@
-require 'spec_helper'
+require "rails_helper"
 require 'nucs_spec_helper'
 
 RSpec.describe NucsProjectActivity do
@@ -12,7 +12,6 @@ RSpec.describe NucsProjectActivity do
     it { is_expected.to allow_value(mkstr(min)).for(k) }
   end
 
-
   it 'tokenizes. Should return an Array of size 3 on a valid, full line' do
     source_line='40000137|01|Sundry Persons for CAS & Sch o|31-DEC-23|31-AUG-49|'
     tokens=NucsProjectActivity.tokenize_source_line(source_line)
@@ -25,7 +24,6 @@ RSpec.describe NucsProjectActivity do
     expect(tokens[2]).to eq(source_line[nxt_sep_ndx+1..-1])
   end
 
-
   it 'tokenizes. Should return an Array of size 2 if no auxiliary data is present' do
     source_line='40000137|01|'
     tokens=NucsProjectActivity.tokenize_source_line(source_line)
@@ -36,7 +34,6 @@ RSpec.describe NucsProjectActivity do
     nxt_sep_ndx=source_line.index(NucsSourcedFromFile::NUCS_TOKEN_SEPARATOR, sep_ndx+1)
     expect(tokens[1]).to eq(source_line[sep_ndx+1...nxt_sep_ndx])
   end
-
 
   [ '4000013701Sundry Persons for CAS & Sch o31-DEC-2331-AUG-49',
     '4000013701Sundry Persons for CAS & Sch o31-DEC-2331-AUG-49|',
@@ -49,7 +46,6 @@ RSpec.describe NucsProjectActivity do
     end
   end
 
-
   it 'creates. Should make a new record on line with no auxiliary data' do
     source_line='40000137|01|'
     tokens=NucsProjectActivity.tokenize_source_line(source_line)
@@ -59,7 +55,6 @@ RSpec.describe NucsProjectActivity do
     expect(pa.project).to eq(tokens[0])
     expect(pa.activity).to eq(tokens[1])
   end
-
 
   it 'creates. Should make a new record on line with auxiliary data' do
     source_line='40000137|01|Sundry Persons for CAS & Sch o|31-DEC-23|31-AUG-49|'
@@ -71,7 +66,6 @@ RSpec.describe NucsProjectActivity do
     expect(pa.activity).to eq(tokens[1])
     expect(pa.auxiliary).to eq(tokens[2])
   end
-
 
   it 'fails to creates. Should return an invalid object on a valid line with invalid data' do
     source_line='XXXXXXX|01|'

@@ -1,4 +1,4 @@
-require 'spec_helper'
+require "rails_helper"
 
 RSpec.describe FacilityAccount do
   context "valid account number" do
@@ -42,6 +42,5 @@ RSpec.describe FacilityAccount do
       assert !@account.valid?
       assert @account.errors[:account_number]
     end
-
   end
 end

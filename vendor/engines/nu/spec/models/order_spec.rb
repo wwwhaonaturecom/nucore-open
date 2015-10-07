@@ -1,7 +1,6 @@
-require 'spec_helper'
+require "rails_helper"
 
 RSpec.describe Order do
-
   context 'add, clear, adjust' do
     before(:each) do
       @facility         = FactoryGirl.create(:facility)
@@ -64,8 +63,6 @@ RSpec.describe Order do
           @order.auto_assign_account!(@item)
         end
       end
-
     end
-
   end
 end
