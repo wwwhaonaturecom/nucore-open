@@ -1,4 +1,4 @@
-require 'spec_helper'
+require "rails_helper"
 
 RSpec.describe FacilityAccount do
   context 'revenue_account' do

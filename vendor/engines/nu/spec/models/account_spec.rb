@@ -1,4 +1,4 @@
-require 'spec_helper'
+require "rails_helper"
 
 RSpec.describe Account do
   def unopen_account(account_number)
@@ -43,6 +43,5 @@ RSpec.describe Account do
         expect(@nufs_account.validate_against_product(@bundle, @user)).not_to be_nil
       end
     end
-
   end
 end

@@ -1,4 +1,4 @@
-require 'spec_helper'
+require "rails_helper"
 require 'controller_spec_helper'
 require 'transaction_search_spec_helper'
 
@@ -47,9 +47,6 @@ RSpec.describe FacilityJournalsController do
         is_expected.to set_flash
         assert_redirected_to facility_journals_path
       end
-
     end
-
   end
-
 end

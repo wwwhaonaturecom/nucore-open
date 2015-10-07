@@ -1,4 +1,4 @@
-require 'spec_helper'
+require "rails_helper"
 
 RSpec.describe JxmlRenderer do
 
@@ -37,7 +37,6 @@ RSpec.describe JxmlRenderer do
     end
   end
 
-
   describe 'rendering', :timecop_freeze do
     let(:now) { weekday }
 
@@ -53,7 +52,6 @@ RSpec.describe JxmlRenderer do
       allow(File).to receive(:open).and_yield []
     end
 
-
     describe 'argument effects' do
       it 'does not move a file when to_dir param is nil' do
         expect(FileUtils).not_to receive :mv
@@ -65,7 +63,6 @@ RSpec.describe JxmlRenderer do
         JxmlRenderer.render '/tmp', '/tmp'
       end
     end
-
 
     describe 'query window' do
       it 'makes Friday the start day when running after the weekend' do

@@ -1,5 +1,4 @@
-
-require "spec_helper"
+require "rails_helper"
 
 RSpec.describe "General reports controller tranlations" do
   it "includes the PMU header (i.e. the override in the engine takes precedence)" do

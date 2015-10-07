@@ -1,4 +1,4 @@
-require 'spec_helper'
+require "rails_helper"
 
 RSpec.describe PmuDocument do
   let(:parser) { Nokogiri::XML::SAX::Parser.new(PmuDocument.new) }

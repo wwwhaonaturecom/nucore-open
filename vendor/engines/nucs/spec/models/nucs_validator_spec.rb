@@ -1,4 +1,4 @@
-require 'spec_helper'
+require "rails_helper"
 require_relative '../support/nucs_validator_helper'
 
 include NucsValidatorHelper
