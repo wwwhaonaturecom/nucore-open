@@ -1,0 +1,34 @@
+= content_for :h1 do
+  = t("nu_cardconnect.pay.title")
+
+= content_for :head_content do
+  = javascript_include_tag "cardconnect"
+  = stylesheet_link_tag "cardconnect"
+
+%h3= @account
+
+.row
+  .span6= render partial: "details"
+
+  .span6
+    %fieldset.well
+      = form_for :payment, url: process_statement_path, html: { class: "cardConnectForm", data: { endpoint: "#{Settings.cardconnect.endpoint}/cardsecure/cs" } } do |f|
+
+        .clearfix
+          = f.label :cc_number, t("nu_cardconnect.pay.cc_number")
+          = f.text_field :cc_number, data: { cc_number: true }, class: "cardConnectForm__input"
+          = f.hidden_field :cc_token, data: { cc_token: true }
+
+
+        .cardConnectForm__selectField
+          = f.label :exp_month, t("nu_cardconnect.pay.exp_month")
+          = f.select :exp_month, (1..12).to_a, { selected: Time.current.month },
+            data: { cc_exp_month: true }, class: "cardConnectForm__select"
+
+        .cardConnectForm__selectField
+          = f.label :exp_year, t("nu_cardconnect.pay.exp_year")
+          = f.select :exp_year, (Time.current.year..15.years.from_now.year).to_a, {},
+            data: { cc_exp_year: true }, class: "cardConnectForm__select"
+
+        .clearfix
+        = f.submit t("nu_cardconnect.pay.submit"), class: "btn btn-primary", disable_with: t("nu_cardconnect.pay.submit")

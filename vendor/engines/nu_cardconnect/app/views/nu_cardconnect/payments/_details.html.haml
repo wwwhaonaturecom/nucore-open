@@ -1,0 +1,9 @@
+= readonly_form_for :payment_action do |f|
+  = f.input :invoice_number, label: t("nu_cardconnect.details.invoice_number")
+  = f.input :invoice_date, input_html: { value: l(f.object.invoice_date.to_date, format: :usa) }, label: t("nu_cardconnect.details.invoice_date")
+  = f.input :statement_amount, input_html: { value: number_to_currency(f.object.statement_amount) }, label: t("nu_cardconnect.details.statement_amount")
+  = f.input :processing_fee, input_html: { value: number_to_currency(f.object.processing_fee) }, label: t("nu_cardconnect.details.processing_fee")
+  = f.input :total_amount, input_html: { value: number_to_currency(f.object.total_amount) }, label: t("nu_cardconnect.details.total_amount")
+  - if f.object.statement.paid_in_full? && @statement.payments.first
+    %label= t("nu_cardconnect.pay.payment_received")
+    = l(@statement.payments.first.created_at, format: :receipt)

@@ -1,0 +1,12 @@
+= content_for :h1 do
+  = current_facility
+
+= content_for :sidebar do
+  = render "admin/shared/sidenav_admin", sidenav_tab: "merchant_account"
+
+%h2= t("nu_cardconnect.merchant_accounts.title")
+= simple_form_for(@merchant_account, url: facility_merchant_account_path) do |f|
+  .form-inputs
+    = f.input :card_connect_merchant_id
+    = f.input :card_connect_location_id
+  = f.button :submit, "Save", class: "btn btn-primary"

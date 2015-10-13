@@ -1,0 +1,28 @@
+en:
+  nu_cardconnect:
+    process:
+      success: Thank you for your payment
+      failure: "There was an error processing your payment: %{errors}"
+      already_paid: This invoice has already been paid
+      no_merchant_id: This facility does not accept credit card payments
+    pay:
+      title: Pay Invoice
+      cc_number: Credit Card Number
+      exp_month: Exp Month
+      exp_year: Exp Year
+      payment_received: Payment Received
+      submit: Pay Now
+    merchant_accounts:
+      title: Card Connect Settings
+      update_success: "The merchant account information for this facility has been saved"
+    details:
+      invoice_number: Invoice Number
+      invoice_date: Date
+      statement_amount: Statement Amount
+      processing_fee: Credit Card Processing Fee
+      total_amount: Total Amount Due
+  activemodel:
+    attributes:
+      "nu_cardconnect/merchant_account":
+        card_connect_merchant_id: Merchant ID
+        card_connect_location_id: Location ID

@@ -52,6 +52,13 @@ module Nu
       pdf.text "Phone: #{@facility.phone_number}" if @facility.phone_number
       pdf.text "Fax: #{@facility.fax_number}" if @facility.fax_number
       pdf.text "Email: #{@facility.email}" if @facility.email
+      pay_online_information(pdf)
+    end
+
+    def pay_online_information(pdf)
+      return unless @statement.credit_card_payable?
+      pdf.formatted_text [text: "Pay Online", color: "0000FF", styles: [:underline],
+        link: NuCardconnect::Engine.routes.url_helpers.pay_statement_url(@statement.uuid)]
     end
 
     def generate_document_header(pdf)
@@ -84,7 +91,7 @@ module Nu
 
     def invoice_bounding_box_content
       content = [['Invoice:', "#{@statement.invoice_number}"],
-                 ['Date:', @statement.created_at.strftime('%m/%d/%Y')]] # TK I18n
+                 ['Date:', I18n.l(@statement.created_at.to_date, format: :usa)]]
 
       content << ['Purchase Order:', @account.account_number] if @account.is_a?(PurchaseOrderAccount)
       content
