@@ -6,7 +6,7 @@ gem 'rails_config',     '0.3.3'
 
 ## database
 gem 'activerecord-oracle_enhanced-adapter', '1.4.3'
-gem 'ruby-oci8',        '2.1.8'
+gem 'ruby-oci8',        '~> 2.2.0'
 
 ## auth
 gem 'devise',           '~> 3.5.0'
