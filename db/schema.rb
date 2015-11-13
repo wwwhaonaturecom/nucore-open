@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20150930213606) do
+ActiveRecord::Schema.define(:version => 20151112060852) do
 
   create_table "account_users", :force => true do |t|
     t.integer  "account_id",               :precision => 38, :scale => 0, :null => false
@@ -50,8 +50,8 @@ ActiveRecord::Schema.define(:version => 20150930213606) do
 
   create_table "affiliates", :force => true do |t|
     t.string   "name"
-    t.datetime "created_at"
-    t.datetime "updated_at"
+    t.datetime "created_at", :null => false
+    t.datetime "updated_at", :null => false
   end
 
   create_table "bi_netids", :force => true do |t|
@@ -99,8 +99,8 @@ ActiveRecord::Schema.define(:version => 20150930213606) do
     t.integer  "passer_id",           :precision => 38, :scale => 0
     t.string   "passer_type"
     t.boolean  "active",              :precision => 1,  :scale => 0, :default => false
-    t.datetime "created_at"
-    t.datetime "updated_at"
+    t.datetime "created_at",                                                            :null => false
+    t.datetime "updated_at",                                                            :null => false
   end
 
   add_index "external_service_passers", ["external_service_id"], :name => "i_ext_ser_pas_ext_ser_id", :tablespace => "bc_nucore"
@@ -110,8 +110,8 @@ ActiveRecord::Schema.define(:version => 20150930213606) do
     t.integer  "external_service_id", :precision => 38, :scale => 0
     t.integer  "receiver_id",         :precision => 38, :scale => 0
     t.string   "receiver_type"
-    t.datetime "created_at"
-    t.datetime "updated_at"
+    t.datetime "created_at",                                         :null => false
+    t.datetime "updated_at",                                         :null => false
     t.string   "external_id"
     t.text     "response_data"
   end
@@ -122,8 +122,8 @@ ActiveRecord::Schema.define(:version => 20150930213606) do
   create_table "external_services", :force => true do |t|
     t.string   "type"
     t.string   "location"
-    t.datetime "created_at"
-    t.datetime "updated_at"
+    t.datetime "created_at", :null => false
+    t.datetime "updated_at", :null => false
   end
 
   create_table "facilities", :force => true do |t|
@@ -147,7 +147,7 @@ ActiveRecord::Schema.define(:version => 20150930213606) do
   end
 
   add_index "facilities", ["abbreviation"], :name => "sys_c008532", :unique => true, :tablespace => "bc_nucore"
-  add_index "facilities", ["is_active", "name"], :name => "i_facilities_is_active_name"
+  add_index "facilities", ["is_active", "name"], :name => "i_facilities_is_active_name", :tablespace => "bc_nucore"
   add_index "facilities", ["name"], :name => "sys_c008531", :unique => true, :tablespace => "bc_nucore"
   add_index "facilities", ["url_name"], :name => "sys_c008533", :unique => true, :tablespace => "bc_nucore"
 
@@ -216,8 +216,8 @@ ActiveRecord::Schema.define(:version => 20150930213606) do
     t.integer   "user_id",                   :precision => 38, :scale => 0, :null => false
     t.string    "notice",                                                   :null => false
     t.timestamp "dismissed_at", :limit => 6
-    t.datetime  "created_at"
-    t.datetime  "updated_at"
+    t.datetime  "created_at",                                               :null => false
+    t.datetime  "updated_at",                                               :null => false
   end
 
   add_index "notifications", ["user_id"], :name => "index_notifications_on_user_id", :tablespace => "bc_nucore"
@@ -354,8 +354,8 @@ ActiveRecord::Schema.define(:version => 20150930213606) do
     t.boolean   "fail_on_error",               :precision => 1,  :scale => 0, :default => true
     t.boolean   "send_receipts",               :precision => 1,  :scale => 0, :default => false
     t.integer   "created_by",                  :precision => 38, :scale => 0,                    :null => false
-    t.datetime  "created_at"
-    t.datetime  "updated_at"
+    t.datetime  "created_at",                                                                    :null => false
+    t.datetime  "updated_at",                                                                    :null => false
     t.integer   "facility_id",                 :precision => 38, :scale => 0
     t.timestamp "processed_at",   :limit => 6
   end
@@ -426,8 +426,8 @@ ActiveRecord::Schema.define(:version => 20150930213606) do
     t.integer  "price_group_id",     :precision => 38, :scale => 0, :null => false
     t.integer  "product_id",         :precision => 38, :scale => 0, :null => false
     t.integer  "reservation_window", :precision => 38, :scale => 0
-    t.datetime "created_at"
-    t.datetime "updated_at"
+    t.datetime "created_at",                                        :null => false
+    t.datetime "updated_at",                                        :null => false
   end
 
   add_index "price_group_products", ["price_group_id"], :name => "i_pri_gro_pro_pri_gro_id", :tablespace => "bc_nucore"
@@ -472,8 +472,8 @@ ActiveRecord::Schema.define(:version => 20150930213606) do
   create_table "product_access_groups", :force => true do |t|
     t.integer  "product_id", :precision => 38, :scale => 0, :null => false
     t.string   "name"
-    t.datetime "created_at"
-    t.datetime "updated_at"
+    t.datetime "created_at",                                :null => false
+    t.datetime "updated_at",                                :null => false
   end
 
   add_index "product_access_groups", ["product_id"], :name => "i_pro_acc_gro_pro_id", :tablespace => "bc_nucore"
@@ -547,8 +547,8 @@ ActiveRecord::Schema.define(:version => 20150930213606) do
     t.string   "password",            :limit => 50
     t.boolean  "auto_logout",                       :precision => 1,  :scale => 0
     t.string   "type"
-    t.datetime "created_at"
-    t.datetime "updated_at"
+    t.datetime "created_at",                                                                       :null => false
+    t.datetime "updated_at",                                                                       :null => false
     t.integer  "auto_logout_minutes",               :precision => 38, :scale => 0, :default => 60
   end
 
@@ -590,8 +590,8 @@ ActiveRecord::Schema.define(:version => 20150930213606) do
   create_table "schedules", :force => true do |t|
     t.string   "name"
     t.integer  "facility_id", :precision => 38, :scale => 0
-    t.datetime "created_at"
-    t.datetime "updated_at"
+    t.datetime "created_at",                                 :null => false
+    t.datetime "updated_at",                                 :null => false
   end
 
   add_index "schedules", ["facility_id"], :name => "i_schedules_facility_id", :tablespace => "bc_nucore"
@@ -599,8 +599,8 @@ ActiveRecord::Schema.define(:version => 20150930213606) do
   create_table "statement_rows", :force => true do |t|
     t.integer  "statement_id",    :precision => 38, :scale => 0, :null => false
     t.integer  "order_detail_id", :precision => 38, :scale => 0, :null => false
-    t.datetime "created_at"
-    t.datetime "updated_at"
+    t.datetime "created_at",                                     :null => false
+    t.datetime "updated_at",                                     :null => false
   end
 
   add_index "statement_rows", ["order_detail_id"], :name => "i_sta_row_ord_det_id", :tablespace => "bc_nucore"
@@ -640,8 +640,8 @@ ActiveRecord::Schema.define(:version => 20150930213606) do
     t.datetime "updated_at",                                :null => false
   end
 
-  add_index "training_requests", ["product_id"], :name => "i_training_requests_product_id"
-  add_index "training_requests", ["user_id"], :name => "i_training_requests_user_id"
+  add_index "training_requests", ["product_id"], :name => "i_training_requests_product_id", :tablespace => "bc_nucore"
+  add_index "training_requests", ["user_id"], :name => "i_training_requests_user_id", :tablespace => "bc_nucore"
 
   create_table "user_roles", :force => true do |t|
     t.integer "user_id",     :precision => 38, :scale => 0, :null => false
@@ -663,8 +663,8 @@ ActiveRecord::Schema.define(:version => 20150930213606) do
     t.datetime "last_sign_in_at"
     t.string   "current_sign_in_ip"
     t.string   "last_sign_in_ip"
-    t.datetime "created_at"
-    t.datetime "updated_at"
+    t.datetime "created_at",                                                            :null => false
+    t.datetime "updated_at",                                                            :null => false
     t.string   "reset_password_token"
     t.datetime "reset_password_sent_at"
     t.integer  "uid",                    :precision => 38, :scale => 0
@@ -683,26 +683,26 @@ ActiveRecord::Schema.define(:version => 20150930213606) do
     t.text     "modifications"
     t.integer  "version_number",    :precision => 38, :scale => 0
     t.string   "tag"
-    t.datetime "created_at"
-    t.datetime "updated_at"
+    t.datetime "created_at",                                       :null => false
+    t.datetime "updated_at",                                       :null => false
     t.string   "reason_for_update"
     t.integer  "reverted_from",     :precision => 38, :scale => 0
     t.string   "commit_label"
   end
 
-  add_index "versions", ["commit_label"], :name => "index_versions_on_commit_label"
-  add_index "versions", ["created_at"], :name => "index_versions_on_created_at"
-  add_index "versions", ["tag"], :name => "index_versions_on_tag"
-  add_index "versions", ["user_id", "user_type"], :name => "i_versions_user_id_user_type"
-  add_index "versions", ["user_name"], :name => "index_versions_on_user_name"
-  add_index "versions", ["version_number"], :name => "index_versions_on_number"
-  add_index "versions", ["versioned_id", "versioned_type"], :name => "i_ver_ver_id_ver_typ"
+  add_index "versions", ["commit_label"], :name => "index_versions_on_commit_label", :tablespace => "bc_nucore"
+  add_index "versions", ["created_at"], :name => "index_versions_on_created_at", :tablespace => "bc_nucore"
+  add_index "versions", ["tag"], :name => "index_versions_on_tag", :tablespace => "bc_nucore"
+  add_index "versions", ["user_id", "user_type"], :name => "i_versions_user_id_user_type", :tablespace => "bc_nucore"
+  add_index "versions", ["user_name"], :name => "index_versions_on_user_name", :tablespace => "bc_nucore"
+  add_index "versions", ["version_number"], :name => "index_versions_on_number", :tablespace => "bc_nucore"
+  add_index "versions", ["versioned_id", "versioned_type"], :name => "i_ver_ver_id_ver_typ", :tablespace => "bc_nucore"
 
   add_foreign_key "account_users", "accounts", :name => "fk_accounts"
 
   add_foreign_key "accounts", "facilities", :name => "fk_account_facility_id"
 
-  add_foreign_key "bi_netids", "facilities", :name => "sys_c00372604"
+  add_foreign_key "bi_netids", "facilities", :name => "sys_c0013780"
 
   add_foreign_key "bundle_products", "products", :column => "bundle_product_id", :name => "fk_bundle_prod_prod"
   add_foreign_key "bundle_products", "products", :name => "fk_bundle_prod_bundle"

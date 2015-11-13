@@ -50,6 +50,8 @@ gem 'fast-aes',         '0.1.1'
 gem 'pdf-reader',       '1.3.3'
 gem 'exception_notification', '~> 4.0.1'
 gem 'daemons',          '1.1.9'
+gem 'lograge'
+gem 'logstash-event'
 
 ## custom
 gem 'c2po',             '~> 1.0.0', path: 'vendor/engines/c2po'
@@ -64,12 +66,22 @@ gem 'synaccess_connect', '0.2.2', git: 'git@github.com:tablexi/synaccess.git'
 group :development do
   gem 'better_errors'
   gem 'binding_of_caller'
+  gem 'rubocop', require: false
+end
+
+group :development, :deployment do
+  gem "capistrano",         require: false
+  gem "capistrano-rails",   require: false
+  gem "capistrano-rvm",     require: false
+  gem "capistrano-bundler", require: false
+  gem 'whenever',           require: false
 end
 
 group :development, :test do
   gem 'awesome_print',     '1.1.0'
   gem 'factory_girl_rails', '~> 4.5.0'
   gem 'guard-rspec', require: false
+  gem 'guard-teaspoon', require: false
   gem 'pry-rails',         '~> 0.3.2'
   gem 'pry-byebug',        '~> 2.0.0'
   gem 'quiet_assets'
@@ -91,18 +103,9 @@ group :development, :test do
   gem 'simplecov', :platforms => [:ruby_19]
 end
 
-# deployment
-group :development, :deployment do
-  gem "capistrano", "~> 3.2.0"
-  gem "capistrano-rvm"
-  gem "capistrano-bundler"
-  gem "capistrano-rails"
-  gem 'whenever', require: false
-end
-
 group :test do
   gem 'rspec_junit_formatter', '0.2.3'
-  gem 'ci_reporter'
+  gem 'ci_reporter_rspec'
 end
 
 group :assets do
