@@ -45,12 +45,22 @@ class NucsValidator
   def account_is_open!(fulfill_date = nil)
     return if Whitelist.includes?(@chart_string)
     raise NucsErrors::InputError.new("account", nil) unless @account
+
+    # Step 1a & 1b
     return validate_zero_fund! if @fund.start_with?("0")
+
+    # Step 2
     return validate_ge001_components! if revenue_account?
-    validate_chart_field1!
+
+    # Step 3
+    validate_program_existence!
+    validate_chart_field1_existence!
+
     components = validate_gl066_components!
 
+    # Step 4
     if grant?
+      # Step 6
       tree = NucsGrantsBudgetTree.find_by_account(@account)
       raise UnknownBudgetTreeError.new(@account) unless tree
       validate_gl066_components!(tree.roll_up_node)
@@ -166,8 +176,12 @@ class NucsValidator
     raise InputError.new("fund", @fund)
   end
 
-  def validate_chart_field1!
+  def validate_chart_field1_existence!
     raise UnknownGE001Error.new("chart field 1", @chart_field1) if @chart_field1 && NucsChartField1.find_by_value(@chart_field1).nil?
+  end
+
+  def validate_program_existence!
+    raise UnknownGE001Error.new("program", @program) if @program && NucsProgram.find_by_value(@program).nil?
   end
 
   def validate_ge001_components!
@@ -175,8 +189,8 @@ class NucsValidator
     raise UnknownGE001Error.new("department", @department) unless NucsDepartment.find_by_value(@department)
     raise UnknownGE001Error.new("project", @project) if @project && NucsProjectActivity.find_by_project(@project).nil?
     raise UnknownGE001Error.new("activity", @activity) if @activity && NucsProjectActivity.find_by_activity(@activity).nil?
-    raise UnknownGE001Error.new("program", @program) if @program && NucsProgram.find_by_value(@program).nil?
-    validate_chart_field1!
+    validate_program_existence!
+    validate_chart_field1_existence!
   end
 
   def validate_gl066_components!(account = nil)

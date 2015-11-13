@@ -27,6 +27,7 @@ module NucsValidatorHelper
       gl = FactoryGirl.create(:nucs_gl066_without_dates, attrs)
     end
 
+    FactoryGirl.create(:nucs_program, value: validator.program) if validator.program
     FactoryGirl.create(:nucs_chart_field1, value: validator.chart_field1) if validator.chart_field1
   end
 
