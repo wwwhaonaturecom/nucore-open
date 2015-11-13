@@ -1,21 +1,21 @@
 require "rails_helper"
-require 'controller_spec_helper'
+require "controller_spec_helper"
 
 RSpec.describe FacilityAccountsController do
   before(:all) { create_users }
   before :each do
-    @authable=FactoryGirl.create(:facility)
-    @facility_account=FactoryGirl.create(:facility_account, :facility => @authable)
+    @authable = FactoryGirl.create(:facility)
+    @facility_account = FactoryGirl.create(:facility_account, facility: @authable)
   end
 
-  describe 'create' do
+  describe "create" do
     let(:base_account_fields) do
-      { :fund => "901",
-        :dept => "7777777",
-        :project => "50028814",
-        :activity => "01",
-        :program => '',
-        :chart_field1 => '' }
+      { fund: "901",
+        dept: "7777777",
+        project: "50028814",
+        activity: "01",
+        program: "",
+        chart_field1: "" }
     end
 
     let(:base_account_number) { "901-7777777-50028814-01" }
@@ -24,125 +24,124 @@ RSpec.describe FacilityAccountsController do
       @method = :post
       @action = :create
       @params = {
-        :facility_id => @authable.url_name,
-        :owner_user_id => @guest.id,
-        :class_type => 'NufsAccount'
+        facility_id: @authable.url_name,
+        owner_user_id: @guest.id,
+        class_type: "NufsAccount",
       }
     end
 
-    context 'entering a four digit project' do
+    context "entering a four digit project" do
       before :each do
-        @params.merge!(:account => { :description => 'description', :account_number_parts => {:fund => '901', :dept => '7777777', :project => '1234' }})
+        @params.merge!(account: { description: "description", account_number_parts: { fund: "901", dept: "7777777", project: "1234" } })
         do_request
       end
 
-      it 'should not save' do
+      it "should not save" do
         expect(assigns(:account)).not_to be_persisted
         expect(assigns(:account).errors.full_messages).to include("Project is the wrong length (should be 8 characters)")
       end
     end
 
-    context 'without a project, but with an activity' do
+    context "without a project, but with an activity" do
       before :each do
-        @params.merge!(:account => { :description => 'description', :account_number_parts => {:fund => '901', :dept => '7777777', :activity => '12' }})
+        @params.merge!(account: { description: "description", account_number_parts: { fund: "901", dept: "7777777", activity: "12" } })
         do_request
       end
 
-      it 'should not save' do
+      it "should not save" do
         expect(assigns(:account)).not_to be_persisted
         expect(assigns(:account).errors.full_messages).to include("Project can't be blank")
       end
     end
 
-    context 'without a program or chart_field1' do
+    context "without a program or chart_field1" do
       before :each do
         define_gl066 base_account_number
-        @params.merge!(:account => {
-          :description => 'Description',
-          :account_number_parts => base_account_fields
-        })
+        @params.merge!(account: {
+                         description: "Description",
+                         account_number_parts: base_account_fields,
+                       })
         do_request
       end
 
-      it 'should be persisted' do
+      it "should be persisted" do
         expect(assigns(:account)).to be_persisted
       end
 
-      it 'should set the number' do
+      it "should set the number" do
         expect(assigns(:account).account_number).to eq(base_account_number)
       end
 
-      it 'should set the display' do
+      it "should set the display" do
         expect(assigns(:account).to_s).to include base_account_number
       end
     end
 
-    context 'with a program' do
+    context "with a program" do
       before :each do
         define_gl066 base_account_number + "-1234"
-        @params.merge!(:account => {
-          :description => 'Description',
-          :account_number_parts => base_account_fields.merge(:program => '1234')
-        })
+        @params.merge!(account: {
+                         description: "Description",
+                         account_number_parts: base_account_fields.merge(program: "1234"),
+                       })
         do_request
       end
 
-      it 'should be persisted' do
+      it "should be persisted" do
         expect(assigns(:account)).to be_persisted
       end
 
-      it 'should set the number' do
+      it "should set the number" do
         expect(assigns(:account).account_number).to eq(base_account_number + "-1234")
       end
 
-      it 'should set the display' do
+      it "should set the display" do
         expect(assigns(:account).to_s).to include "#{base_account_number} (1234) ()"
       end
     end
 
-    context 'with a chart_field1' do
+    context "with a chart_field1" do
       before :each do
         define_gl066 base_account_number + "--1234"
-        @params.merge!(:account => {
-          :description => 'Description',
-          :account_number_parts => base_account_fields.merge(:chart_field1 => '1234')
-        })
+        @params.merge!(account: {
+                         description: "Description",
+                         account_number_parts: base_account_fields.merge(chart_field1: "1234"),
+                       })
         do_request
       end
 
-      it 'should be persisted' do
+      it "should be persisted" do
         expect(assigns(:account)).to be_persisted
       end
 
-      it 'should set the number' do
+      it "should set the number" do
         expect(assigns(:account).account_number).to eq(base_account_number + "--1234")
       end
 
-      it 'should set the display' do
+      it "should set the display" do
         expect(assigns(:account).to_s).to include "#{base_account_number} () (1234)"
       end
     end
 
-    context 'with a program AND chart_field1' do
+    context "with a program AND chart_field1" do
       before :each do
         define_gl066 base_account_number + "-6543-1234"
-        @params.merge!(:account => {
-          :description => 'Description',
-          :account_number_parts => base_account_fields.merge(:program => '6543', :chart_field1 => '1234')
-        })
+        @params.merge!(account: {
+                         description: "Description",
+                         account_number_parts: base_account_fields.merge(program: "6543", chart_field1: "1234"),
+                       })
         do_request
       end
 
-      it 'should be persisted' do
+      it "should be persisted" do
         expect(assigns(:account)).to be_persisted
       end
 
-
-      it 'should set the number' do
+      it "should set the number" do
         expect(assigns(:account).account_number).to eq(base_account_number + "-6543-1234")
       end
 
-      it 'should set the display' do
+      it "should set the display" do
         expect(assigns(:account).to_s).to include "#{base_account_number} (6543) (1234)"
       end
     end

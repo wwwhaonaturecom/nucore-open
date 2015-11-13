@@ -1,5 +1,7 @@
 module Nucs
+
   class Engine < Rails::Engine
+
     config.autoload_paths << File.join(File.dirname(__FILE__), "../lib")
 
     config.autoload_paths << File.join(File.dirname(__FILE__), "../spec/support") if Rails.env.test?
@@ -10,5 +12,7 @@ module Nucs
       NufsAccount.send :include, Accounts::NucsAccountSections
       FacilityAccount.send :include, Accounts::NucsAccountSections
     end
+
   end
+
 end

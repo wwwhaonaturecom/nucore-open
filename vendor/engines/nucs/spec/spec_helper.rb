@@ -1,19 +1,19 @@
 # This file is copied to ~/spec when you run 'ruby script/generate rspec'
 # from the project root directory.
-ENV["RAILS_ENV"] ||= 'test'
+ENV["RAILS_ENV"] ||= "test"
 require File.expand_path("../../config/environment", __FILE__)
 
-require 'rspec/rails'
-require 'factory_girl'
-require 'shoulda'
-require 'mocha'
+require "rspec/rails"
+require "factory_girl"
+require "shoulda"
+require "mocha"
 
 # Uncomment the next line to use webrat's matchers
-#require 'webrat/integrations/rspec-rails'
+# require 'webrat/integrations/rspec-rails'
 
 # Requires supporting files with custom matchers and macros, etc,
 # in ./support/ and its subdirectories.
-Dir[Rails.root.join("spec/support/**/*.rb")].each {|f| require f}
+Dir[Rails.root.join("spec/support/**/*.rb")].each { |f| require f }
 
 RSpec.configure do |config|
   # If you're not using ActiveRecord you should remove these

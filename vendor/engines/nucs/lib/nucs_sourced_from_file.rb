@@ -6,23 +6,23 @@
 # errors. They just need to worry about parsing an input line
 # and creating a model out of the input.
 module NucsSourcedFromFile
+
   include NucsErrors
 
   #
   # source line data delimiter
-  NUCS_TOKEN_SEPARATOR='|'
+  NUCS_TOKEN_SEPARATOR = "|"
 
   #
   # MM-DD +String+ of NU's fiscal year end
-  NUCS_FISCAL_YEAR_MONTH_DAY='09-01'
-
+  NUCS_FISCAL_YEAR_MONTH_DAY = "09-01"
 
   def self.included(base)
     base.extend(ClassMethods)
   end
 
-
   module ClassMethods
+
     #
     # Creates and saves an +ActiveRecord+ model
     #
@@ -33,10 +33,9 @@ module NucsSourcedFromFile
     # [_note_]
     #   Implementers should not let a +ActiveRecord::RecordInvalid+
     #   error raise if calling +ActiveRecord::Base#save!+.
-    def create_from_source(tokens)
-      raise 'Must be implemented!'
+    def create_from_source(_tokens)
+      raise "Must be implemented!"
     end
-
 
     #
     # Parses a data input line
@@ -46,9 +45,8 @@ module NucsSourcedFromFile
     # [_returns_]
     #   An +Array+ of the data parsed from +source_line+
     def tokenize_source_line(source_line)
-      return source_line.split(NUCS_TOKEN_SEPARATOR)
+      source_line.split(NUCS_TOKEN_SEPARATOR)
     end
-
 
     #
     # Reads an input file line by line ingesting each and
@@ -62,7 +60,8 @@ module NucsSourcedFromFile
     #   Warnings about invalid data and a 1-line summary of
     #   the overall import
     def source(source_file)
-      imported, invalid=0, 0
+      imported = 0
+      invalid = 0
 
       transaction do
         delete_all
@@ -71,11 +70,11 @@ module NucsSourcedFromFile
           line.strip!
 
           begin
-            record=create_from_source(tokenize_source_line(line))
-            raise NucsErrors::ImportError.new(record.errors.full_messages.join(', ')) unless record.valid?
+            record = create_from_source(tokenize_source_line(line))
+            raise NucsErrors::ImportError.new(record.errors.full_messages.join(", ")) unless record.valid?
             imported += 1
           rescue NucsErrors::ImportError => e
-            puts "invalid data on line ##{ndx+1} of #{File.basename(source_file)} (#{line}) :: #{e.message}"
+            puts "invalid data on line ##{ndx + 1} of #{File.basename(source_file)} (#{line}) :: #{e.message}"
             invalid += 1
           end
         end
@@ -85,4 +84,5 @@ module NucsSourcedFromFile
     end
 
   end
+
 end

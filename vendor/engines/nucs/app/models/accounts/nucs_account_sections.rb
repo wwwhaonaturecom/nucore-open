@@ -1,7 +1,8 @@
 module Accounts::NucsAccountSections
+
   def account_number_fields
     example_validator.components.inject({}) do |hash, (field, value)|
-      hash[field] = { :length => value.length }
+      hash[field] = { length: value.length }
       hash
     end
   end
@@ -28,7 +29,7 @@ module Accounts::NucsAccountSections
     @account_number_parts
   end
 
-private
+  private
 
   def example_validator
     @example_validator ||= ValidatorFactory.instance(ValidatorFactory.pattern_format)
@@ -36,7 +37,7 @@ private
 
   def account_number_beginning
     a = account_number_parts
-    [a.fund, a.dept, a.project, a.activity].join('-')
+    [a.fund, a.dept, a.project, a.activity].join("-")
   end
 
   def build_parts
@@ -44,6 +45,7 @@ private
   end
 
   def trim(str)
-    str.sub(/-+\z/, '')
+    str.sub(/-+\z/, "")
   end
+
 end
