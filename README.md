@@ -106,6 +106,13 @@ NU Core uses [Rspec](http://rspec.info) to run tests. Try any of the following f
 * To run just the controller tests
     rake spec:controllers
 
+## Chart String Validation
+
+Northwestern has complex rules around what makes a chart string valid. See the `nucs` engine for the code,
+and the following documents for details.
+
+* [Chart of Accounts Quick Reference](doc/chartstrings/ChartOfAccountsQuickRef.pdf)
+* [Validation Rules (V9)](doc/chartstrings/Validating Chart Strings.V9.pdf)
 
 ## Learn more
 
