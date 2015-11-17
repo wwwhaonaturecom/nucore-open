@@ -34,23 +34,16 @@ class Ability
     end
 
     can :list, Facility if user.facilities.size > 0 and controller.is_a?(FacilitiesController)
-    can :read, Notification if user.operator? || user.administrator?
+    can :read, Notification if user.notifications.active.any?
 
     return unless resource
 
     if user.billing_administrator?
-
-      # can manage orders / order_details / reservations
-      can :manage, [Order, OrderDetail, Reservation]
-
-      # can manage all journals
-      can :manage, Journal
-
-      # can manage all accounts
-      can :manage, Account
-
-      # can list transactions for a facility
-      can [:transactions, :manage_billing], Facility
+      can :manage, [Account, Journal, Order, OrderDetail, Reservation]
+      cannot :administer, [Order, OrderDetail, Reservation]
+      can [:manage_billing, :transactions], Facility do
+        resource.cross_facility?
+      end
     end
 
     if resource.is_a?(OrderDetail)
@@ -70,7 +63,10 @@ class Ability
           UserPriceGroupMember,
         ]
 
+        can :read, Notification
+
         can [
+          :administer,
           :assign_price_policies_to_problem_orders,
           :create,
           :edit,
@@ -86,6 +82,7 @@ class Ability
         can(:destroy, Reservation) { |r| r.admin? }
 
         can [
+          :administer,
           :assign_price_policies_to_problem_orders,
           :batch_update,
           :create,
@@ -97,12 +94,13 @@ class Ability
           :update,
         ], Order
 
-        can [:index, :view_details, :schedule, :show], [Product]
+        can [:administer, :index, :view_details, :schedule, :show], Product
 
         can [:upload, :uploader_create, :destroy], StoredFile do |fileupload|
           fileupload.file_type == 'sample_result'
         end
 
+        can :administer, User
         can :manage, User if controller.is_a?(UsersController)
 
         can [ :schedule, :agenda, :list, :show ], Facility

@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20151112060852) do
+ActiveRecord::Schema.define(:version => 20151113205331) do
 
   create_table "account_users", :force => true do |t|
     t.integer  "account_id",               :precision => 38, :scale => 0, :null => false
@@ -395,6 +395,21 @@ ActiveRecord::Schema.define(:version => 20151112060852) do
   add_index "orders", ["state"], :name => "index_orders_on_state", :tablespace => "bc_nucore"
   add_index "orders", ["user_id"], :name => "index_orders_on_user_id", :tablespace => "bc_nucore"
 
+  create_table "payments", :force => true do |t|
+    t.integer  "account_id",   :precision => 38, :scale => 0, :null => false
+    t.integer  "statement_id", :precision => 38, :scale => 0
+    t.string   "source",                                      :null => false
+    t.string   "source_id"
+    t.decimal  "amount",       :precision => 10, :scale => 2, :null => false
+    t.integer  "paid_by_id",   :precision => 38, :scale => 0
+    t.datetime "created_at",                                  :null => false
+    t.datetime "updated_at",                                  :null => false
+  end
+
+  add_index "payments", ["account_id"], :name => "index_payments_on_account_id"
+  add_index "payments", ["paid_by_id"], :name => "index_payments_on_paid_by_id"
+  add_index "payments", ["statement_id"], :name => "index_payments_on_statement_id"
+
   create_table "pmu_departments", :force => true do |t|
     t.string   "unit_id",           :limit => 32
     t.string   "pmu",               :limit => 256
@@ -724,6 +739,10 @@ ActiveRecord::Schema.define(:version => 20151112060852) do
 
   add_foreign_key "orders", "accounts", :name => "sys_c008808"
   add_foreign_key "orders", "facilities", :name => "orders_facility_id_fk"
+
+  add_foreign_key "payments", "accounts", :name => "payments_account_id_fk"
+  add_foreign_key "payments", "statements", :name => "payments_statement_id_fk"
+  add_foreign_key "payments", "users", :column => "paid_by_id", :name => "payments_paid_by_id_fk"
 
   add_foreign_key "price_group_members", "price_groups", :name => "sys_c008583"
 

@@ -1,11 +1,20 @@
 # Put any locale overrides specific to your fork in this file
 en:
+  # app_name: NU Core
+  # institution_name: Northwestern
+
+  # shared:
+  #   footer:
+  #     copyright_html: "&copy; Copyright 2011%{to_date} Northwestern University"
+  #     logo_alt: "Northwestern University Logo"
+
   activerecord:
     errors:
       # The values :model, :attribute and :value are always available for interpolation
       # The value :count is available when applicable. Can be used for pluralization.
       messages:
         bad_payment_source_format: "must be in format %{pattern_format}; project, activity, program, and chart field 1 are optional"
+
   statements:
     pdf:
       filename: "NU-%{facility}-%{invoice_number}-%{date}.pdf"

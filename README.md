@@ -118,6 +118,8 @@ and the following documents for details.
 
 There are valuable resources in the NU Core's doc directory.
 
+* Want to conform to the project's established coding standards? [**See coding_standards.md**](doc/coding_standards.md)
+
 * Want to know more about the instrument pricing model? [**See instrument_pricing.md**](doc/instrument_pricing.md)
 
 * Need to move changes between nucore-open and your fork? [**See HOWTO_forks.txt**](doc/HOWTO_forks.md)

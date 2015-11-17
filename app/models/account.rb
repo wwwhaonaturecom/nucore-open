@@ -21,6 +21,7 @@ class Account < ActiveRecord::Base
   has_many   :order_details
   has_many   :orders
   has_many   :statements, :through => :order_details
+  has_many   :payments, inverse_of: :account
   belongs_to :affiliate
   accepts_nested_attributes_for :account_users
 
@@ -82,7 +83,7 @@ class Account < ActiveRecord::Base
   def self.for_facility(facility)
     accounts = scoped
 
-    unless facility.all_facility?
+    if facility.single_facility?
       accounts = accounts.where("accounts.type in (:allow_all) or (accounts.type in (:limit_one) and accounts.facility_id = :facility)",
             {:allow_all => AccountManager::GLOBAL_ACCOUNT_CLASSES,
               :limit_one => AccountManager::FACILITY_ACCOUNT_CLASSES,
@@ -101,10 +102,8 @@ class Account < ActiveRecord::Base
     .where("accounts.facility_id IS NULL OR accounts.facility_id = ?", order_detail.facility.id)
   end
 
-  # find all accounts that have ordered fror a facility
   def self.has_orders_for_facility(facility)
-    ids = OrderDetail.for_facility(facility).select("distinct order_details.account_id").collect(&:account_id)
-    where(:id => ids)
+    where(id: ids_with_orders(facility))
   end
 
   def facilities
@@ -272,6 +271,14 @@ class Account < ActiveRecord::Base
     else
       description
     end
+  end
+
+  private
+
+  def self.ids_with_orders(facility)
+    relation = joins(order_details: :order)
+    relation = relation.where("orders.facility_id = ?", facility) if facility.single_facility?
+    relation.select("distinct order_details.account_id")
   end
 
 end
