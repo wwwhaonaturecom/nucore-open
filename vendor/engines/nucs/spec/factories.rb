@@ -5,8 +5,8 @@ unless Rails.root.to_s.include?("/vendor/engines/nucs")
   FactoryGirl.define do
     factory :nufs_account do
       sequence(:account_number) do |n|
-        # 9XX-7777777
-        account = "9#{'%02d' % (n % 100)}-7777777" # fund3-dept7
+        # 999-77XXXXX
+        account = "901-77#{'%05d' % (n % 100000)}" # fund3-dept7
         # Defined here as opposed to in an after_build hook
         # since some tests rely on it being defined on attributes_for
         define_gl066 account
