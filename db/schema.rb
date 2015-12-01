@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20151113205331) do
+ActiveRecord::Schema.define(:version => 20151201221103) do
 
   create_table "account_users", :force => true do |t|
     t.integer  "account_id",               :precision => 38, :scale => 0, :null => false
@@ -396,14 +396,15 @@ ActiveRecord::Schema.define(:version => 20151113205331) do
   add_index "orders", ["user_id"], :name => "index_orders_on_user_id", :tablespace => "bc_nucore"
 
   create_table "payments", :force => true do |t|
-    t.integer  "account_id",   :precision => 38, :scale => 0, :null => false
-    t.integer  "statement_id", :precision => 38, :scale => 0
-    t.string   "source",                                      :null => false
+    t.integer  "account_id",     :precision => 38, :scale => 0, :null => false
+    t.integer  "statement_id",   :precision => 38, :scale => 0
+    t.string   "source",                                        :null => false
     t.string   "source_id"
-    t.decimal  "amount",       :precision => 10, :scale => 2, :null => false
-    t.integer  "paid_by_id",   :precision => 38, :scale => 0
-    t.datetime "created_at",                                  :null => false
-    t.datetime "updated_at",                                  :null => false
+    t.decimal  "amount",         :precision => 10, :scale => 2, :null => false
+    t.integer  "paid_by_id",     :precision => 38, :scale => 0
+    t.datetime "created_at",                                    :null => false
+    t.datetime "updated_at",                                    :null => false
+    t.decimal  "processing_fee", :precision => 10, :scale => 2
   end
 
   add_index "payments", ["account_id"], :name => "index_payments_on_account_id"
@@ -717,7 +718,7 @@ ActiveRecord::Schema.define(:version => 20151113205331) do
 
   add_foreign_key "accounts", "facilities", :name => "fk_account_facility_id"
 
-  add_foreign_key "bi_netids", "facilities", :name => "sys_c0013780"
+  add_foreign_key "bi_netids", "facilities", :name => "sys_c0019397"
 
   add_foreign_key "bundle_products", "products", :column => "bundle_product_id", :name => "fk_bundle_prod_prod"
   add_foreign_key "bundle_products", "products", :name => "fk_bundle_prod_bundle"
