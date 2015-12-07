@@ -1,17 +1,17 @@
 GIT
+  remote: git://github.com/tablexi/synaccess.git
+  revision: 7342482d6d5b77aa33b09fbc48e538100f9c31dd
+  specs:
+    synaccess_connect (0.2.2)
+      nokogiri (> 1.5)
+
+GIT
   remote: git@github.com:elzoiddy/vestal_versions.git
   revision: 1905429b80303875c261370a16b086a3d6a88b25
   specs:
     vestal_versions (1.2.4.3)
       activerecord (>= 3.0.0)
       activesupport (>= 3.0.0)
-
-GIT
-  remote: git@github.com:tablexi/synaccess.git
-  revision: 7342482d6d5b77aa33b09fbc48e538100f9c31dd
-  specs:
-    synaccess_connect (0.2.2)
-      nokogiri (> 1.5)
 
 PATH
   remote: vendor/engines/c2po
@@ -42,6 +42,11 @@ PATH
   remote: vendor/engines/pmu
   specs:
     pmu (1.0.0)
+
+PATH
+  remote: vendor/engines/split_accounts
+  specs:
+    split_accounts (0.0.1)
 
 GEM
   remote: https://rubygems.org/
@@ -629,6 +634,7 @@ DEPENDENCIES
   simple_form (~> 2.1.1)
   simplecov
   single_test (= 0.4.0)
+  split_accounts (~> 0.0.1)!
   spreadsheet (~> 0.6.5.5)
   spring
   spring-commands-rspec

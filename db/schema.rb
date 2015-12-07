@@ -612,6 +612,16 @@ ActiveRecord::Schema.define(:version => 20151201221103) do
 
   add_index "schedules", ["facility_id"], :name => "i_schedules_facility_id", :tablespace => "bc_nucore"
 
+  create_table "splits", :force => true do |t|
+    t.integer "parent_split_account_id", :precision => 38, :scale => 0, :null => false
+    t.integer "subaccount_id",           :precision => 38, :scale => 0, :null => false
+    t.decimal "percent",                 :precision => 6,  :scale => 3, :null => false
+    t.boolean "extra_penny",             :precision => 1,  :scale => 0, :null => false
+  end
+
+  add_index "splits", ["parent_split_account_id"], :name => "i_spl_par_spl_acc_id"
+  add_index "splits", ["subaccount_id"], :name => "index_splits_on_subaccount_id"
+
   create_table "statement_rows", :force => true do |t|
     t.integer  "statement_id",    :precision => 38, :scale => 0, :null => false
     t.integer  "order_detail_id", :precision => 38, :scale => 0, :null => false

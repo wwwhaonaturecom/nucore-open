@@ -62,7 +62,8 @@ gem 'pmu',              '~> 1.0.0', path: 'vendor/engines/pmu'
 gem 'jxml',             '~> 1.0.0', path: 'vendor/engines/jxml'
 
 gem 'dataprobe',        '~> 1.0.0', path: 'vendor/engines/dataprobe'
-gem 'synaccess_connect', '0.2.2', git: 'git@github.com:tablexi/synaccess.git'
+gem 'split_accounts',   '~> 0.0.1', path: 'vendor/engines/split_accounts'
+gem 'synaccess_connect', '0.2.2', github: 'tablexi/synaccess'
 
 group :development do
   gem 'better_errors'
