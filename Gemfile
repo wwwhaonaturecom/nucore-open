@@ -1,5 +1,7 @@
 source 'https://rubygems.org'
 
+git_source(:github) { |repo_name| "git@github.com:#{repo_name}.git" }
+
 ## base
 gem 'rails',            '3.2.22'
 gem "strong_parameters"
@@ -18,7 +20,7 @@ gem 'cancancan',        '1.10'
 ## models
 gem 'aasm',             '2.2.0'
 gem 'paperclip',        '~> 4.2.0'
-gem 'vestal_versions',  '1.2.4.3', git: 'git@github.com:elzoiddy/vestal_versions.git'
+gem 'vestal_versions',  '1.2.4.3', github: 'elzoiddy/vestal_versions'
 gem 'awesome_nested_set', '2.1.6'
 gem 'nokogiri',         '~> 1.6.1'
 
