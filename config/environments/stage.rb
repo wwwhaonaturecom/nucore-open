@@ -18,8 +18,8 @@ Nucore::Application.configure do
   # If you have no front-end server that supports something like X-Sendfile,
   # just comment this out and Rails will serve the files
 
-  # See everything in the log (default is :info)
-  # config.log_level = :debug
+  # Default for everything but production is :debug
+  config.log_level = :info
 
   # Use a different logger for distributed setups
   # config.logger = SyslogLogger.new
