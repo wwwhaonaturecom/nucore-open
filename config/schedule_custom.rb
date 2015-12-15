@@ -1,12 +1,15 @@
 # Add your fork-specific cron jobs here
 # This file is automatically included by schedule.rb
 
-every :day, at: '7:20am', roles: [:db] do
-  rake 'nucs:import:all[$HOME/files/FFRA-in/current]'
-end
 
-every :day, at: '7:40am', roles: [:db] do
-  rake 'chart_strings:update_expiration'
+if @environment == "production"
+  every :day, at: '7:20am', roles: [:db] do
+    rake 'nucs:import:all[$HOME/files/FFRA-in/current]'
+  end
+
+  every :day, at: '7:40am', roles: [:db] do
+    rake 'chart_strings:update_expiration'
+  end
 end
 
 if @environment == "production"
