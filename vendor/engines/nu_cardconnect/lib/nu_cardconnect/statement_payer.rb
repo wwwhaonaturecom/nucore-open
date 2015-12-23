@@ -47,7 +47,7 @@ module NuCardconnect
     private
 
     def authorization
-      @authorization ||= NuCardconnect::Authorization.new(token: params[:cc_token],
+      @authorization ||= NuCardconnect::Authorization.new(token: token_from_param,
         exp_month: params[:exp_month],
         exp_year: params[:exp_year],
         amount: total_amount,
@@ -75,6 +75,20 @@ module NuCardconnect
         @error = I18n.t("nu_cardconnect.process.no_merchant_id")
         false
       end
+    end
+
+    # TODO This should be removed once there is a real testing environment
+    def token_from_param
+      # this is the token for 4111 1111 1111 1111
+      if testing? && params[:cc_token] == "9417119164771111"
+         Settings.cardconnect.test_token
+      else
+        params[:cc_token]
+      end
+    end
+
+    def testing?
+      Rails.env.development? || Rails.env.stage?
     end
 
   end
