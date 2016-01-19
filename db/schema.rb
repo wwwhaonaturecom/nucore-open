@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20151221210653) do
+ActiveRecord::Schema.define(:version => 20160119154330) do
 
   create_table "account_users", :force => true do |t|
     t.integer  "account_id",               :precision => 38, :scale => 0, :null => false
@@ -145,7 +145,6 @@ ActiveRecord::Schema.define(:version => 20151221210653) do
     t.boolean  "accepts_multi_add",                           :precision => 1, :scale => 0, :default => false, :null => false
     t.boolean  "show_instrument_availability",                :precision => 1, :scale => 0, :default => false, :null => false
     t.string   "card_connect_merchant_id"
-    t.string   "card_connect_location_id"
   end
 
   add_index "facilities", ["abbreviation"], :name => "sys_c008532", :unique => true, :tablespace => "bc_nucore"

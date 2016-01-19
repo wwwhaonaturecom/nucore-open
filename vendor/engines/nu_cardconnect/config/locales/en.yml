@@ -25,4 +25,3 @@ en:
     attributes:
       "nu_cardconnect/merchant_account":
         card_connect_merchant_id: Merchant ID
-        card_connect_location_id: Location ID
