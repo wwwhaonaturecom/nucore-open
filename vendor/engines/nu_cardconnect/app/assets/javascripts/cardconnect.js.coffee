@@ -31,6 +31,9 @@ $ ->
         type: 'json'
       }
 
+      masked = "****************"
+      @numberField().val(masked).prop('disabled', true)
+
       $.get($(e.target).data("endpoint"), params)
        .done(@successfullyTokenized)
        .error(@failedTokenize)
@@ -45,8 +48,6 @@ $ ->
 
       if response.action == 'CE'
         token = response.data
-        masked = "****************"
-        @numberField().val(masked).prop('disabled', true)
         @tokenField().val(token)
         @$form.submit()
       else # usually "ER"
