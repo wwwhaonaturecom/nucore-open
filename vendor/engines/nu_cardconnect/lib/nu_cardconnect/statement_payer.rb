@@ -53,7 +53,6 @@ module NuCardconnect
         amount: total_amount,
         merchant_id: statement.facility.card_connect_merchant_id,
         user_fields: {
-          location_id: statement.facility.card_connect_location_id,
           facility: statement.facility.to_s
         },
         order_id: statement.invoice_number)
