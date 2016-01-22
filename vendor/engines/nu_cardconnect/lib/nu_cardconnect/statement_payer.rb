@@ -44,6 +44,10 @@ module NuCardconnect
       percentage / BigDecimal.new(100, 2)
     end
 
+    def paid_at
+      nil
+    end
+
     private
 
     def authorization

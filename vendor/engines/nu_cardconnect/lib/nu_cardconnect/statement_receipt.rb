@@ -21,7 +21,7 @@ module NuCardconnect
     end
 
     def paid_at
-      payment.created_at
+      payment.try(:created_at)
     end
 
     private

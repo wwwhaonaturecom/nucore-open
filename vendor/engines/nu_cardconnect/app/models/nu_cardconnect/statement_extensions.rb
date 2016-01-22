@@ -4,7 +4,7 @@ module NuCardconnect
     include Uuid
 
     def credit_card_payable?
-      facility.supports_credit_card_payments?
+      facility.supports_credit_card_payments? && total_cost > 0
     end
   end
 end
