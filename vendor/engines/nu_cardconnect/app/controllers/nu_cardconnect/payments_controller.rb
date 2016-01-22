@@ -6,6 +6,9 @@ module NuCardconnect
 
     def pay
       if payment_action.paid_in_full?
+        # If we're already paid, use a receipt instead so the amounts displayed
+        # are locked to the Payment.
+        @payment_action = NuCardconnect::StatementReceipt.new(@statement)
         render :paid_in_full
       elsif !payment_action.valid?
         flash.now[:error] = payment_action.error
