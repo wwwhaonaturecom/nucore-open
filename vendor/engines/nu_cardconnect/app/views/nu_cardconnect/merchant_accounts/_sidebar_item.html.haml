@@ -1,0 +1,4 @@
+- if can?(:edit, NuCardconnect::MerchantAccount)
+  = tab t("nu_cardconnect.merchant_accounts.title"),
+    NuCardconnect::Engine.routes.url_helpers.facility_merchant_account_path(current_facility.url_name),
+    sidenav_tab == 'merchant_account'

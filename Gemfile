@@ -62,6 +62,7 @@ gem 'nu',               '~> 1.0.0', path: 'vendor/engines/nu'
 gem 'nucs',             '~> 1.0.0', path: 'vendor/engines/nucs'
 gem 'pmu',              '~> 1.0.0', path: 'vendor/engines/pmu'
 gem 'jxml',             '~> 1.0.0', path: 'vendor/engines/jxml'
+gem 'nu_cardconnect',      '~> 0.0.1', path: 'vendor/engines/nu_cardconnect'
 
 gem 'dataprobe',        '~> 1.0.0', path: 'vendor/engines/dataprobe'
 gem 'split_accounts',   '~> 0.0.1', path: 'vendor/engines/split_accounts'
@@ -90,6 +91,7 @@ group :development, :test do
   gem 'pry-byebug',        '~> 2.0.0'
   gem 'quiet_assets'
   gem 'rspec-rails',       '~> 3.3.0'
+  gem 'rspec-its'
   gem 'shoulda-matchers',  '~> 2.8.0', require: false
   gem 'rspec-collection_matchers'
   gem 'single_test',       '0.4.0'
@@ -98,10 +100,6 @@ group :development, :test do
   gem 'teaspoon-jasmine'
   gem 'timecop',           '~> 0.6.3'
   gem 'thin'
-
-  # http://devnet.jetbrains.com/message/5479367
-  # don't require in RubyMine since ruby-debug interferes with ruby-debug-ide gem
-  gem 'ruby-debug19',      '0.11.6', ENV['RM_INFO'] ? { :require => false, :platforms => [:ruby_19] } : {:platforms => [:ruby_19]}
 
   # NU specific
   gem 'simplecov', :platforms => [:ruby_19]

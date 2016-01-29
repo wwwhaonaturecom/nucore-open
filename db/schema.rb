@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20151221210653) do
+ActiveRecord::Schema.define(:version => 20160119154330) do
 
   create_table "account_users", :force => true do |t|
     t.integer  "account_id",               :precision => 38, :scale => 0, :null => false
@@ -144,6 +144,7 @@ ActiveRecord::Schema.define(:version => 20151221210653) do
     t.string   "journal_mask",                 :limit => 50,                                                   :null => false
     t.boolean  "accepts_multi_add",                           :precision => 1, :scale => 0, :default => false, :null => false
     t.boolean  "show_instrument_availability",                :precision => 1, :scale => 0, :default => false, :null => false
+    t.string   "card_connect_merchant_id"
   end
 
   add_index "facilities", ["abbreviation"], :name => "sys_c008532", :unique => true, :tablespace => "bc_nucore"
@@ -637,10 +638,12 @@ ActiveRecord::Schema.define(:version => 20151221210653) do
     t.integer  "created_by",  :precision => 38, :scale => 0, :null => false
     t.datetime "created_at",                                 :null => false
     t.integer  "account_id",  :precision => 38, :scale => 0, :null => false
+    t.string   "uuid",                                       :null => false
   end
 
   add_index "statements", ["account_id"], :name => "index_statements_on_account_id", :tablespace => "bc_nucore"
   add_index "statements", ["facility_id"], :name => "i_statements_facility_id", :tablespace => "bc_nucore"
+  add_index "statements", ["uuid"], :name => "index_statements_on_uuid", :unique => true
 
   create_table "stored_files", :force => true do |t|
     t.integer  "order_detail_id",                  :precision => 38, :scale => 0

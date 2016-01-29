@@ -14,4 +14,7 @@ class Payment < ActiveRecord::Base
   validates :amount, presence: true, numericality: true, exclusion: { in: [0], message: "may not be 0" }
   validates :processing_fee, presence: true, numericality: true, allow_nil: false
 
+  def total
+    amount + processing_fee
+  end
 end

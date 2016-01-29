@@ -1,0 +1,3 @@
+<% if @statement.credit_card_payable? %>
+Pay Online: <%= NuCardconnect::Engine.routes.url_helpers.pay_statement_url(@statement.uuid) %>
+<% end %>
