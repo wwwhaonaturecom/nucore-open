@@ -3,7 +3,7 @@ source 'https://rubygems.org'
 git_source(:github) { |repo_name| "git@github.com:#{repo_name}.git" }
 
 ## base
-gem 'rails',            '3.2.22'
+gem 'rails',            '3.2.22.1'
 gem "strong_parameters"
 gem 'rails_config',     '0.3.3'
 
@@ -35,6 +35,7 @@ gem 'jquery-ui-sass-rails'
 gem 'clockpunch',       '~> 0.1.0'
 gem 'simple_form',      '~> 2.1.1'
 gem 'font-awesome-rails', '~> 3.2.0'
+gem 'nested_form_fields'
 
 ## controllers
 gem 'prawn',            '0.12'

@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20160119154330) do
+ActiveRecord::Schema.define(:version => 20160120162354) do
 
   create_table "account_users", :force => true do |t|
     t.integer  "account_id",               :precision => 38, :scale => 0, :null => false
@@ -527,28 +527,29 @@ ActiveRecord::Schema.define(:version => 20160119154330) do
   add_index "product_users", ["user_id"], :name => "index_product_users_on_user_id", :tablespace => "bc_nucore"
 
   create_table "products", :force => true do |t|
-    t.string   "type",                    :limit => 50,                                                    :null => false
-    t.integer  "facility_id",                            :precision => 38, :scale => 0,                    :null => false
-    t.string   "name",                    :limit => 200,                                                   :null => false
-    t.string   "url_name",                :limit => 50,                                                    :null => false
+    t.string   "type",                      :limit => 50,                                                    :null => false
+    t.integer  "facility_id",                              :precision => 38, :scale => 0,                    :null => false
+    t.string   "name",                      :limit => 200,                                                   :null => false
+    t.string   "url_name",                  :limit => 50,                                                    :null => false
     t.text     "description"
-    t.boolean  "requires_approval",                      :precision => 1,  :scale => 0,                    :null => false
-    t.integer  "initial_order_status_id",                :precision => 38, :scale => 0
-    t.boolean  "is_archived",                            :precision => 1,  :scale => 0,                    :null => false
-    t.boolean  "is_hidden",                              :precision => 1,  :scale => 0,                    :null => false
-    t.datetime "created_at",                                                                               :null => false
-    t.datetime "updated_at",                                                                               :null => false
-    t.integer  "min_reserve_mins",                       :precision => 38, :scale => 0
-    t.integer  "max_reserve_mins",                       :precision => 38, :scale => 0
-    t.integer  "min_cancel_hours",                       :precision => 38, :scale => 0
-    t.integer  "facility_account_id",                    :precision => 38, :scale => 0
-    t.string   "account",                 :limit => 5
-    t.boolean  "show_details",                           :precision => 1,  :scale => 0, :default => false, :null => false
-    t.integer  "auto_cancel_mins",                       :precision => 38, :scale => 0
+    t.boolean  "requires_approval",                        :precision => 1,  :scale => 0,                    :null => false
+    t.integer  "initial_order_status_id",                  :precision => 38, :scale => 0
+    t.boolean  "is_archived",                              :precision => 1,  :scale => 0,                    :null => false
+    t.boolean  "is_hidden",                                :precision => 1,  :scale => 0,                    :null => false
+    t.datetime "created_at",                                                                                 :null => false
+    t.datetime "updated_at",                                                                                 :null => false
+    t.integer  "min_reserve_mins",                         :precision => 38, :scale => 0
+    t.integer  "max_reserve_mins",                         :precision => 38, :scale => 0
+    t.integer  "min_cancel_hours",                         :precision => 38, :scale => 0
+    t.integer  "facility_account_id",                      :precision => 38, :scale => 0
+    t.string   "account",                   :limit => 5
+    t.boolean  "show_details",                             :precision => 1,  :scale => 0, :default => false, :null => false
+    t.integer  "auto_cancel_mins",                         :precision => 38, :scale => 0
     t.string   "contact_email"
-    t.integer  "schedule_id",                            :precision => 38, :scale => 0
-    t.integer  "reserve_interval",                       :precision => 38, :scale => 0
-    t.integer  "lock_window",                            :precision => 38, :scale => 0, :default => 0,     :null => false
+    t.integer  "schedule_id",                              :precision => 38, :scale => 0
+    t.integer  "reserve_interval",                         :precision => 38, :scale => 0
+    t.integer  "lock_window",                              :precision => 38, :scale => 0, :default => 0,     :null => false
+    t.text     "training_request_contacts"
   end
 
   add_index "products", ["facility_account_id"], :name => "i_products_facility_account_id", :tablespace => "bc_nucore"
@@ -731,7 +732,7 @@ ActiveRecord::Schema.define(:version => 20160119154330) do
 
   add_foreign_key "accounts", "facilities", :name => "fk_account_facility_id"
 
-  add_foreign_key "bi_netids", "facilities", :name => "sys_c0019397"
+  add_foreign_key "bi_netids", "facilities", :name => "sys_c0021225"
 
   add_foreign_key "bundle_products", "products", :column => "bundle_product_id", :name => "fk_bundle_prod_prod"
   add_foreign_key "bundle_products", "products", :name => "fk_bundle_prod_bundle"
