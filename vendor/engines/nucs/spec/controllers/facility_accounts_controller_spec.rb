@@ -137,5 +137,15 @@ RSpec.describe FacilityAccountsController do
         expect(assigns(:account).to_s).to include "#{base_account_number} (6543) (1234)"
       end
     end
+
+    context "with a blacklisted fund" do
+      let(:account_number_parts) { base_account_fields.merge(fund: "011") }
+
+      it "should include an error" do
+        do_request
+        expect(assigns(:account)).to be_new_record
+        expect(assigns(:account).errors.full_messages).to include("Payment Source Number 011 is blacklisted as a fund")
+      end
+    end
   end
 end
