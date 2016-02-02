@@ -26,13 +26,17 @@ RSpec.describe FacilityAccountsController do
       @params = {
         facility_id: @authable.url_name,
         owner_user_id: @guest.id,
-        class_type: "NufsAccount",
+        account_type: "NufsAccount",
+        nufs_account: account_params
       }
     end
 
+    let(:account_params) { { description: "description", account_number_parts: account_number_parts } }
+
     context "entering a four digit project" do
+      let(:account_number_parts) { { fund: "901", dept: "7777777", project: "1234" } }
+
       before :each do
-        @params.merge!(account: { description: "description", account_number_parts: { fund: "901", dept: "7777777", project: "1234" } })
         do_request
       end
 
@@ -43,8 +47,8 @@ RSpec.describe FacilityAccountsController do
     end
 
     context "without a project, but with an activity" do
+      let(:account_number_parts) { { fund: "901", dept: "7777777", activity: "12" } }
       before :each do
-        @params.merge!(account: { description: "description", account_number_parts: { fund: "901", dept: "7777777", activity: "12" } })
         do_request
       end
 
@@ -55,12 +59,9 @@ RSpec.describe FacilityAccountsController do
     end
 
     context "without a program or chart_field1" do
+      let(:account_number_parts) { base_account_fields }
       before :each do
         define_gl066 base_account_number
-        @params.merge!(account: {
-                         description: "Description",
-                         account_number_parts: base_account_fields,
-                       })
         do_request
       end
 
@@ -78,12 +79,9 @@ RSpec.describe FacilityAccountsController do
     end
 
     context "with a program" do
+      let(:account_number_parts) { base_account_fields.merge(program: "1234") }
       before :each do
         define_gl066 base_account_number + "-1234"
-        @params.merge!(account: {
-                         description: "Description",
-                         account_number_parts: base_account_fields.merge(program: "1234"),
-                       })
         do_request
       end
 
@@ -101,12 +99,9 @@ RSpec.describe FacilityAccountsController do
     end
 
     context "with a chart_field1" do
+      let(:account_number_parts) { base_account_fields.merge(chart_field1: "1234") }
       before :each do
         define_gl066 base_account_number + "--1234"
-        @params.merge!(account: {
-                         description: "Description",
-                         account_number_parts: base_account_fields.merge(chart_field1: "1234"),
-                       })
         do_request
       end
 
@@ -124,12 +119,9 @@ RSpec.describe FacilityAccountsController do
     end
 
     context "with a program AND chart_field1" do
+      let(:account_number_parts) { base_account_fields.merge(program: "6543", chart_field1: "1234") }
       before :each do
         define_gl066 base_account_number + "-6543-1234"
-        @params.merge!(account: {
-                         description: "Description",
-                         account_number_parts: base_account_fields.merge(program: "6543", chart_field1: "1234"),
-                       })
         do_request
       end
 
@@ -143,6 +135,16 @@ RSpec.describe FacilityAccountsController do
 
       it "should set the display" do
         expect(assigns(:account).to_s).to include "#{base_account_number} (6543) (1234)"
+      end
+    end
+
+    context "with a blacklisted fund" do
+      let(:account_number_parts) { base_account_fields.merge(fund: "011") }
+
+      it "should include an error" do
+        do_request
+        expect(assigns(:account)).to be_new_record
+        expect(assigns(:account).errors.full_messages).to include("Payment Source Number 011 is blacklisted as a fund")
       end
     end
   end

@@ -1,14 +1,19 @@
 class NufsAccount < Account
-  validates_uniqueness_of :account_number, :message => "already exists"
+  validates_uniqueness_of :account_number, message: "already exists"
+  validates_presence_of :expires_at
 
   validate { validate_account_number }
 
   after_find :load_components
 
-  def set_expires_at!
+  def set_expires_at
     self.expires_at = ValidatorFactory.instance(account_number).latest_expiration
+    # If this Validator instance has an error, suppress it. The errors
+    # will be raised later.
+    rescue ValidatorError, AccountNumberFormatError
+      # Prevent the expires_at validation error message from appearing on the front end
+      self.expires_at ||= Time.current
   end
-
 
   def account_open?(account_num)
     begin
@@ -49,7 +54,6 @@ class NufsAccount < Account
     Rails.logger.error "#{e.message}\n#{e.backtrace.join("\n")}"
     raise ValidatorError.new(e)
   end
-
 
   def validate_account_number
     begin
