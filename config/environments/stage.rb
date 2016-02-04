@@ -73,7 +73,7 @@ Nucore::Application.configure do
   config.assets.digest = true
 
   # Precompile additional assets (application.js, application.css, and all non-JS/CSS are already added)
-  config.assets.precompile += %w( ie.css ie8.css )
+  config.assets.precompile += %w( ie.css ie8.css print.css )
   config.assets.precompile += %w( *.js ) # precompile all js files
 
   config.middleware.use ExceptionNotification::Rack,
