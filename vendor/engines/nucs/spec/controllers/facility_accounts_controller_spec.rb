@@ -44,6 +44,10 @@ RSpec.describe FacilityAccountsController do
         expect(assigns(:account)).not_to be_persisted
         expect(assigns(:account).errors.full_messages).to include("Project is the wrong length (should be 8 characters)")
       end
+
+      it "does not have an expiration warning" do
+        expect(assigns(:account).errors.full_messages).not_to include(a_string_starting_with("Expiration"))
+      end
     end
 
     context "without a project, but with an activity" do
@@ -144,8 +148,21 @@ RSpec.describe FacilityAccountsController do
       it "should include an error" do
         do_request
         expect(assigns(:account)).to be_new_record
-        expect(assigns(:account).errors.full_messages).to include("Payment Source Number 011 is blacklisted as a fund")
+        expect(assigns(:account).errors.full_messages).to include("011 is blacklisted as a fund")
       end
     end
+
+    context "with an non-existing GL066" do
+      let(:account_number_parts) { base_account_fields }
+
+      it "should include errors", :aggregate_failures do
+        do_request
+        expect(assigns(:account)).to be_new_record
+        expect(assigns(:account).errors.full_messages).to include("The chart string appears to be invalid. Either the fund, department, project, or activity could not be found.")
+        expect(assigns(:account).errors.full_messages).not_to include(a_string_starting_with("Expiration"))
+      end
+    end
+
+
   end
 end
