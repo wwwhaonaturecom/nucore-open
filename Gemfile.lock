@@ -392,6 +392,7 @@ GEM
       nenv (~> 0.1)
       shellany (~> 0.0)
     numerizer (0.1.1)
+    oj (2.12.14)
     orm_adapter (0.5.0)
     paperclip (4.2.4)
       activemodel (>= 3.2.0)
@@ -461,6 +462,8 @@ GEM
     ref (1.0.5)
     responders (1.1.2)
       railties (>= 3.2, < 4.2)
+    rollbar (2.7.1)
+      multi_json
     rspec (3.3.0)
       rspec-core (~> 3.3.0)
       rspec-expectations (~> 3.3.0)
@@ -628,6 +631,7 @@ DEPENDENCIES
   nu (~> 1.0.0)!
   nu_cardconnect (~> 0.0.1)!
   nucs (~> 1.0.0)!
+  oj (~> 2.12.14)
   paperclip (~> 4.2.0)
   pdf-reader (= 1.3.3)
   pmu (~> 1.0.0)!
@@ -639,6 +643,7 @@ DEPENDENCIES
   rails (= 3.2.22.1)
   rails_config (= 0.3.3)
   rake
+  rollbar (~> 2.7.1)
   rspec-collection_matchers
   rspec-its
   rspec-rails (~> 3.3.0)

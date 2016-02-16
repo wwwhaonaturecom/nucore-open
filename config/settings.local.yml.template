@@ -10,3 +10,5 @@
 #   fog_directory: Your-Bucket-Name-Here
 #   fog_public: false
 #   path: ":class/:attachment/:id_partition/:style/:safe_filename"
+
+# rollbar: ROLLBAR_ACCESS_TOKEN
