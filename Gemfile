@@ -44,6 +44,7 @@ gem 'prawn_rails',      '0.0.11'
 ## monitoring
 gem 'eye-patch', require: false
 gem 'aws-ses'
+gem "skylight"
 
 ## other
 gem 'delayed_job_active_record', '~> 4.0.1'

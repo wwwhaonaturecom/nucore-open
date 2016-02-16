@@ -10,3 +10,6 @@ set :default_env, {
   "ORACLE_HOME" => "/usr/lib/oracle/12.1/client64/lib",
   "NLS_LANG" => "AMERICAN_AMERICA.WE8MSWIN1252"
 }
+
+# Skylight is only used in production
+set :linked_files, fetch(:linked_files, []).push("config/skylight.yml")

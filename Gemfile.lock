@@ -514,6 +514,8 @@ GEM
       actionpack (~> 3.0)
       activemodel (~> 3.0)
     single_test (0.4.0)
+    skylight (0.8.1)
+      activesupport (>= 3.0.0)
     slop (3.6.0)
     spreadsheet (0.6.5.9)
       ruby-ole (>= 1.0)
@@ -647,6 +649,7 @@ DEPENDENCIES
   shoulda-matchers (~> 2.8.0)
   simple_form (~> 2.1.1)
   single_test (= 0.4.0)
+  skylight
   split_accounts (~> 0.0.1)!
   spreadsheet (~> 0.6.5.5)
   spring
