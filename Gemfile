@@ -72,6 +72,7 @@ gem 'synaccess_connect', '0.2.2', github: 'tablexi/synaccess'
 group :development do
   gem 'better_errors'
   gem 'binding_of_caller'
+  gem "coffeelint"
   gem 'rubocop', require: false
 end
 
@@ -99,11 +100,9 @@ group :development, :test do
   gem 'spring'
   gem 'spring-commands-rspec'
   gem 'teaspoon-jasmine'
-  gem 'timecop',           '~> 0.6.3'
+  gem 'test-unit', '~> 3.0'
   gem 'thin'
-
-  # NU specific
-  gem 'simplecov', :platforms => [:ruby_19]
+  gem 'timecop',           '~> 0.6.3'
 end
 
 group :test do

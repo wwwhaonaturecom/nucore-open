@@ -11,6 +11,7 @@ financial:
     xls: true
     csv: false
     xml: true
+  default_journal_cutoff_time: "16:45"
 
 statement_pdf:
   class_name: Nu::StatementPdf
