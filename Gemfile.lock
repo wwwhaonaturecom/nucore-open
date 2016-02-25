@@ -29,17 +29,17 @@ PATH
     jxml (1.0.0)
 
 PATH
+  remote: vendor/engines/nu
+  specs:
+    nu (1.0.0)
+
+PATH
   remote: vendor/engines/nu_cardconnect
   specs:
     nu_cardconnect (0.0.1)
       c2po
       cardconnect
       rails
-
-PATH
-  remote: vendor/engines/nu
-  specs:
-    nu (1.0.0)
 
 PATH
   remote: vendor/engines/nucs
@@ -90,6 +90,7 @@ GEM
     activesupport (3.2.22.1)
       i18n (~> 0.6, >= 0.6.4)
       multi_json (~> 1.0)
+    addressable (2.4.0)
     afm (0.2.2)
     arel (3.0.3)
     ast (2.1.0)
@@ -358,6 +359,10 @@ GEM
       railties (>= 3.1.0)
     json (1.8.3)
     kgio (2.9.3)
+    launchy (2.4.3)
+      addressable (~> 2.3)
+    letter_opener (1.4.1)
+      launchy (~> 2.2)
     libv8 (3.16.14.13)
     listen (3.0.3)
       rb-fsevent (>= 0.9.3)
@@ -624,6 +629,7 @@ DEPENDENCIES
   jquery-rails (~> 2.1.4)
   jquery-ui-sass-rails
   jxml (~> 1.0.0)!
+  letter_opener
   lograge
   logstash-event
   nested_form_fields
