@@ -12,6 +12,7 @@ en:
       exp_year: Exp Year
       payment_received: Payment Received
       submit: Pay Now
+      disclaimer: "A surcharge of 3.5% will be added to the transaction amount on Visa, MasterCard, and Discover credit card products."
     merchant_accounts:
       title: Card Connect Settings
       update_success: "The merchant account information for this facility has been saved"
