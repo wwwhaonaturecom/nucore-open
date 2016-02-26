@@ -1,36 +1,5 @@
 module Nu
   module JournalExtension
-    def journal_row_attributes_from_order_detail(order_detail)
-      {
-        account: order_detail.product.account,
-        activity: order_detail.account.activity,
-        amount: order_detail.total,
-        chart_field1: order_detail.account.chart_field1,
-        dept: order_detail.account.dept,
-        description: order_detail.long_description,
-        fund: order_detail.account.fund,
-        journal_id: id,
-        order_detail_id: order_detail.id,
-        program: order_detail.account.program,
-        project: order_detail.account.project,
-      }
-    end
-
-    def journal_row_attributes_from_product_and_total(product, total)
-      facility_account = product.facility_account
-      {
-        account: facility_account.revenue_account,
-        activity: facility_account.activity,
-        amount: total * -1,
-        chart_field1: facility_account.chart_field1,
-        dept: facility_account.dept,
-        description: product.to_s,
-        journal_id: id,
-        fund: facility_account.fund,
-        program: facility_account.program,
-        project: facility_account.project,
-      }
-    end
 
     def create_spreadsheet
       rows = journal_rows
