@@ -28,3 +28,7 @@ after 'deploy:finished', 'deploy:cleanup'
 
 set :eye_config, "config/eye.yml.erb"
 set :eye_env, ->{ {rails_env: fetch(:rails_env)} }
+
+set :rollbar_token, ENV["ROLLBAR_ACCESS_TOKEN"]
+set :rollbar_env, Proc.new { fetch :stage }
+set :rollbar_role, Proc.new { :app }
