@@ -29,17 +29,17 @@ PATH
     jxml (1.0.0)
 
 PATH
-  remote: vendor/engines/nu
-  specs:
-    nu (1.0.0)
-
-PATH
   remote: vendor/engines/nu_cardconnect
   specs:
     nu_cardconnect (0.0.1)
       c2po
       cardconnect
       rails
+
+PATH
+  remote: vendor/engines/nu
+  specs:
+    nu (1.0.0)
 
 PATH
   remote: vendor/engines/nucs
@@ -467,7 +467,7 @@ GEM
     ref (1.0.5)
     responders (1.1.2)
       railties (>= 3.2, < 4.2)
-    rollbar (2.7.1)
+    rollbar (2.8.0)
       multi_json
     rspec (3.3.0)
       rspec-core (~> 3.3.0)
@@ -649,7 +649,7 @@ DEPENDENCIES
   rails (= 3.2.22.1)
   rails_config (= 0.3.3)
   rake
-  rollbar (~> 2.7.1)
+  rollbar (~> 2.8.0)
   rspec-collection_matchers
   rspec-its
   rspec-rails (~> 3.3.0)

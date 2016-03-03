@@ -58,7 +58,7 @@ gem 'daemons',          '1.1.9'
 gem 'lograge'
 gem 'logstash-event'
 gem "oj", "~> 2.12.14"
-gem "rollbar", "~> 2.7.1"
+gem "rollbar", "~> 2.8.0"
 
 ## custom
 gem 'c2po',             '~> 1.0.0', path: 'vendor/engines/c2po'
