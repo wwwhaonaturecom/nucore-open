@@ -1,6 +1,6 @@
 set :deploy_to, "/home/nucore/nucore.northwestern.edu"
 set :rails_env, "production"
-set :branch, "master"
+set :branch, ENV["REVISION"] || ENV["BRANCH_NAME"] || "master"
 
 server "nucore01.northwestern.edu", user: "nucore", roles: %w(web app db)
 server "nucore02.northwestern.edu", user: "nucore", roles: %w(web app)
