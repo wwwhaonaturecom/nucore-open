@@ -12,7 +12,7 @@ module Nu
       end
 
       def convert
-        [{
+        {
           account: facility_account.revenue_account,
           activity: facility_account.activity,
           amount: total * -1,
@@ -23,7 +23,7 @@ module Nu
           program: facility_account.program,
           project: facility_account.project,
           journal_id: journal.try(:id),
-        }]
+        }
       end
 
     end

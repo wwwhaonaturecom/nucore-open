@@ -11,7 +11,8 @@ module Nu
       end
 
       def convert
-        [{
+        {
+          account_id: order_detail.account_id,
           account: order_detail.product.account,
           activity: order_detail.account.activity,
           amount: total,
@@ -23,7 +24,7 @@ module Nu
           program: order_detail.account.program,
           project: order_detail.account.project,
           journal_id: journal.try(:id),
-        }]
+        }
       end
 
     end
