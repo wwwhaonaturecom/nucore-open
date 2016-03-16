@@ -17,11 +17,8 @@ statement_pdf:
   class_name: Nu::StatementPdf
 
 converters:
-  default:
-    product_to_journal_rows: Nu::Converters::ProductToJournalRowAttributes
-    order_detail_to_journal_rows: Nu::Converters::OrderDetailToJournalRowAttributes
-  split_accounts/split_account:
-    order_detail_to_journal_rows: SplitAccounts::Converters::OrderDetailToJournalRowAttributes
+  product_to_journal_rows: Nu::Converters::ProductToJournalRowAttributes
+  order_detail_to_journal_rows: Nu::Converters::OrderDetailToJournalRowAttributes
 
 reports:
   export_raw:
@@ -58,6 +55,7 @@ order_details:
   status_change_hooks:
     #pending_approval: StatusChangeNotifications::NotifyFacilityHook
     #approved: StatusChangeNotifications::NotifyPurchaserHook
+  list_transformer: SplitAccounts::OrderDetailListTransformer
 
 reservations:
   grace_period: <%= 5.minutes %>
@@ -106,6 +104,7 @@ feature:
   daily_view_on: true
   split_accounts_on: false
   print_order_detail_on: false
+  user_based_price_groups_on: true
 
 # This may be overridden in settings.local.yml if your fork is using S3, so
 # be sure to check there for configuration

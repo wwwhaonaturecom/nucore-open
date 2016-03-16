@@ -159,6 +159,11 @@ GEM
       sass
     cocaine (0.5.7)
       climate_control (>= 0.0.3, < 1.0)
+    codeclimate-test-reporter (0.5.0)
+      simplecov (>= 0.7.1, < 1.0.0)
+    codeclimate_circle_ci_coverage (0.0.6)
+      codeclimate-test-reporter (~> 0)
+      simplecov (~> 0)
     coderay (1.1.0)
     coffee-rails (3.2.2)
       coffee-script (>= 2.2.0)
@@ -195,6 +200,7 @@ GEM
       net-ldap (>= 0.6.0, <= 0.11)
     diff-lcs (1.2.5)
     dispatcher (0.0.1)
+    docile (1.1.5)
     dynamic_form (1.1.4)
     erubis (2.7.0)
     eventmachine (1.0.8)
@@ -521,6 +527,11 @@ GEM
     simple_form (2.1.1)
       actionpack (~> 3.0)
       activemodel (~> 3.0)
+    simplecov (0.11.2)
+      docile (~> 1.1.0)
+      json (~> 1.8)
+      simplecov-html (~> 0.10.0)
+    simplecov-html (0.10.0)
     single_test (0.4.0)
     skylight (0.8.1)
       activesupport (>= 3.0.0)
@@ -607,6 +618,7 @@ DEPENDENCIES
   ci_reporter_rspec
   ckeditor (~> 4.0.10)
   clockpunch (~> 0.1.0)
+  codeclimate_circle_ci_coverage
   coffee-rails (~> 3.2.2)
   coffeelint
   daemons (= 1.1.9)

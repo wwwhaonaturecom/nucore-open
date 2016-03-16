@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20160201171348) do
+ActiveRecord::Schema.define(:version => 20160309224521) do
 
   create_table "account_users", :force => true do |t|
     t.integer  "account_id",               :precision => 38, :scale => 0, :null => false
@@ -189,8 +189,10 @@ ActiveRecord::Schema.define(:version => 20160201171348) do
     t.string  "program",         :limit => 4
     t.string  "account",         :limit => 5
     t.string  "chart_field1",    :limit => 4
+    t.integer "account_id",                     :precision => 38, :scale => 0
   end
 
+  add_index "journal_rows", ["account_id"], :name => "i_journal_rows_account_id"
   add_index "journal_rows", ["journal_id"], :name => "i_journal_rows_journal_id", :tablespace => "bc_nucore"
   add_index "journal_rows", ["order_detail_id"], :name => "i_journal_rows_order_detail_id", :tablespace => "bc_nucore"
 

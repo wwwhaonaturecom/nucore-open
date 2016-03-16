@@ -88,6 +88,12 @@ group :development, :deployment do
   gem 'whenever',           require: false
 end
 
+# TODO: Move this to :development, :test when we upgrade to Rails 4.
+# It is not included by default in Ruby 2.2, and the rails console requires it. Without
+# including it everywhere, we can't run `rails console` on staging or production.
+# https://github.com/rails/rails/blob/3-2-stable/railties/lib/rails/console/app.rb
+gem 'test-unit', '~> 3.0'
+
 group :development, :test do
   gem 'awesome_print',     '1.1.0'
   gem 'factory_girl_rails', '~> 4.5.0'
@@ -104,7 +110,6 @@ group :development, :test do
   gem 'spring'
   gem 'spring-commands-rspec'
   gem 'teaspoon-jasmine'
-  gem 'test-unit', '~> 3.0'
   gem 'thin'
   gem 'timecop',           '~> 0.6.3'
 end
@@ -112,6 +117,7 @@ end
 group :test do
   gem 'rspec_junit_formatter', '0.2.3'
   gem 'ci_reporter_rspec'
+  gem 'codeclimate_circle_ci_coverage'
 end
 
 group :assets do
