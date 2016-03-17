@@ -7,6 +7,7 @@ module Pmu
       NufsAccount.send :include, Pmu::NufsAccountExtension
       GeneralReportsController.send :include, Pmu::GeneralReportsControllerExtension
       InstrumentReportsController.send :include, Pmu::InstrumentReportsControllerExtension
+      ::Reports::ExportRaw.transformers << "Pmu::Reports::ExportRawTransformer"
 
       # make this engine's views override the main app's views
       paths = ActionController::Base.view_paths.to_a
