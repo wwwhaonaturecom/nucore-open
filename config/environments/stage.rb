@@ -81,10 +81,6 @@ Nucore::Application.configure do
       :sender_address       => Settings.email.exceptions.sender,
       :exception_recipients => Settings.email.exceptions.recipients
     }
-
-
-  # Where a surveyor external service redirects to when a survey is completed
-  config.surveyor_redirects_to='https://nucore-staging.northwestern.edu'
 end
 
 # What's this for?
