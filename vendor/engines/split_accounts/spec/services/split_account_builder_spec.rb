@@ -1,8 +1,8 @@
 require "rails_helper"
 require "action_controller/parameters"
-require_relative "../engine_helper"
+require_relative "../split_accounts_spec_helper"
 
-RSpec.describe SplitAccounts::SplitAccountBuilder, type: :service, split_accounts: true do
+RSpec.describe SplitAccounts::SplitAccountBuilder, :enable_split_accounts do
   let(:builder) { described_class.new(options) }
 
   it "is an AccountBuilder" do
@@ -10,6 +10,9 @@ RSpec.describe SplitAccounts::SplitAccountBuilder, type: :service, split_account
   end
 
   describe "#build" do
+    let(:account) { builder.build }
+    let(:splits) { account.splits }
+
     let(:options) do
       {
         account_type: "SplitAccounts::SplitAccount",
@@ -20,35 +23,77 @@ RSpec.describe SplitAccounts::SplitAccountBuilder, type: :service, split_account
       }
     end
 
-    let(:params) do
-      ActionController::Parameters.new({
-        split_accounts_split_account: {
-          splits_attributes: {
-            "0" => {
-              subaccount_id: subaccount_2.id,
-              percent: 50,
-              extra_penny: true
+    describe "happy path" do
+      let(:params) do
+        ActionController::Parameters.new(
+          split_accounts_split_account: {
+            splits_attributes: {
+              "0" => {
+                subaccount_id: subaccount_2.id,
+                percent: 50,
+                extra_penny: true,
+              },
+              "1" => {
+                subaccount_id: subaccount_1.id,
+                percent: 50,
+                extra_penny: false,
+              },
             },
-            "1" => {
-              subaccount_id: subaccount_1.id,
-              percent: 50,
-              extra_penny: false
-            },
-          }
-        }
-      })
+          },
+        )
+      end
+
+      let(:subaccount_1) { create(:setup_account, expires_at: (Time.zone.now + 1.month).change(usec: 0)) }
+      let(:subaccount_2) { create(:setup_account, expires_at: (Time.zone.now + 2.months).change(usec: 0)) }
+
+      it "is a split account" do
+        expect(account).to be_a SplitAccounts::SplitAccount
+      end
+
+      it "sets splits" do
+        expect(splits.size).to be(2)
+      end
+
+      it "sets expired_at to earliest expiring subaccount" do
+        expect(account.expires_at).to eq(subaccount_1.expires_at)
+      end
     end
 
-    let(:subaccount_1) { create(:setup_account, expires_at: (Time.zone.now + 1.month).change(usec: 0)) }
-    let(:subaccount_2) { create(:setup_account, expires_at: (Time.zone.now + 1.month).change(usec: 0)) }
+    describe "with a blank subaccount" do
+      let(:params) do
+        ActionController::Parameters.new(
+          split_accounts_split_account: {
+            splits_attributes: {
+              "0" => {
+                subaccount_id: "",
+                percent: 100,
+                extra_penny: true,
+              },
+            },
+          },
+        )
+      end
 
-    it "sets splits" do
-      expect(builder.build.splits.size).to be(2)
+      it "does not error" do
+        expect(splits).to be_one
+      end
     end
 
-    it "sets expired_at to earliest expiring subaccount" do
-      expect(builder.build.expires_at).to eq(subaccount_1.expires_at)
+    describe "with no subaccounts" do
+      let(:params) { {} }
+
+      it "has two default subaccounts" do
+        expect(splits.size).to eq(2)
+      end
+
+      it "sets them all to 50%" do
+        expect(splits.map(&:percent)).to all(eq(50))
+      end
+
+      it "sets the first one, and only the first one to extra_penny" do
+        expect(splits.first).to be_extra_penny
+        expect(splits.second).not_to be_extra_penny
+      end
     end
   end
-
 end

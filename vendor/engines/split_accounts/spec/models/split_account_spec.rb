@@ -1,7 +1,7 @@
 require "rails_helper"
-require_relative "../engine_helper"
+require_relative "../split_accounts_spec_helper"
 
-RSpec.describe SplitAccounts::SplitAccount, type: :model, split_accounts: true do
+RSpec.describe SplitAccounts::SplitAccount, :enable_split_accounts, type: :model do
 
   it "is an account type" do
     expect(described_class.new).to be_an(Account)
@@ -14,11 +14,27 @@ RSpec.describe SplitAccounts::SplitAccount, type: :model, split_accounts: true d
 
   describe "validations" do
 
+    let(:subaccount_1) { build_stubbed(:setup_account) }
+    let(:subaccount_2) { build_stubbed(:setup_account) }
+
+    context "when only one split" do
+      let(:split_account) do
+        build(:split_account, without_splits: true).tap do |split_account|
+          split_account.splits << build(:split, percent: 100, extra_penny: true, parent_split_account: split_account)
+        end
+      end
+
+      it "is invalid" do
+        expect(split_account).not_to be_valid
+        expect(split_account.errors[:splits]).to include(I18n.t("activerecord.errors.models.split_accounts/split_account.attributes.splits.more_than_one_split"))
+      end
+    end
+
     context "when splits total 100 and one split has extra_penny" do
       let(:split_account) do
         build(:split_account, without_splits: true).tap do |split_account|
-          split_account.splits << build(:split, percent: 50, extra_penny: true, parent_split_account: split_account)
-          split_account.splits << build(:split, percent: 50, extra_penny: false, parent_split_account: split_account)
+          split_account.splits << build(:split, percent: 50, extra_penny: true, parent_split_account: split_account, subaccount: subaccount_1)
+          split_account.splits << build(:split, percent: 50, extra_penny: false, parent_split_account: split_account, subaccount: subaccount_2)
         end
       end
 
@@ -30,42 +46,61 @@ RSpec.describe SplitAccounts::SplitAccount, type: :model, split_accounts: true d
     context "when splits do not total 100 and one split has extra_penny" do
       let(:split_account) do
         build(:split_account, without_splits: true).tap do |split_account|
-          split_account.splits << build(:split, percent: 50, extra_penny: true, parent_split_account: split_account)
-          split_account.splits << build(:split, percent: 49.99, extra_penny: false, parent_split_account: split_account)
+          split_account.splits << build(:split, percent: 50, extra_penny: true, parent_split_account: split_account, subaccount: subaccount_1)
+          split_account.splits << build(:split, percent: 49.99, extra_penny: false, parent_split_account: split_account, subaccount: subaccount_2)
         end
       end
 
       it "is invalid" do
         expect(split_account).not_to be_valid
-        expect(split_account.errors).to include(:splits)
+        message = I18n.t("activerecord.errors.models.split_accounts/split_account.attributes.splits.percent_total")
+        expect(split_account.errors[:splits]).to include(message)
       end
     end
 
     context "when splits total 100 and no splits have extra_penny" do
       let(:split_account) do
         build(:split_account, without_splits: true).tap do |split_account|
-          split_account.splits << build(:split, percent: 50, extra_penny: false, parent_split_account: split_account)
-          split_account.splits << build(:split, percent: 50, extra_penny: false, parent_split_account: split_account)
+          split_account.splits << build(:split, percent: 50, extra_penny: false, parent_split_account: split_account, subaccount: subaccount_1)
+          split_account.splits << build(:split, percent: 50, extra_penny: false, parent_split_account: split_account, subaccount: subaccount_2)
         end
       end
 
       it "is invalid" do
         expect(split_account).not_to be_valid
-        expect(split_account.errors).to include(:splits)
+        message = I18n.t("activerecord.errors.models.split_accounts/split_account.attributes.splits.only_one_extra_penny")
+        expect(split_account.errors[:splits]).to include(message)
       end
     end
 
     context "when splits total 100 and multiple splits have extra_penny" do
       let(:split_account) do
         build(:split_account, without_splits: true).tap do |split_account|
-          split_account.splits << build(:split, percent: 50, extra_penny: true, parent_split_account: split_account)
-          split_account.splits << build(:split, percent: 50, extra_penny: true, parent_split_account: split_account)
+          split_account.splits << build(:split, percent: 50, extra_penny: true, parent_split_account: split_account, subaccount: subaccount_1)
+          split_account.splits << build(:split, percent: 50, extra_penny: true, parent_split_account: split_account, subaccount: subaccount_2)
         end
       end
 
       it "is invalid" do
         expect(split_account).not_to be_valid
-        expect(split_account.errors).to include(:splits)
+        message = I18n.t("activerecord.errors.models.split_accounts/split_account.attributes.splits.only_one_extra_penny")
+        expect(split_account.errors[:splits]).to include(message)
+      end
+    end
+
+    context "when splits share one or more subaccount" do
+
+      let(:split_account) do
+        build(:split_account, without_splits: true).tap do |split_account|
+          split_account.splits << build(:split, percent: 50, extra_penny: true, parent_split_account: split_account, subaccount: subaccount_1)
+          split_account.splits << build(:split, percent: 50, extra_penny: false, parent_split_account: split_account, subaccount: subaccount_1)
+        end
+      end
+
+      it "is invalid" do
+        expect(split_account).not_to be_valid
+        message = I18n.t("activerecord.errors.models.split_accounts/split_account.attributes.splits.duplicate_subaccounts")
+        expect(split_account.errors[:splits]).to include(message)
       end
     end
   end
@@ -107,7 +142,7 @@ RSpec.describe SplitAccounts::SplitAccount, type: :model, split_accounts: true d
     let(:split_account) { create(:split_account) }
 
     it "returns subaccounts" do
-      expect(split_account.subaccounts).to contain_exactly(split_account.splits.first.subaccount)
+      expect(split_account.subaccounts).to contain_exactly(*split_account.splits.map(&:subaccount))
     end
   end
 

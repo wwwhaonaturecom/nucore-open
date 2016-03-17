@@ -27,6 +27,9 @@ test:
         files:
           - spec/**/*_spec.rb
           - vendor/engines/**/spec/**/*_spec.rb
-    - bundle exec teaspoon --suppress-log --format junit > $CIRCLE_TEST_REPORTS/teaspoon.xml
   post:
+    - bundle exec teaspoon
+      --suppress-log
+      --format junit > $CIRCLE_TEST_REPORTS/teaspoon.xml
     - bash config/circle/database_delete.sh
+    - bundle exec report_coverage

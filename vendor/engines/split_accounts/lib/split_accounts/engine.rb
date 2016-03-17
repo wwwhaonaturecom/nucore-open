@@ -1,17 +1,32 @@
 module SplitAccounts
   class Engine < Rails::Engine
 
+    def self.enable!
+      # Concat class variables in main rails app
+      Account.config.account_types << "SplitAccounts::SplitAccount"
+      Account.config.journal_account_types << "SplitAccounts::SplitAccount"
+
+      # Add views to view hooks in main rails app
+      ViewHook.add_hook "accounts.show", "after_end_of_form", "split_accounts/shared/show_splits"
+      ViewHook.add_hook "facility_accounts.show", "after_end_of_form", "split_accounts/shared/show_splits"
+    end
+
+    # This needs to undo everything that enable! does. Used in specs for testing for turning the feature on or off
+    def self.disable!
+      Account.config.account_types.delete "SplitAccounts::SplitAccount"
+      Account.config.journal_account_types.delete "SplitAccounts::SplitAccount"
+
+      ViewHook.remove_hook "accounts.show", "after_end_of_form", "split_accounts/shared/show_splits"
+      ViewHook.remove_hook "facility_accounts.show", "after_end_of_form", "split_accounts/shared/show_splits"
+    end
+
     config.to_prepare do
+      # Include modules in main rails app
+      Account.send :include, SplitAccounts::AccountExtension
+      FacilityAccountsController.send :include, SplitAccounts::FacilityAccountsControllerExtension
+
       if SettingsHelper.feature_on?(:split_accounts)
-        # Include modules in main rails app
-        Account.send :include, SplitAccounts::AccountExtension
-
-        # Concat class variables in main rails app
-        Account.config.account_types << "SplitAccounts::SplitAccount"
-        Account.config.journal_account_types << "SplitAccounts::SplitAccount"
-
-        # Add views to view hooks in main rails app
-        ViewHook.add_hook "facility_accounts.show", "after_end_of_form", "split_accounts/facility_accounts/show_splits"
+        SplitAccounts::Engine.enable!
       end
     end
 
@@ -25,7 +40,7 @@ module SplitAccounts
 
     # Include factories in main rails app
     initializer "model_core.factories", after: "factory_girl.set_factory_paths" do
-      if defined?(FactoryGirl) && SettingsHelper.feature_on?(:split_accounts)
+      if defined?(FactoryGirl)
         FactoryGirl.definition_file_paths << File.expand_path('../../../spec/factories', __FILE__)
       end
     end
