@@ -12,6 +12,11 @@ Rollbar.configure do |config|
   config.person_username_method = "username"
   config.person_email_method = "email"
 
+  config.exception_level_filters.merge!("ActiveRecord::RecordNotFound"       => "ignore",
+                                        "ActionController::RoutingError"     => "ignore",
+                                        "AbstractController::ActionNotFound" => "ignore",
+                                        "ActionController::UnknownFormat"    => "ignore")
+
   # By default, Rollbar will try to call the `current_user` controller method
   # to fetch the logged-in user object, and then call that object's `id`,
   # `username`, and `email` methods to fetch those properties. To customize:
