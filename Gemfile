@@ -1,45 +1,45 @@
-source 'https://rubygems.org'
+source "https://rubygems.org"
 
 git_source(:github) { |repo_name| "git@github.com:#{repo_name}.git" }
 
 ## base
-gem 'rails',            '3.2.22.2'
+gem "rails", "3.2.22.2"
 gem "strong_parameters"
-gem 'rails_config',     '0.3.3'
+gem "rails_config",     "0.3.3"
 
 ## database
 gem 'activerecord-oracle_enhanced-adapter', '1.4.3'
 gem 'ruby-oci8',        '~> 2.2.0'
 
 ## auth
-gem 'devise',           '~> 3.5.0'
-gem 'devise-encryptable', '~> 0.2.0'
-gem 'devise_ldap_authenticatable', '~> 0.8.5'
-gem 'cancancan',        '1.10'
+gem "devise",           "~> 3.5.0"
+gem "devise-encryptable", "~> 0.2.0"
+gem "devise_ldap_authenticatable", "~> 0.8.5"
+gem "cancancan",        "1.10"
 
 ## models
-gem 'aasm',             '2.2.0'
-gem 'paperclip',        '~> 4.2.0'
-gem 'vestal_versions',  '1.2.4.3', github: 'elzoiddy/vestal_versions'
-gem 'awesome_nested_set', '2.1.6'
-gem 'nokogiri',         '~> 1.6.1'
+gem "aasm",             "2.2.0"
+gem "paperclip",        "~> 4.2.0"
+gem "vestal_versions",  "1.2.4.3", github: "elzoiddy/vestal_versions"
+gem "awesome_nested_set", "2.1.6"
+gem "nokogiri",         "~> 1.6.1"
 
 ## views
-gem 'bootstrap-sass',   '~> 2.3.2'
-gem 'haml',             '~> 4.0.5'
-gem 'will_paginate',    '~> 3.0.5'
-gem 'dynamic_form',     '~> 1.1.4'
-gem 'ckeditor',         '~> 4.0.10'
-gem 'jquery-rails',     '~> 2.1.4'
-gem 'jquery-ui-sass-rails'
-gem 'clockpunch',       '~> 0.1.0'
-gem 'simple_form',      '~> 2.1.1'
-gem 'font-awesome-rails', '~> 3.2.0'
-gem 'nested_form_fields'
+gem "bootstrap-sass",   "~> 2.3.2"
+gem "haml",             "~> 4.0.5"
+gem "will_paginate",    "~> 3.0.5"
+gem "dynamic_form",     "~> 1.1.4"
+gem "ckeditor",         "~> 4.0.10"
+gem "jquery-rails",     "~> 2.1.4"
+gem "jquery-ui-sass-rails"
+gem "clockpunch",       "~> 0.1.0"
+gem "simple_form",      "~> 2.1.1"
+gem "font-awesome-rails", "~> 3.2.0"
+gem "nested_form_fields"
 
 ## controllers
-gem 'prawn',            '0.12'
-gem 'prawn_rails',      '0.0.11'
+gem "prawn",            "0.12"
+gem "prawn_rails",      "0.0.11"
 
 ## monitoring
 gem 'eye-patch', require: false
@@ -73,11 +73,11 @@ gem 'split_accounts',   '~> 0.0.1', path: 'vendor/engines/split_accounts'
 gem 'synaccess_connect', '0.2.2', github: 'tablexi/synaccess'
 
 group :development do
-  gem 'better_errors'
-  gem 'binding_of_caller'
+  gem "better_errors"
+  gem "binding_of_caller"
   gem "coffeelint"
-  gem 'letter_opener'
-  gem 'rubocop', require: false
+  gem "letter_opener"
+  gem "rubocop", require: false
 end
 
 group :development, :deployment do
@@ -85,14 +85,14 @@ group :development, :deployment do
   gem "capistrano-rails",   require: false
   gem "capistrano-rvm",     require: false
   gem "capistrano-bundler", require: false
-  gem 'whenever',           require: false
+  gem "whenever",           require: false
 end
 
 # TODO: Move this to :development, :test when we upgrade to Rails 4.
 # It is not included by default in Ruby 2.2, and the rails console requires it. Without
 # including it everywhere, we can't run `rails console` on staging or production.
 # https://github.com/rails/rails/blob/3-2-stable/railties/lib/rails/console/app.rb
-gem 'test-unit', '~> 3.0'
+gem "test-unit", "~> 3.0"
 
 group :development, :test do
   gem 'awesome_print',     '1.1.0'
@@ -115,17 +115,17 @@ group :development, :test do
 end
 
 group :test do
-  gem 'rspec_junit_formatter', '0.2.3'
-  gem 'ci_reporter_rspec'
-  gem 'codeclimate_circle_ci_coverage'
+  gem "rspec_junit_formatter", "0.2.3"
+  gem "ci_reporter_rspec"
+  gem "codeclimate_circle_ci_coverage"
 end
 
 group :assets do
-  gem 'sass-rails',   '~> 3.2.6'
-  gem 'coffee-rails', '~> 3.2.2'
-  gem 'uglifier',     '>= 2.1.1'
-  gem 'therubyracer'
-  gem 'turbo-sprockets-rails3'
+  gem "sass-rails",   "~> 3.2.6"
+  gem "coffee-rails", "~> 3.2.2"
+  gem "uglifier",     ">= 2.1.1"
+  gem "therubyracer"
+  gem "turbo-sprockets-rails3"
 end
 
 group :production, :staging do
