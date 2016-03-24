@@ -10,7 +10,7 @@ module ReportsHelper
   end
 
   def to_percent(decimal)
-    (decimal * 100).round_to(1)
+    (decimal * 100).round(1)
   end
 
   def format_percent(percent)
