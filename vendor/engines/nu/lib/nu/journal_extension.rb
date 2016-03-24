@@ -1,4 +1,5 @@
 module Nu
+
   module JournalExtension
 
     def create_spreadsheet
@@ -6,8 +7,8 @@ module Nu
       return false if rows.empty?
 
       # write journal spreadsheet to tmp directory
-      temp_file   = File.new("#{Dir::tmpdir}/journal.spreadsheet.#{Time.zone.now.strftime("%Y%m%dT%H%M%S")}.xls", "w")
-      output_file = JournalSpreadsheet.write_journal_entry(rows, :output_file => temp_file.path) do |line, row|
+      temp_file   = File.new("#{Dir.tmpdir}/journal.spreadsheet.#{Time.zone.now.strftime('%Y%m%dT%H%M%S')}.xls", "w")
+      output_file = JournalSpreadsheet.write_journal_entry(rows, output_file: temp_file.path) do |line, row|
         line[0] = row.fund
         line[1] = row.dept
         line[2] = row.project
@@ -26,12 +27,17 @@ module Nu
       end
 
       # add/import journal spreadsheet
-      status      = add_spreadsheet(output_file)
+      status = add_spreadsheet(output_file)
 
       # remove temp file
-      File.unlink(temp_file.path) rescue nil
+      begin
+        File.unlink(temp_file.path)
+      rescue
+        nil
+      end
       status
     end
 
   end
+
 end

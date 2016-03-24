@@ -1,4 +1,5 @@
 class AddNuOracleIndexes < ActiveRecord::Migration
+
   def change
     add_index :accounts, :facility_id
     add_index :orders, :merge_with_order_id
@@ -26,4 +27,5 @@ class AddNuOracleIndexes < ActiveRecord::Migration
     add_index :stored_files, :created_by
     add_index :stored_files, :order_detail_id
   end
+
 end

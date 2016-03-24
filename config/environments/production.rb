@@ -37,11 +37,11 @@ Nucore::Application.configure do
   # Disable delivery errors, bad email addresses will be ignored
   config.action_mailer.raise_delivery_errors = false
   config.action_mailer.delivery_method       = :smtp
-  config.action_mailer.default_url_options   = { :host => "nucore.northwestern.edu", :protocol => 'https' }
+  config.action_mailer.default_url_options   = { host: "nucore.northwestern.edu", protocol: "https" }
   config.action_mailer.smtp_settings         = {
-    :address        => 'smtprelay.northwestern.edu',
-    :port           => 25,
-    :domain         => 'northwestern.edu',
+    address: "smtprelay.northwestern.edu",
+    port: 25,
+    domain: "northwestern.edu",
   }
 
   # Enable threaded mode
@@ -74,11 +74,11 @@ Nucore::Application.configure do
   # config.force_ssl = true
 
   config.middleware.use ExceptionNotification::Rack,
-    :email => {
-      :sender_address       => Settings.email.exceptions.sender,
-      :exception_recipients => Settings.email.exceptions.recipients
-    }
+                        email: {
+                          sender_address: Settings.email.exceptions.sender,
+                          exception_recipients: Settings.email.exceptions.recipients,
+                        }
 end
 
 # What's this for?
-GOOGLE_ANALYTICS_KEY = 'UA-19053506-1'
+GOOGLE_ANALYTICS_KEY = "UA-19053506-1".freeze

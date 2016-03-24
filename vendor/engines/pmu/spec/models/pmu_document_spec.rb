@@ -63,19 +63,18 @@ RSpec.describe PmuDocument do
 XML
   end
 
-
-  it 'creates new departments' do
+  it "creates new departments" do
     expect { parser.parse document }.to change { PmuDepartment.count }.by(2)
   end
 
-  it 'updates an existing department' do
-    department = PmuDepartment.create(nufin_id: 1610200)
+  it "updates an existing department" do
+    department = PmuDepartment.create(nufin_id: 1_610_200)
     expect(department.nufin_description).to be_blank
     expect { parser.parse document }.to change { PmuDepartment.count }.by(1)
-    expect(department.reload.nufin_description).to eq('Principal Gifts')
+    expect(department.reload.nufin_description).to eq("Principal Gifts")
   end
 
-  it 'sets the fields properly' do
+  it "sets the fields properly" do
     parser.parse document
     department = PmuDepartment.first
 

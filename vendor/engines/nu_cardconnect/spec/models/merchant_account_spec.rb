@@ -31,7 +31,7 @@ RSpec.describe NuCardconnect::MerchantAccount do
   describe "assign_attributes" do
     it "assigns only the valid values to the facility" do
       merchant_account.assign_attributes(card_connect_merchant_id: "123456",
-        abbreviation: "ABCD")
+                                         abbreviation: "ABCD")
       expect(facility.card_connect_merchant_id).to eq("123456")
       expect(facility.abbreviation).not_to eq("ABCD")
     end

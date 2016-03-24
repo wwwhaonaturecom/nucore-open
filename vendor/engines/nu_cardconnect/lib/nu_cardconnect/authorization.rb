@@ -47,7 +47,7 @@ module NuCardconnect
         amount: amount.to_s,
         orderid: order_id.to_s,
         capture: @capture ? "Y" : "N",
-        userfields: user_fields
+        userfields: user_fields,
       )
       Rails.logger.debug "Request:"
       Rails.logger.debug service.request.payload
@@ -65,9 +65,11 @@ module NuCardconnect
     end
 
     class Response < SimpleDelegator
+
       def approved?
         respstat == "A"
       end
+
     end
 
   end

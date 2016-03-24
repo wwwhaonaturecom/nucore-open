@@ -9,10 +9,10 @@ module NucsValidatorHelper
   def define_gl066(chart_string, attrs = {})
     validator = NucsValidator.new(chart_string)
     raise Exception.new("#{chart_string} does not match #{NucsValidator.pattern}") unless validator.valid?
-    attrs.merge!(fund: validator.fund) unless attrs.key?(:fund)
-    attrs.merge!(department: validator.department) unless attrs.key?(:department)
-    attrs.merge!(project: validator.project) if validator.project && !attrs.key?(:project)
-    attrs.merge!(activity: validator.activity) if validator.activity && !attrs.key?(:activity)
+    attrs[:fund] = validator.fund unless attrs.key?(:fund)
+    attrs[:department] = validator.department unless attrs.key?(:department)
+    attrs[:project] = validator.project if validator.project && !attrs.key?(:project)
+    attrs[:activity] = validator.activity if validator.activity && !attrs.key?(:activity)
 
     if attrs.key?(:expires_at) || attrs.key?(:starts_at)
       FactoryGirl.create(:nucs_gl066_with_dates, attrs)
@@ -21,7 +21,7 @@ module NucsValidatorHelper
         today = Time.zone.today
         period = (today + 1.year).year
         period = today.year if Time.zone.parse("#{period}0901") - 1.year > today
-        attrs.merge!(budget_period: period)
+        attrs[:budget_period] = period
       end
 
       gl = FactoryGirl.create(:nucs_gl066_without_dates, attrs)
@@ -42,7 +42,7 @@ module NucsValidatorHelper
 
     if validator.project
       project_activity = { project: validator.project }
-      project_activity.merge!(activity: validator.activity) if validator.activity
+      project_activity[:activity] = validator.activity if validator.activity
       FactoryGirl.create(:nucs_project_activity, project_activity)
     end
 

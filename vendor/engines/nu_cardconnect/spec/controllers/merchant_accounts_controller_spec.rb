@@ -63,7 +63,7 @@ RSpec.describe NuCardconnect::MerchantAccountsController do
       before { sign_in admin }
 
       describe "success" do
-        let(:params) { { card_connect_merchant_id: 123456 } }
+        let(:params) { { card_connect_merchant_id: 123_456 } }
 
         it "saves to the fields" do
           do_request
@@ -78,7 +78,7 @@ RSpec.describe NuCardconnect::MerchantAccountsController do
       end
 
       describe "success, but with illegal fields" do
-        let(:params) { { card_connect_merchant_id: 123456, abbreviation: "ABC" } }
+        let(:params) { { card_connect_merchant_id: 123_456, abbreviation: "ABC" } }
 
         it "does not change the abbreviation" do
           expect { do_request }.not_to change { facility.reload.abbreviation }

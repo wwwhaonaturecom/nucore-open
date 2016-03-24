@@ -3,7 +3,7 @@ require "nu_cardconnect/charge_validator"
 require "ostruct"
 
 RSpec.describe NuCardconnect::ChargeValidator do
-  subject(:validator) { described_class.new({ retref: retref, amount: amount }) }
+  subject(:validator) { described_class.new(retref: retref, amount: amount) }
   let(:response) { OpenStruct.new(amount: "43.06", respstat: respstat) }
   before { allow_any_instance_of(CardConnect::Service::Inquire).to receive(:submit).and_return response }
 

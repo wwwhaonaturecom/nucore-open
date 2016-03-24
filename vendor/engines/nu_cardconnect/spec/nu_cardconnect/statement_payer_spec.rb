@@ -3,7 +3,7 @@ require "rails_helper"
 RSpec.describe NuCardconnect::StatementPayer do
   let(:statement) { instance_double("Statement", facility: facility, paid_in_full?: false) }
   let(:facility) { instance_double("Facility", supports_credit_card_payments?: true) }
-  let(:merchant_id) { 12345678 }
+  let(:merchant_id) { 12_345_678 }
   let(:statement_amount) { BigDecimal.new("100.00") }
   subject(:payer) { described_class.new(statement, params) }
 

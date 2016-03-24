@@ -27,7 +27,7 @@ RSpec.describe FacilityAccountsController do
         facility_id: @authable.url_name,
         owner_user_id: @guest.id,
         account_type: "NufsAccount",
-        nufs_account: account_params
+        nufs_account: account_params,
       }
     end
 
@@ -162,7 +162,5 @@ RSpec.describe FacilityAccountsController do
         expect(assigns(:account).errors.full_messages).not_to include(a_string_starting_with("Expiration"))
       end
     end
-
-
   end
 end

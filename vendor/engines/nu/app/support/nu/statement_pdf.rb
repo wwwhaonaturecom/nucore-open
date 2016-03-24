@@ -1,4 +1,5 @@
 module Nu
+
   class StatementPdf < ::StatementPdf
 
     def generate(pdf)
@@ -27,21 +28,21 @@ module Nu
     def generate_bill_to_bounding_box_content(pdf)
       pdf.text "PLEASE MAKE ALL CHECKS PAYABLE TO:", style: :bold
       pdf.text "NORTHWESTERN UNIVERSITY", style: :bold
-      pdf.text 'NET 30', style: :bold
+      pdf.text "NET 30", style: :bold
       generate_bill_to_table(pdf)
       pdf.move_down 5
       generate_bill_to_user_table(pdf)
     end
 
     def generate_bill_to_table(pdf)
-      pdf.table [ ['Bill To:'], [@account.remittance_information] ] do
+      pdf.table [["Bill To:"], [@account.remittance_information]] do
         row(0).style(LABEL_ROW_STYLE)
         cells.style(width: @second_row_box_width)
       end
     end
 
     def generate_bill_to_user_table(pdf)
-      pdf.table [ ['User:', "#{@account.owner.user}\n#{@account.owner.user.email}"] ] do
+      pdf.table [["User:", "#{@account.owner.user}\n#{@account.owner.user.email}"]] do
         column(0).style(font_style: :bold)
         cells.style(borders: [])
       end
@@ -58,7 +59,7 @@ module Nu
     def pay_online_information(pdf)
       return unless @statement.credit_card_payable?
       pdf.formatted_text [text: "Pay Online", color: "0000FF", styles: [:underline],
-        link: NuCardconnect::Engine.routes.url_helpers.pay_statement_url(@statement.uuid)]
+                          link: NuCardconnect::Engine.routes.url_helpers.pay_statement_url(@statement.uuid)]
     end
 
     def generate_document_header(pdf)
@@ -84,16 +85,16 @@ module Nu
         cells.style(borders: [], padding: 2, width: box_width / 2)
       end
 
-      pdf.table([ [@facility.to_s], [invoice_details_inner_table] ]) do
+      pdf.table([[@facility.to_s], [invoice_details_inner_table]]) do
         row(0).style(LABEL_ROW_STYLE.merge(size: 12, width: box_width))
       end
     end
 
     def invoice_bounding_box_content
-      content = [['Invoice:', "#{@statement.invoice_number}"],
-                 ['Date:', I18n.l(@statement.created_at.to_date, format: :usa)]]
+      content = [["Invoice:", @statement.invoice_number.to_s],
+                 ["Date:", I18n.l(@statement.created_at.to_date, format: :usa)]]
 
-      content << ['Purchase Order:', @account.account_number] if @account.is_a?(PurchaseOrderAccount)
+      content << ["Purchase Order:", @account.account_number] if @account.is_a?(PurchaseOrderAccount)
       content
     end
 
@@ -118,7 +119,7 @@ module Nu
     def generate_remittance_information(pdf)
       pdf.bounding_box [pdf.bounds.width / 2, @second_row_box_top], width: @second_row_box_width do
         pdf.text "\n" # extra line to balance the "NET 30" above the bill to table
-        pdf.table([['Remit To:'], [@facility.address]]) do
+        pdf.table([["Remit To:"], [@facility.address]]) do
           row(0).style(LABEL_ROW_STYLE)
           cells.style(width: 200)
         end
@@ -130,7 +131,7 @@ module Nu
       pdf.table(
         [order_detail_headers] + order_detail_rows + [order_detail_footer],
         header: true,
-        width: pdf.bounds.width
+        width: pdf.bounds.width,
       ) do
         cells.style(borders: [], inline_format: true)
         row(0).style(LABEL_ROW_STYLE.merge(borders: [:top, :left, :bottom, :right]))
@@ -145,7 +146,7 @@ module Nu
     end
 
     def generate_order_detail_rows
-      @statement.order_details.includes(:product).order('fulfilled_at DESC').map do |order_detail|
+      @statement.order_details.includes(:product).order("fulfilled_at DESC").map do |order_detail|
         @total_due += order_detail.actual_total
         [
           format_usa_date(order_detail.fulfilled_at),
@@ -154,13 +155,13 @@ module Nu
           order_detail.quantity.to_s,
           number_to_currency(order_detail.actual_cost / order_detail.quantity),
           subsidy_display(order_detail),
-          number_to_currency(order_detail.actual_total)
+          number_to_currency(order_detail.actual_total),
         ]
       end
     end
 
     def item_description(order_detail)
-      description = "#{order_detail.product}"
+      description = order_detail.product.to_s
       description += "\n<i>#{order_detail.note}</i>" if order_detail.note.present?
       description
     end
@@ -172,11 +173,13 @@ module Nu
     end
 
     def order_detail_footer
-      ['', '', '', '', '', 'TOTAL DUE', number_to_currency(@total_due)]
+      ["", "", "", "", "", "TOTAL DUE", number_to_currency(@total_due)]
     end
 
     def order_detail_headers
-      ['Fulfillment Date', 'Order Number', 'Item Name', 'Quantity', 'Unit Cost', 'Subsidy Amount', 'Total Cost']
+      ["Fulfillment Date", "Order Number", "Item Name", "Quantity", "Unit Cost", "Subsidy Amount", "Total Cost"]
     end
+
   end
+
 end

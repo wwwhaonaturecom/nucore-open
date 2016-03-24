@@ -226,7 +226,7 @@ RSpec.describe NucsValidator do
       end
 
       describe "without a project, or anything else" do
-        let(:chart_string) { [fund, department].join("-")}
+        let(:chart_string) { [fund, department].join("-") }
         it "does not require the project" do
           define_gl066(chart_string)
           NucsValidator.new(chart_string, account).account_is_open!
@@ -235,7 +235,7 @@ RSpec.describe NucsValidator do
     end
   end
 
-  # TODO I started refactoring this file, but only got about halfway through.
+  # TODO: I started refactoring this file, but only got about halfway through.
 
   it "recognizes an expired chart string on a GL066 entry with dates" do
     define_gl066(non_grant_chart_string, expires_at: Time.zone.today - 1)
@@ -374,9 +374,9 @@ RSpec.describe NucsValidator do
   end
 
   it 'returns a date when there is no project given and "-" exists in the DB' do
-    define_gl066(non_grant_chart_string,       expires_at: Time.zone.now + 3.years,
-                                     project: NucsValidator::NUCS_BLANK,
-                                     activity: NucsValidator::NUCS_BLANK)
+    define_gl066(non_grant_chart_string, expires_at: Time.zone.now + 3.years,
+                                         project: NucsValidator::NUCS_BLANK,
+                                         activity: NucsValidator::NUCS_BLANK)
 
     expect(NucsValidator.new(non_grant_chart_string[0...non_grant_chart_string.index("-10006385")]).latest_expiration).not_to be_nil
   end

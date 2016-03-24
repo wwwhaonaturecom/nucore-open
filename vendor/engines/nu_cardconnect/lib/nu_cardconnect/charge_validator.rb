@@ -5,7 +5,9 @@ require "active_support/core_ext/hash/indifferent_access"
 # and it matches the expected amount.
 # Useful if using the hosted payment service to validate the postback
 module NuCardconnect
+
   class ChargeValidator
+
     attr_reader :retref, :amount
     def initialize(params)
       @params = params.symbolize_keys
@@ -30,5 +32,7 @@ module NuCardconnect
     def response
       @response ||= Inquire.new(retref: retref).response
     end
+
   end
+
 end

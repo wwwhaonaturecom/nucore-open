@@ -4,82 +4,82 @@ RSpec.describe NufsAccount do
   context "account number validations" do
     before(:each) do
       @user     = FactoryGirl.create(:user)
-      @options  = { :description => "account description",
-                    :expires_at => Time.zone.now + 1.day,
-                    :created_by => @user.id,
-                    :account_users_attributes => account_users_attributes_hash(:user => @user) }
-      @starts_at  = Time.zone.now-3.days
-      @expires_at = Time.zone.now+3.days
+      @options  = { description: "account description",
+                    expires_at: Time.zone.now + 1.day,
+                    created_by: @user.id,
+                    account_users_attributes: account_users_attributes_hash(user: @user) }
+      @starts_at  = Time.zone.now - 3.days
+      @expires_at = Time.zone.now + 3.days
     end
 
     it "should allow format fund3-dept7" do
-      @options[:account_number] = '123-1234567'
+      @options[:account_number] = "123-1234567"
       define_gl066(@options[:account_number])
       @account = NufsAccount.create(@options)
       assert @account.valid?
-      assert_equal '123', @account.fund
-      assert_equal '1234567', @account.dept
+      assert_equal "123", @account.fund
+      assert_equal "1234567", @account.dept
       # should initialize reader attributes after loading from database
       @account = NufsAccount.first
       @account.valid?
-      assert_equal '123', @account.fund
-      assert_equal '1234567', @account.dept
+      assert_equal "123", @account.fund
+      assert_equal "1234567", @account.dept
     end
 
     it "should not allow format fund3-dept7-project8" do
-      assert_number_format('123-1234567-12345678', false)
+      assert_number_format("123-1234567-12345678", false)
     end
 
     it "should allow format fund3-dept7-project8-activity2 where fund is < 800 and activity is 01" do
-      assert_number_format('171-1234567-12345678-01', true)
+      assert_number_format("171-1234567-12345678-01", true)
     end
 
     it "should not allow format fund3-dept7-project8-activity2 where fund is < 800 and activity is not 01" do
-      assert_number_format('123-1234567-12345678-12', false)
+      assert_number_format("123-1234567-12345678-12", false)
     end
 
     it "should allow format fund3-dept7-project8-activity2 where fund is >= 800 and activity is not 01" do
-      assert_number_format('800-1234567-82345678-12', true)
+      assert_number_format("800-1234567-82345678-12", true)
     end
 
     it "should allow format fund3-dept7-project8-activity2-program4" do
-      assert_number_format '171-1234567-12345678-01-1234', true
+      assert_number_format "171-1234567-12345678-01-1234", true
       account = NufsAccount.find(@account.id)
-      assert_equal '171', account.fund
-      assert_equal '1234567', account.dept
-      assert_equal '12345678', account.project
-      assert_equal '01', account.activity
-      assert_equal '1234', account.program
+      assert_equal "171", account.fund
+      assert_equal "1234567", account.dept
+      assert_equal "12345678", account.project
+      assert_equal "01", account.activity
+      assert_equal "1234", account.program
     end
 
     it "should not allow format fund3-dept7-project8-activity2-program4-account5" do
       # create chart string without program value
-      @bcs = BudgetedChartString.create(:fund => '123', :dept => '1234567', :project => '12345678', :activity => '12',
-                                        :account => '12345', :starts_at => @starts_at, :expires_at => @expires_at)
-      @options[:account_number] = '123-1234567-12345678-12-1234-12345'
+      @bcs = BudgetedChartString.create(fund: "123", dept: "1234567", project: "12345678", activity: "12",
+                                        account: "12345", starts_at: @starts_at, expires_at: @expires_at)
+      @options[:account_number] = "123-1234567-12345678-12-1234-12345"
       @account = NufsAccount.create(@options)
       assert !@account.valid?
       assert @account.errors[:account_number]
     end
 
     it "should not allow invalid account number" do
-      @options[:account_number] = '123'
+      @options[:account_number] = "123"
       @account = NufsAccount.create(@options)
       assert !@account.valid?
       assert @account.errors[:account_number]
     end
 
     it "should not allow account that has expired" do
-      @bcs = BudgetedChartString.create(:fund => '123', :dept => '1234567', :starts_at => @starts_at, :expires_at => @starts_at)
-      @options[:account_number] = '123-1234567'
+      @bcs = BudgetedChartString.create(fund: "123", dept: "1234567", starts_at: @starts_at, expires_at: @starts_at)
+      @options[:account_number] = "123-1234567"
       @account = NufsAccount.create(@options)
       assert !@account.valid?
       expect(@account.errors[:account_number]).not_to be_nil
     end
 
     it "should not allow account that has not started" do
-      @bcs = BudgetedChartString.create(:fund => '123', :dept => '1234567', :starts_at => @starts_at+1.year, :expires_at => @expires_at)
-      @options[:account_number] = '123-1234567'
+      @bcs = BudgetedChartString.create(fund: "123", dept: "1234567", starts_at: @starts_at + 1.year, expires_at: @expires_at)
+      @options[:account_number] = "123-1234567"
       @account = NufsAccount.create(@options)
       assert !@account.valid?
       expect(@account.errors[:account_number]).not_to be_nil
@@ -87,7 +87,7 @@ RSpec.describe NufsAccount do
 
     private
 
-    def assert_number_format(account_number, valid, gl066_override=nil)
+    def assert_number_format(account_number, valid, gl066_override = nil)
       @options[:account_number] = account_number
       define_gl066(gl066_override ? gl066_override : @options[:account_number])
       @account = NufsAccount.create(@options)

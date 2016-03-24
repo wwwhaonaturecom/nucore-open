@@ -5,7 +5,7 @@ class NucsProjectActivity < NucsGe001
 
   def self.create_from_source(tokens)
     attrs = { project: tokens[0], activity: tokens[1] }
-    attrs.merge!(auxiliary: tokens[2]) if tokens.size > 2
+    attrs[:auxiliary] = tokens[2] if tokens.size > 2
     create(attrs)
   end
 

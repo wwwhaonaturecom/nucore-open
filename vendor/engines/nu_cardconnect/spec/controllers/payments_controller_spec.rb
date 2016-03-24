@@ -2,7 +2,7 @@ require "rails_helper"
 
 RSpec.describe NuCardconnect::PaymentsController do
   let(:facility) { FactoryGirl.create(:facility, card_connect_merchant_id: merchant_id) }
-  let(:merchant_id) { 123456 }
+  let(:merchant_id) { 123_456 }
   let(:user) { FactoryGirl.create(:user) }
   let(:account) { FactoryGirl.create(:purchase_order_account, :with_account_owner, owner: user) }
   let(:statement) { FactoryGirl.create(:statement, facility: facility, account: account, created_by_user: user) }

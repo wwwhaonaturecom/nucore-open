@@ -2,7 +2,9 @@ require "cardconnect"
 
 # Wrapper around the CardConnect gem's Inquire service
 module NuCardconnect
+
   class Inquire
+
     attr_reader :retref
 
     def initialize(retref:)
@@ -17,6 +19,7 @@ module NuCardconnect
     end
 
     class InquireResponse < SimpleDelegator
+
       def approved?
         respstat == "A"
       end
@@ -26,8 +29,11 @@ module NuCardconnect
       end
 
       def amount_matches?(other_amount)
-        self.amount == other_amount.to_s
+        amount == other_amount.to_s
       end
+
     end
+
   end
+
 end

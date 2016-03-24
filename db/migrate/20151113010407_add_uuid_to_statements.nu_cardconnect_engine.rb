@@ -1,5 +1,6 @@
 # This migration comes from nu_cardconnect_engine (originally 20151111233917)
 class AddUuidToStatements < ActiveRecord::Migration
+
   def up
     add_column :statements, :uuid, :string
     Statement.find_each do |statement|
@@ -12,4 +13,5 @@ class AddUuidToStatements < ActiveRecord::Migration
   def down
     remove_column :statements, :uuid
   end
+
 end

@@ -1,6 +1,6 @@
 require "rails_helper"
-require 'controller_spec_helper'
-require 'transaction_search_spec_helper'
+require "controller_spec_helper"
+require "transaction_search_spec_helper"
 
 RSpec.describe FacilityJournalsController do
   include DateHelper
@@ -15,26 +15,26 @@ RSpec.describe FacilityJournalsController do
     @journal = FactoryGirl.create(:journal, facility: @authable, created_by: @admin.id, journal_date: Time.current)
   end
 
-  context 'create' do
+  context "create" do
     before :each do
       @method = :post
       @action = :create
       @journal_date = I18n.l(Date.current, format: :usa)
       @params = {
-        :facility_id => @authable.url_name,
-        :journal_date => @journal_date
+        facility_id: @authable.url_name,
+        journal_date: @journal_date,
       }
     end
 
-    context 'with order detail' do
+    context "with order detail" do
       before :each do
         acct = create_nufs_account_with_owner :director
         place_and_complete_item_order(@director, @authable, acct)
         define_open_account(@item.account, acct.account_number)
-        @params.merge!(order_detail_ids: [ @order_detail.id ])
+        @params.merge!(order_detail_ids: [@order_detail.id])
       end
 
-      it 'allows director to create the journal' do
+      it "allows director to create the journal" do
         maybe_grant_always_sign_in(:director)
         do_request
 

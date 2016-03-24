@@ -8,7 +8,7 @@ class NucsGe001 < ActiveRecord::Base
 
   def self.create_from_source(tokens)
     attrs = { value: tokens[0] }
-    attrs.merge!(auxiliary: tokens[1]) if tokens.size > 1
+    attrs[:auxiliary] = tokens[1] if tokens.size > 1
     create(attrs)
   end
 
