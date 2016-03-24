@@ -1,6 +1,8 @@
 require "cardconnect"
 module NuCardconnect
+
   class PaymentsController < ApplicationController
+
     skip_before_filter :verify_authenticity_token, only: :postback
     before_filter :load_statement
 
@@ -47,5 +49,7 @@ module NuCardconnect
     def payment_params
       params.fetch(:payment, {}).merge(current_user_id: current_user.try(:id))
     end
+
   end
+
 end

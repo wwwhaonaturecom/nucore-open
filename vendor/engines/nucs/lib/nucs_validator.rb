@@ -3,7 +3,7 @@ class NucsValidator
   include NucsErrors
   include ActiveModel::Validations
 
-  NUCS_BLANK = "-"
+  NUCS_BLANK = "-".freeze
 
   attr_reader :chart_string, :fund, :department, :project, :activity, :program, :chart_field1, :account
   alias_attribute :dept, :department
@@ -112,7 +112,7 @@ class NucsValidator
       department: @department,
     }
 
-    where.merge!(project: @project) if @project
+    where[:project] = @project if @project
     gls = NucsGl066.find(:all, conditions: where)
     gls.delete_if { |gl| (@project.nil? && gl.project && gl.project != NUCS_BLANK) }
 
@@ -195,9 +195,9 @@ class NucsValidator
 
   def validate_gl066_components!(account = nil)
     where = ActiveSupport::OrderedHash[:fund, @fund, :department, @department]
-    where.merge!(activity: @activity) if @activity && grant?
-    where.merge!(project: @project) if @project
-    where.merge!(account: account) if account
+    where[:activity] = @activity if @activity && grant?
+    where[:project] = @project if @project
+    where[:account] = account if account
     gls = NucsGl066.where(where).all
     raise UnknownGL066Error.new(where) if gls.empty?
     gls

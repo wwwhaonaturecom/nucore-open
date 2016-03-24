@@ -1,12 +1,14 @@
 task copy_cc_pers: :environment do
   class CancerCenterMember < ActiveRecord::Base
+
     self.table_name = "v_cancer_center_members"
     establish_connection "cc_pers"
+
   end
 
   def user_to_s(user)
     "user '#{user.username}'" +
-    (user.email.present? ? " (#{user.email})" : "")
+      (user.email.present? ? " (#{user.email})" : "")
   end
 
   cc_price_group = PriceGroup.cancer_center.first

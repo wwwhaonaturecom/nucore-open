@@ -1,10 +1,11 @@
 class PmuFetcher
+
   # Returns the pathname of the file it downloaded to
   def download
     write_to_file(fetch_from_cognos)
   end
 
-private
+  private
 
   def fetch_from_cognos
     puts "Fetching data from Cognos..."
@@ -32,10 +33,10 @@ private
   end
 
   # Returns the path name
-  def write_to_file(string, file_prefix = 'pmu')
+  def write_to_file(string, file_prefix = "pmu")
     path = File.expand_path("#{Rails.root}/tmp/#{file_prefix}-#{now_string}.xml", File.dirname(__FILE__))
     puts "Saving to file: #{path}"
-    File.open path, 'wb' do |f|
+    File.open path, "wb" do |f|
       f.write(string)
     end
     path
@@ -44,6 +45,5 @@ private
   def now_string
     Time.zone.now.strftime("%Y-%m-%d.%H-%M")
   end
-
 
 end

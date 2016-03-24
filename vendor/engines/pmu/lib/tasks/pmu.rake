@@ -1,8 +1,7 @@
 namespace :pmu do
-
   desc "fetches NU's PMU file, parses it, and loads it in the DB"
-  task :import => :environment do
-    settings_path = File.expand_path('../../config/settings.yml', File.dirname(__FILE__))
+  task import: :environment do
+    settings_path = File.expand_path("../../config/settings.yml", File.dirname(__FILE__))
     puts "loading #{settings_path}"
     Settings.add_source!(settings_path)
     Settings.reload!
@@ -11,9 +10,7 @@ namespace :pmu do
     pmu_path = fetcher.download
 
     # read as binary so we can get the whole doc as a string
-    pmu_xml = File.open pmu_path, 'rb' do |file|
-      file.read
-    end
+    pmu_xml = File.open pmu_path, "rb", &:read
 
     p "Parsing XML in #{pmu_path}..."
     parse_and_load_xml pmu_xml
@@ -30,7 +27,4 @@ namespace :pmu do
     parser = Nokogiri::XML::SAX::Parser.new PmuDocument.new
     parser.parse xml_as_string
   end
-
-
-
 end

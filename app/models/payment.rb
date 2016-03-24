@@ -18,4 +18,5 @@ class Payment < ActiveRecord::Base
   def total
     amount + processing_fee
   end
+
 end

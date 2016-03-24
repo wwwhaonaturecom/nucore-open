@@ -1,5 +1,7 @@
 module NuCardconnect
+
   module Uuid
+
     extend ActiveSupport::Concern
 
     included do
@@ -9,5 +11,7 @@ module NuCardconnect
     def set_uuid
       self.uuid ||= SecureRandom.uuid
     end
+
   end
+
 end

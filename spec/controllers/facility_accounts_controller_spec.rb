@@ -131,7 +131,7 @@ RSpec.describe FacilityAccountsController do
         @method = :post
         @action = :create
         @acct_attrs = FactoryGirl.attributes_for(:nufs_account)
-        @acct_attrs[:account_number] += '-12345678-01' # add project & activity
+        @acct_attrs[:account_number] += "-12345678-01" # add project & activity
         define_gl066 @acct_attrs[:account_number]
         @params = {
           facility_id: @authable.url_name,

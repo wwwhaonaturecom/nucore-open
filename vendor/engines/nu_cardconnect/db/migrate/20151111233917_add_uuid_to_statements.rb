@@ -1,4 +1,5 @@
 class AddUuidToStatements < ActiveRecord::Migration
+
   def up
     add_column :statements, :uuid, :string
     Statement.find_each do |statement|
@@ -11,4 +12,5 @@ class AddUuidToStatements < ActiveRecord::Migration
   def down
     remove_column :statements, :uuid
   end
+
 end

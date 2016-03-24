@@ -1,5 +1,7 @@
 module Nu
+
   module Converters
+
     class ProductToJournalRowAttributes
 
       attr_accessor :journal, :product, :total
@@ -27,5 +29,7 @@ module Nu
       end
 
     end
+
   end
+
 end

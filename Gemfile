@@ -5,11 +5,11 @@ git_source(:github) { |repo_name| "git@github.com:#{repo_name}.git" }
 ## base
 gem "rails", "3.2.22.2"
 gem "strong_parameters"
-gem "rails_config",     "0.3.3"
+gem "rails_config", "0.3.3"
 
 ## database
-gem 'activerecord-oracle_enhanced-adapter', '1.4.3'
-gem 'ruby-oci8',        '~> 2.2.0'
+gem "activerecord-oracle_enhanced-adapter", "1.4.3"
+gem "ruby-oci8",        "~> 2.2.0"
 
 ## auth
 gem "devise",           "~> 3.5.0"
@@ -42,35 +42,35 @@ gem "prawn",            "0.12"
 gem "prawn_rails",      "0.0.11"
 
 ## monitoring
-gem 'eye-patch', require: false
-gem 'aws-ses'
+gem "eye-patch", require: false
+gem "aws-ses"
 gem "skylight"
 
 ## other
-gem 'delayed_job_active_record', '~> 4.0.1'
-gem 'fog'
-gem 'rake'
-gem 'spreadsheet',      '~> 0.6.5.5'
-gem 'fast-aes',         '0.1.1'
-gem 'pdf-reader',       '1.3.3'
-gem 'exception_notification', '~> 4.0.1'
-gem 'daemons',          '1.1.9'
-gem 'lograge'
-gem 'logstash-event'
+gem "delayed_job_active_record", "~> 4.0.1"
+gem "fog"
+gem "rake"
+gem "spreadsheet",      "~> 0.6.5.5"
+gem "fast-aes",         "0.1.1"
+gem "pdf-reader",       "1.3.3"
+gem "exception_notification", "~> 4.0.1"
+gem "daemons", "1.1.9"
+gem "lograge"
+gem "logstash-event"
 gem "oj", "~> 2.12.14"
 gem "rollbar", "~> 2.8.0"
 
 ## custom
-gem 'c2po',             '~> 1.0.0', path: 'vendor/engines/c2po'
-gem 'nu',               '~> 1.0.0', path: 'vendor/engines/nu'
-gem 'nucs',             '~> 1.0.0', path: 'vendor/engines/nucs'
-gem 'pmu',              '~> 1.0.0', path: 'vendor/engines/pmu'
-gem 'jxml',             '~> 1.0.0', path: 'vendor/engines/jxml'
-gem 'nu_cardconnect',      '~> 0.0.1', path: 'vendor/engines/nu_cardconnect'
+gem "c2po",             "~> 1.0.0", path: "vendor/engines/c2po"
+gem "nu",               "~> 1.0.0", path: "vendor/engines/nu"
+gem "nucs",             "~> 1.0.0", path: "vendor/engines/nucs"
+gem "pmu",              "~> 1.0.0", path: "vendor/engines/pmu"
+gem "jxml",             "~> 1.0.0", path: "vendor/engines/jxml"
+gem "nu_cardconnect", "~> 0.0.1", path: "vendor/engines/nu_cardconnect"
 
-gem 'dataprobe',        '~> 1.0.0', path: 'vendor/engines/dataprobe'
-gem 'split_accounts',   '~> 0.0.1', path: 'vendor/engines/split_accounts'
-gem 'synaccess_connect', '0.2.2', github: 'tablexi/synaccess'
+gem "dataprobe",        "~> 1.0.0", path: "vendor/engines/dataprobe"
+gem "split_accounts",   "~> 0.0.1", path: "vendor/engines/split_accounts"
+gem "synaccess_connect", "0.2.2", github: "tablexi/synaccess"
 
 group :development do
   gem "better_errors"
@@ -95,23 +95,23 @@ end
 gem "test-unit", "~> 3.0"
 
 group :development, :test do
-  gem 'awesome_print',     '1.1.0'
-  gem 'factory_girl_rails', '~> 4.5.0'
-  gem 'guard-rspec', require: false
-  gem 'guard-teaspoon', require: false
-  gem 'pry-rails',         '~> 0.3.2'
-  gem 'pry-byebug',        '~> 2.0.0'
-  gem 'quiet_assets'
-  gem 'rspec-rails',       '~> 3.3.0'
-  gem 'rspec-its'
-  gem 'shoulda-matchers',  '~> 2.8.0', require: false
-  gem 'rspec-collection_matchers'
-  gem 'single_test',       '0.4.0'
-  gem 'spring'
-  gem 'spring-commands-rspec'
-  gem 'teaspoon-jasmine'
-  gem 'thin'
-  gem 'timecop',           '~> 0.6.3'
+  gem "awesome_print", "1.1.0"
+  gem "factory_girl_rails", "~> 4.5.0"
+  gem "guard-rspec", require: false
+  gem "guard-teaspoon", require: false
+  gem "pry-rails",         "~> 0.3.2"
+  gem "pry-byebug",        "~> 2.0.0"
+  gem "quiet_assets"
+  gem "rspec-rails", "~> 3.3.0"
+  gem "rspec-its"
+  gem "shoulda-matchers", "~> 2.8.0", require: false
+  gem "rspec-collection_matchers"
+  gem "single_test", "0.4.0"
+  gem "spring"
+  gem "spring-commands-rspec"
+  gem "teaspoon-jasmine"
+  gem "thin"
+  gem "timecop", "~> 0.6.3"
 end
 
 group :test do
@@ -129,6 +129,6 @@ group :assets do
 end
 
 group :production, :staging do
-  gem 'dispatcher'
-  gem 'unicorn'
+  gem "dispatcher"
+  gem "unicorn"
 end

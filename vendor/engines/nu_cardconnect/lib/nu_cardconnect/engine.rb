@@ -1,5 +1,7 @@
 module NuCardconnect
+
   class Engine < ::Rails::Engine
+
     initializer "nu_cardconnect.filter_params" do |app|
       app.config.filter_parameters += [:cc_number, :cc_token]
     end
@@ -33,5 +35,7 @@ module NuCardconnect
     initializer "nu_cardconnect.assets.precompile" do |app|
       app.config.assets.precompile += %w(cardconnect.js cardconnect.css)
     end
+
   end
+
 end

@@ -1,5 +1,7 @@
 module NuCardconnect
+
   class StatementReceipt
+
     attr_reader :statement
 
     delegate :invoice_number, :invoice_date, :paid_in_full?, to: :statement
@@ -12,9 +14,7 @@ module NuCardconnect
       payment.amount
     end
 
-    def processing_fee
-      payment.processing_fee
-    end
+    delegate :processing_fee, to: :payment
 
     def total_amount
       statement_amount + processing_fee
@@ -29,5 +29,7 @@ module NuCardconnect
     def payment
       @payment ||= statement.payments.first
     end
+
   end
+
 end

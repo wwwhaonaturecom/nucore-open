@@ -1,4 +1,5 @@
 class RemoveCardConnectLocationId < ActiveRecord::Migration
+
   def up
     remove_column :facilities, :card_connect_location_id
   end
@@ -6,4 +7,5 @@ class RemoveCardConnectLocationId < ActiveRecord::Migration
   def down
     add_column :facilities, :card_connect_location_id, :string
   end
+
 end

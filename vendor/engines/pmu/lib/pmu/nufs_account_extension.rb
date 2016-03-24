@@ -1,4 +1,5 @@
 module Pmu
+
   module NufsAccountExtension
 
     def pmu_description
@@ -14,4 +15,5 @@ module Pmu
     end
 
   end
+
 end

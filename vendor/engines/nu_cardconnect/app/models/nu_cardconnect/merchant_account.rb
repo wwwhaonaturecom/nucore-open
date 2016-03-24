@@ -1,12 +1,14 @@
 module NuCardconnect
+
   class MerchantAccount
+
     include ActiveModel::Conversion
     include ActiveModel::Validations
     extend ActiveModel::Naming
 
     attr_accessor :facility
     delegate :card_connect_merchant_id, :card_connect_merchant_id=,
-      :card_connect_merchant_id?, to: :facility
+             :card_connect_merchant_id?, to: :facility
 
     validates :card_connect_merchant_id, numericality: { only_integer: true }, allow_blank: true
 
@@ -35,5 +37,7 @@ module NuCardconnect
         false
       end
     end
+
   end
+
 end

@@ -1,5 +1,7 @@
 module NuCardconnect
+
   class MerchantAccountsController < ApplicationController
+
     before_filter :authenticate_user!
     before_filter :load_and_authorize_merchant_account
     before_filter :set_active_tab
@@ -32,7 +34,9 @@ module NuCardconnect
     helper_method :facility_merchant_account_path
 
     def set_active_tab
-      @active_tab = 'admin_facility'
+      @active_tab = "admin_facility"
     end
+
   end
+
 end

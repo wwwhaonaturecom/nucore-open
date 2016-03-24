@@ -9,7 +9,7 @@ namespace :nucs do
 
     FasterCSV.foreach(args.path_to_csv, headers: true) do |row|
       chart_string = %w(fund department project activity).collect! { |c| row[c] }
-      chart_string = (chart_string.delete_if(&:blank?)).join("-")
+      chart_string = chart_string.delete_if(&:blank?).join("-")
 
       begin
         ValidatorFactory.instance(chart_string, row["account"]).account_is_open!

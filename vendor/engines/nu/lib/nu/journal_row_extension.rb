@@ -1,4 +1,5 @@
 module Nu
+
   module JournalRowExtension
 
     def self.included(base)
@@ -6,4 +7,5 @@ module Nu
     end
 
   end
+
 end

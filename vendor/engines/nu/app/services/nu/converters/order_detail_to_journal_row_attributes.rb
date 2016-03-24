@@ -1,5 +1,7 @@
 module Nu
+
   module Converters
+
     class OrderDetailToJournalRowAttributes
 
       attr_accessor :journal, :order_detail, :total
@@ -28,5 +30,7 @@ module Nu
       end
 
     end
+
   end
+
 end

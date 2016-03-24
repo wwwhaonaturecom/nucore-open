@@ -60,7 +60,7 @@ namespace :db do
   end
 
   desc "Remove the DMRS tables from a production DB dump"
-  task :drop_dmrs => :environment do
+  task drop_dmrs: :environment do
     next unless db_allow_task?
 
     table_names = ActiveRecord::Base.connection.select_rows(

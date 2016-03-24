@@ -6,7 +6,7 @@ class Blacklist
     130 131 132 133 330 410 420
     430 431 432 433 460 470 471
     472 480 481 482 483 510 520
-    530 540 830 840)
+    530 540 830 840).freeze
 
   def self.valid_fund?(fund)
     !DISALLOWED_FUNDS.include?(fund) && fund.to_i > 100

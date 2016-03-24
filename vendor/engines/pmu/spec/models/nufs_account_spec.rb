@@ -3,8 +3,8 @@ require "rails_helper"
 RSpec.describe NufsAccount do
   subject(:account) do
     create(:nufs_account,
-      account_users_attributes: account_users_attributes_hash(user: user)
-    )
+           account_users_attributes: account_users_attributes_hash(user: user),
+          )
   end
 
   let(:pmu_dept) { double "pmu" }
