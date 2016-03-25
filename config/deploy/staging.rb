@@ -4,6 +4,6 @@ set :branch, ENV["REVISION"] || ENV["BRANCH_NAME"] || "develop"
 
 server "nucore01s.northwestern.edu", user: "nucore", roles: %w(web app db)
 
-set :default_env,   "LD_LIBRARY_PATH" => "/usr/lib/oracle/12.1/client64/lib",
-  "ORACLE_HOME" => "/usr/lib/oracle/12.1/client64/lib",
-  "NLS_LANG" => "AMERICAN_AMERICA.WE8MSWIN1252",
+set :default_env, "LD_LIBRARY_PATH" => "/usr/lib/oracle/12.1/client64/lib",
+                  "ORACLE_HOME" => "/usr/lib/oracle/12.1/client64/lib",
+                  "NLS_LANG" => "AMERICAN_AMERICA.WE8MSWIN1252"
