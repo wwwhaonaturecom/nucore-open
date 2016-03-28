@@ -61,9 +61,6 @@ en:
         adjustments to this rate for individual internal price groups.
 
   statements:
-    index:
-      th:
-        total: "Unreconciled Total"
     pdf:
       filename: "NU-%{facility}-%{invoice_number}-%{date}.pdf"
 
