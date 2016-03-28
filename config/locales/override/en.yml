@@ -36,10 +36,44 @@ en:
       messages:
         bad_payment_source_format: "must be in format %{pattern_format}; project, activity, program, and chart field 1 are optional"
 
+  facilities:
+    index:
+      welcome: |
+        Welcome to NUcore, the centralized ordering system for all shared
+        facilities at Northwestern University. Please select the shared facility
+        below to view and purchase services and products offered by the facility.
+
+  notifier:
+    new_user:
+      no_password: You may log in with your Northwestern NetID and password.
+
+  price_groups:
+    price_group_fields:
+      internal_instruction: |
+        Check this box if this price group is internal, intended for use by
+        Northwestern Customers:
+
+  price_policies:
+    instructional_text:
+      common: |
+        All Northwestern users must be charged the same base rate.
+        Rates must be reviewed by the Office of Cost Studies. You may define
+        adjustments to this rate for individual internal price groups.
+
   statements:
+    index:
+      th:
+        total: "Unreconciled Total"
     pdf:
       filename: "NU-%{facility}-%{invoice_number}-%{date}.pdf"
 
   testing: # DO NOT DELETE: these are used to verify proper file loading in the specs
     locale_loading: This is here to verify the file is loaded in the specs
     overriding: This overrides the version in en.yml
+
+  user_password:
+    reset:
+      instructions_html: |
+        Please enter your email address below.
+        If you use a NetID, please reset it through
+        <a href="https://validate.it.northwestern.edu/idm/user/login.jsp">NUVALIDATE</a>
