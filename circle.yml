@@ -31,5 +31,6 @@ test:
     - bundle exec teaspoon
       --suppress-log
       --format junit > $CIRCLE_TEST_REPORTS/teaspoon.xml
-    - bash config/circle/database_delete.sh
+    - bash config/circle/database_delete.sh:
+        parallel: true
     - bundle exec report_coverage
