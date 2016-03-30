@@ -4,10 +4,11 @@ en:
     errors:
       models:
         split_accounts/split_account:
+          suspended_child: "One or more sub-accounts are currently suspended. All sub-accounts must be reactivated prior to split payment source activation."
           attributes:
             splits:
               percent_total: percent total must equal 100
-              only_one_extra_penny: must have exactly one split with the extra penny selected
+              only_one_apply_remainder: must have exactly one split with the extra penny selected
               duplicate_subaccounts: must have unique subaccounts
               more_than_one_split: must have two or more subaccounts
         split_accounts/split:

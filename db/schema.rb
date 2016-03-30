@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20160309224521) do
+ActiveRecord::Schema.define(:version => 20160325213918) do
 
   create_table "account_users", :force => true do |t|
     t.integer  "account_id",               :precision => 38, :scale => 0, :null => false
@@ -626,7 +626,7 @@ ActiveRecord::Schema.define(:version => 20160309224521) do
     t.integer "parent_split_account_id", :precision => 38, :scale => 0, :null => false
     t.integer "subaccount_id",           :precision => 38, :scale => 0, :null => false
     t.decimal "percent",                 :precision => 6,  :scale => 3, :null => false
-    t.boolean "extra_penny",             :precision => 1,  :scale => 0, :null => false
+    t.boolean "apply_remainder",         :precision => 1,  :scale => 0, :null => false
   end
 
   add_index "splits", ["parent_split_account_id"], :name => "i_spl_par_spl_acc_id"

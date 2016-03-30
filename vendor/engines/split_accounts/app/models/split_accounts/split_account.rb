@@ -6,7 +6,7 @@ module SplitAccounts
     has_many :subaccounts, through: :splits
 
     validate :valid_percent_total
-    validate :one_split_has_extra_penny
+    validate :one_split_has_apply_remainder
     validate :unique_split_subaccounts
     validate :more_than_one_split
 
@@ -25,16 +25,16 @@ module SplitAccounts
       end
     end
 
-    def one_split_has_extra_penny
-      errors.add(:splits, :only_one_extra_penny) if extra_penny_count != 1
+    def one_split_has_apply_remainder
+      errors.add(:splits, :only_one_apply_remainder) if apply_remainder_count != 1
     end
 
     def unique_split_subaccounts
       errors.add(:splits, :duplicate_subaccounts) if duplicate_subaccounts?
     end
 
-    def extra_penny_count
-      splits.to_a.count(&:extra_penny?)
+    def apply_remainder_count
+      splits.to_a.count(&:apply_remainder?)
     end
 
     def duplicate_subaccounts?
@@ -80,8 +80,13 @@ module SplitAccounts
       true
     end
 
-    def recreate_journal_rows_on_order_detail_update?
-      true
+    def unsuspend
+      if subaccounts.any?(&:suspended?)
+        errors.add(:base, :suspended_child)
+        false
+      else
+        super
+      end
     end
 
   end
