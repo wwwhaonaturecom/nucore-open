@@ -7,7 +7,7 @@ module Pmu
       include HashHelper
 
       def transform(original_hash)
-        insert_into_hash_after(original_hash, :account, pmu_department: method(:pmu_description))
+        insert_into_hash_after(original_hash, :account_description, pmu_department: method(:pmu_description))
       end
 
       private
