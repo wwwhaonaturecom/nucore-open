@@ -37,6 +37,8 @@ en:
         bad_payment_source_format: "must be in format %{pattern_format}; project, activity, program, and chart field 1 are optional"
 
   facilities:
+    facility_fields:
+      payment_options: "By default, all facilities accept NU Chart Strings; you may check additional payment options:"
     index:
       welcome: |
         Welcome to NUcore, the centralized ordering system for all shared
