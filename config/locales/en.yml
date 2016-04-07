@@ -142,10 +142,11 @@ en:
       facility_tooltip:
         admin_reservation: Administrative Reservation
 
-  order_search:
-    search: "Search by Order #"
-    results: Search Results
-    no_results: No orders found
+  global_search:
+    search: "Search"
+    index:
+      results: Search Results
+      no_results: No results found
 
   facility_accounts:
     edit:
@@ -616,6 +617,10 @@ en:
         unassigned: "Unassigned"
     pdf:
       filename: "%{facility}-%{invoice_number}-%{date}.pdf"
+      download: Download
+    reconciled:
+      "true": Reconciled
+      "false": Unreconciled
 
   orders:
     add_account:
@@ -852,6 +857,9 @@ en:
       is_active: "Is Active?"
       contact: "The following contact information will appear on statements and should indicate where payment should be sent"
       show_instrument_availability: Show Instrument Availability Status?
+      order_notification: |
+        This email address will be notified when an order is placed by a user
+        (if left blank, notifications will not be sent)
 
     movable_transactions:
       head: "Move Transactions"
@@ -955,6 +963,8 @@ en:
       subject: "Welcome to NUcore"
     new_account:
       subject: "NUcore New Payment Method"
+    order_notification:
+      subject: "NUcore Order Notification"
     order_receipt:
       subject: "NUcore Order Receipt"
       intro: "Thank you for your order on the NUcore website."
