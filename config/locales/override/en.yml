@@ -62,6 +62,10 @@ en:
         Rates must be reviewed by the Office of Cost Studies. You may define
         adjustments to this rate for individual internal price groups.
 
+  search:
+    results_table:
+      username:  Username or NetID
+
   statements:
     pdf:
       filename: "NU-%{facility}-%{invoice_number}-%{date}.pdf"
