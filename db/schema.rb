@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20160325213918) do
+ActiveRecord::Schema.define(:version => 20160405203240) do
 
   create_table "account_users", :force => true do |t|
     t.integer  "account_id",               :precision => 38, :scale => 0, :null => false
@@ -691,22 +691,23 @@ ActiveRecord::Schema.define(:version => 20160325213918) do
   add_index "user_roles", ["user_id", "facility_id", "role"], :name => "i_use_rol_use_id_fac_id_rol", :tablespace => "bc_nucore"
 
   create_table "users", :force => true do |t|
-    t.string   "username",                                                              :null => false
-    t.string   "first_name"
-    t.string   "last_name"
-    t.string   "email",                                                 :default => "", :null => false
-    t.string   "encrypted_password"
-    t.string   "password_salt"
-    t.integer  "sign_in_count",          :precision => 38, :scale => 0, :default => 0
-    t.datetime "current_sign_in_at"
-    t.datetime "last_sign_in_at"
-    t.string   "current_sign_in_ip"
-    t.string   "last_sign_in_ip"
-    t.datetime "created_at",                                                            :null => false
-    t.datetime "updated_at",                                                            :null => false
-    t.string   "reset_password_token"
-    t.datetime "reset_password_sent_at"
-    t.integer  "uid",                    :precision => 38, :scale => 0
+    t.string    "username",                                                                           :null => false
+    t.string    "first_name"
+    t.string    "last_name"
+    t.string    "email",                                                              :default => "", :null => false
+    t.string    "encrypted_password"
+    t.string    "password_salt"
+    t.integer   "sign_in_count",                       :precision => 38, :scale => 0, :default => 0
+    t.datetime  "current_sign_in_at"
+    t.datetime  "last_sign_in_at"
+    t.string    "current_sign_in_ip"
+    t.string    "last_sign_in_ip"
+    t.datetime  "created_at",                                                                         :null => false
+    t.datetime  "updated_at",                                                                         :null => false
+    t.string    "reset_password_token"
+    t.datetime  "reset_password_sent_at"
+    t.integer   "uid",                                 :precision => 38, :scale => 0
+    t.timestamp "deactivated_at",         :limit => 6
   end
 
   add_index "users", ["email"], :name => "index_users_on_email", :unique => true, :tablespace => "bc_nucore"
@@ -741,7 +742,7 @@ ActiveRecord::Schema.define(:version => 20160325213918) do
 
   add_foreign_key "accounts", "facilities", :name => "fk_account_facility_id"
 
-  add_foreign_key "bi_netids", "facilities", :name => "sys_c0021225"
+  add_foreign_key "bi_netids", "facilities", :name => "sys_c0011408"
 
   add_foreign_key "bundle_products", "products", :column => "bundle_product_id", :name => "fk_bundle_prod_prod"
   add_foreign_key "bundle_products", "products", :name => "fk_bundle_prod_bundle"

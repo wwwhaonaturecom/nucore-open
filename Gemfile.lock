@@ -547,7 +547,7 @@ GEM
     skylight (0.10.3)
       activesupport (>= 3.0.0)
     slop (3.6.0)
-    spreadsheet (0.6.5.9)
+    spreadsheet (1.1.2)
       ruby-ole (>= 1.0)
     spring (1.6.4)
     spring-commands-rspec (1.0.4)
@@ -684,7 +684,7 @@ DEPENDENCIES
   single_test (= 0.4.0)
   skylight
   split_accounts (~> 0.0.1)!
-  spreadsheet (~> 0.6.5.5)
+  spreadsheet (~> 1.1.2)
   spring
   spring-commands-rspec
   strong_parameters
