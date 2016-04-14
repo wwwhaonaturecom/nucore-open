@@ -26,27 +26,35 @@ $ ->
       return false unless @validateFields()
 
       params = {
-        action: 'CE',
+        action: "CE",
         data: @numberField().val(),
-        type: 'json'
+        type: "json"
       }
 
       masked = "****************"
-      @numberField().val(masked).prop('disabled', true)
+      @numberField().val(masked).prop("disabled", true)
 
-      $.get($(e.target).data("endpoint"), params)
+      $.ajax(url: $(e.target).data("endpoint"), data: params, timeout: 3000)
        .done(@successfullyTokenized)
        .error(@failedTokenize)
 
-    failedTokenize: (e) ->
-      # renable disable_with fields
-      $.rails.enableFormElements($($.rails.formSubmitSelector))
-      throw new Error("Tokenization error: #{e}")
+    failedTokenize: (xhr, textStatus, errorThrown) =>
+      @numberField().prop("disabled", false).val("")
+      # renable disable_with fields. Form does not always get re-enabled without
+      # the timeout when the error is thrown
+      setTimeout ->
+        $.rails.enableFormElements($($.rails.formSubmitSelector))
+      , 100
+
+      Flash.error("Could not connect to card merchant. Please try again. If the problem persists, please contact support.")
+
+      if errorThrown != "timeout"
+        throw new Error("Tokenization error: #{xhr} #{textStatus} #{errorThrown}")
 
     successfullyTokenized: (responseText) =>
       response = JSON.parse responseText.substring(14, responseText.length - 2)
 
-      if response.action == 'CE'
+      if response.action == "CE"
         token = response.data
         @tokenField().val(token)
         @$form.submit()
