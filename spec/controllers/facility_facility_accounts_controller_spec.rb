@@ -81,6 +81,11 @@ RSpec.describe FacilityFacilityAccountsController, if: SettingsHelper.feature_on
     it_should_allow_managers_only do
       expect(assigns(:facility_account))
         .to be_kind_of(FacilityAccount).and eq(facility_account)
+
+      assigns(:facility_account).account_number_parts.to_h.each do |key, value|
+        expect(response.body).to match(/\[account_number_parts\]\[#{key}\].+value="#{value}"/)
+      end
+
       is_expected.to render_template "edit"
     end
   end
