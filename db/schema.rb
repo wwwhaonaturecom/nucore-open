@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20160405203240) do
+ActiveRecord::Schema.define(:version => 20160415231343) do
 
   create_table "account_users", :force => true do |t|
     t.integer  "account_id",               :precision => 38, :scale => 0, :null => false
@@ -594,7 +594,7 @@ ActiveRecord::Schema.define(:version => 20160405203240) do
     t.string   "admin_note"
   end
 
-  add_index "reservations", ["order_detail_id"], :name => "i_reservations_order_detail_id", :tablespace => "bc_nucore"
+  add_index "reservations", ["order_detail_id"], :name => "res_od_uniq_fk", :unique => true
   add_index "reservations", ["product_id", "reserve_start_at"], :name => "i_res_pro_id_res_sta_at", :tablespace => "bc_nucore"
   add_index "reservations", ["product_id"], :name => "i_reservations_product_id", :tablespace => "bc_nucore"
 
