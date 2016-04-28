@@ -29,17 +29,17 @@ PATH
     jxml (1.0.0)
 
 PATH
+  remote: vendor/engines/nu
+  specs:
+    nu (1.0.0)
+
+PATH
   remote: vendor/engines/nu_cardconnect
   specs:
     nu_cardconnect (0.0.1)
       c2po
       cardconnect
       rails
-
-PATH
-  remote: vendor/engines/nu
-  specs:
-    nu (1.0.0)
 
 PATH
   remote: vendor/engines/nucs
