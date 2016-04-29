@@ -124,7 +124,7 @@ RSpec.describe FacilityAccountsController do
 
     end
 
-    context "create" do
+    context "create", if: Account.config.creation_enabled?(NufsAccount) do
       let(:owner_user) { assigns(:account).owner_user }
 
       before :each do
@@ -336,7 +336,7 @@ RSpec.describe FacilityAccountsController do
       expect(assigns(:facility)).to eq(@authable)
       expect(assigns(:statement)).to eq(@statement)
       expect(response.content_type).to eq("application/pdf")
-      expect(response.body).to match(/%PDF-1.3/)
+      expect(response.body).to match(/%PDF-1.\d/)
       is_expected.to render_template "statements/show"
     end
 

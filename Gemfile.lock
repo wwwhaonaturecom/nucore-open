@@ -29,17 +29,17 @@ PATH
     jxml (1.0.0)
 
 PATH
-  remote: vendor/engines/nu
-  specs:
-    nu (1.0.0)
-
-PATH
   remote: vendor/engines/nu_cardconnect
   specs:
     nu_cardconnect (0.0.1)
       c2po
       cardconnect
       rails
+
+PATH
+  remote: vendor/engines/nu
+  specs:
+    nu (1.0.0)
 
 PATH
   remote: vendor/engines/nucs
@@ -50,6 +50,11 @@ PATH
   remote: vendor/engines/pmu
   specs:
     pmu (1.0.0)
+
+PATH
+  remote: vendor/engines/projects
+  specs:
+    projects (0.0.1)
 
 PATH
   remote: vendor/engines/split_accounts
@@ -666,6 +671,7 @@ DEPENDENCIES
   pmu (~> 1.0.0)!
   prawn (= 0.12)
   prawn_rails (= 0.0.11)
+  projects (~> 0.0.1)!
   pry-byebug (~> 2.0.0)
   pry-rails (~> 0.3.2)
   quiet_assets

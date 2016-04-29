@@ -27,6 +27,10 @@ class AccountConfig
     @statement_account_types ||= []
   end
 
+  def reconcilable_account_types
+    statement_account_types.map(&:constantize).select { |t| t < ReconcilableAccount }.map(&:to_s)
+  end
+
   # Returns an array of subclassed Account object names that support affiliates.
   # Engines can append to this list.
   def affiliate_account_types
@@ -39,18 +43,35 @@ class AccountConfig
     @journal_account_types ||= ["NufsAccount"]
   end
 
+  # An array of account types where creation should be disabled
+  def creation_disabled_types
+    @creation_disabled_types ||= []
+  end
+
+  def creation_enabled?(type)
+    type.to_s.in?(account_types - creation_disabled_types)
+  end
+
   # Given an subclassed `Account` name return a param-friendly string. Replaces
   # any backslashes with underscore to support namespaced class names.
   def account_type_to_param(account_type)
     account_type.to_s.underscore.tr("/", "_")
   end
 
+  # Given a subclassed `Account` name, return a string that will be used for routing.
+  # Will convert something like `CreditCardAccount` to `credit_cards`
+  def account_type_to_route(class_string)
+    account_type_to_param(class_string).sub(/_account\z/, "").pluralize
+  end
+
   # Returns an array of subclassed Account objects given a facility.
   # Facility can be a NullObject (used when not in the context of a facility)
   # and the NullObject always returns `true` for cross_facility?.
-  def account_types_for_facility(facility)
-    return account_types.select { |type| type.constantize.cross_facility? } if facility.try(:cross_facility?)
-    account_types
+  def account_types_for_facility(facility, action)
+    types = account_types
+    types = account_types.select { |type| type.constantize.cross_facility? } if facility.try(:cross_facility?)
+    types = account_types - creation_disabled_types if action == :create
+    types
   end
 
   # Returns true if multiple account types are available

@@ -69,6 +69,7 @@ gem "jxml",             "~> 1.0.0", path: "vendor/engines/jxml"
 gem "nu_cardconnect", "~> 0.0.1", path: "vendor/engines/nu_cardconnect"
 
 gem "dataprobe",        "~> 1.0.0", path: "vendor/engines/dataprobe"
+gem "projects",         "~> 0.0.1", path: "vendor/engines/projects"
 gem "split_accounts",   "~> 0.0.1", path: "vendor/engines/split_accounts"
 gem "synaccess_connect", "0.2.2", github: "tablexi/synaccess"
 

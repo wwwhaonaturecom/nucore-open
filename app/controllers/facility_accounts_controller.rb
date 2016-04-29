@@ -1,12 +1,5 @@
 class FacilityAccountsController < ApplicationController
 
-  # Actions included in the `check_billing_access` before_filter.
-  # This method must be defined before the before_filter
-  # Overridable by engines.
-  def self.check_billing_access_actions
-    @@check_billing_access_actions ||= [:accounts_receivable, :show_statement]
-  end
-
   include AccountSuspendActions
   include SearchHelper
 
@@ -19,7 +12,7 @@ class FacilityAccountsController < ApplicationController
 
   authorize_resource :account
 
-  before_filter :check_billing_access, only: check_billing_access_actions
+  before_filter :check_billing_access, only: [:accounts_receivable, :show_statement]
 
   layout "two_column"
 
@@ -182,7 +175,7 @@ class FacilityAccountsController < ApplicationController
   private
 
   def available_account_types
-    Account.config.account_types_for_facility(current_facility).select do |account_type|
+    Account.config.account_types_for_facility(current_facility, :create).select do |account_type|
       current_ability.can?(:create, account_type.constantize)
     end
   end
