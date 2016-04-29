@@ -8,6 +8,18 @@ en:
   #     copyright_html: "&copy; Copyright 2011%{to_date} Northwestern University"
   #     logo_alt: "Northwestern University Logo"
 
+  views:
+    facilities:
+      index:
+        welcome: |
+          Welcome to !app_name!, the centralized ordering system for all shared
+          facilities at Northwestern University. Please select the shared !facility_downcase!
+          below to view and purchase services and products offered by the !facility_downcase!.
+    c2po:
+      facilities:
+        facility_fields:
+          payment_options: "By default, all facilities accept NU Chart Strings; you may check additional payment options:"
+
   facility_journals:
     index:
       instructions_html: |
@@ -35,15 +47,6 @@ en:
       # The value :count is available when applicable. Can be used for pluralization.
       messages:
         bad_payment_source_format: "must be in format %{pattern_format}; project, activity, program, and chart field 1 are optional"
-
-  facilities:
-    facility_fields:
-      payment_options: "By default, all facilities accept NU Chart Strings; you may check additional payment options:"
-    index:
-      welcome: |
-        Welcome to NUcore, the centralized ordering system for all shared
-        facilities at Northwestern University. Please select the shared facility
-        below to view and purchase services and products offered by the facility.
 
   notifier:
     new_user:
