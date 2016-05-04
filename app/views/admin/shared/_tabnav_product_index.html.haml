@@ -1,3 +1,0 @@
-%ul.nav.nav-tabs
-  = tab "Active #{@product_name} (#{@not_archived_product_count})", {:action => :index}, !(params[:archived] == 'true')
-  = tab "Inactive #{@product_name} (#{@archived_product_count})", {:action => :index, :archived => 'true'}, (params[:archived] == 'true')

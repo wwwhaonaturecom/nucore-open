@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20160415231343) do
+ActiveRecord::Schema.define(:version => 20160426231556) do
 
   create_table "account_users", :force => true do |t|
     t.integer  "account_id",               :precision => 38, :scale => 0, :null => false
@@ -340,6 +340,7 @@ ActiveRecord::Schema.define(:version => 20160415231343) do
     t.integer  "product_accessory_id",                   :precision => 38, :scale => 0
     t.boolean  "problem",                                :precision => 1,  :scale => 0, :default => false, :null => false
     t.integer  "dispute_by_id",                          :precision => 38, :scale => 0
+    t.datetime "reconciled_at"
   end
 
   add_index "order_details", ["account_id"], :name => "i_order_details_account_id", :tablespace => "bc_nucore"

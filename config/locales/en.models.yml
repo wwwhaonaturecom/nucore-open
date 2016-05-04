@@ -5,6 +5,16 @@ en:
     order:
       auto_assign_account: "Could not find a valid payment source for purchasing %{product_name}"
 
+  activemodel:
+    errors:
+      models:
+        order_details/reconciler:
+          must_be_in_past: "Reconciliation Date cannot be in the future"
+          after_all_journal_dates: "Reconciliation Date must be after all journal or statement dates"
+          attributes:
+            order_details:
+              blank: No orders were selected to reconcile
+
   activerecord:
     errors:
       # The values :model, :attribute and :value are always available for interpolation
@@ -129,6 +139,9 @@ en:
       facility:
         one: Facility
         other: Facilities
+      facility_account:
+        one: Recharge Chart String
+        other: Recharge Chart Strings
       instrument:
         one: Instrument
         other: Instruments
@@ -153,12 +166,15 @@ en:
       order_status:
         one: Order Status
         other: Order Statuses
+      price_group:
+        one: Price Group
+        other: Price Groups
       product:
         one: Product
         other: Products
       product_access_group: Scheduling Group
       service:
-        one: Services
+        one: Service
         other: Services
       statement:
         one: Statement
@@ -191,6 +207,10 @@ en:
         phone_number: Phone Number
         short_description: Short Description
         url_name: URL Name
+      facility_account:
+        account_number: Chart String Number
+        revenue_account: Revenue Account
+        is_active: "Is Active?"
       product:
         url: URL
         url_name: URL Name
@@ -244,6 +264,7 @@ en:
         product: Product
         quantity: Quantity
         reconciled_note: Reconciliation Note
+        reconciled_at: Reconciliation Date
         reviewed_at: Review Closes
         reviewed_at_past: Review Closed
         status: Status

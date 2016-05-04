@@ -52,11 +52,6 @@ PATH
     pmu (1.0.0)
 
 PATH
-  remote: vendor/engines/projects
-  specs:
-    projects (0.0.1)
-
-PATH
   remote: vendor/engines/split_accounts
   specs:
     split_accounts (0.0.1)
@@ -490,6 +485,7 @@ GEM
       ffi (>= 0.5.0)
     rdoc (3.12.2)
       json (~> 1.4)
+    redcarpet (3.3.4)
     ref (2.0.0)
     responders (1.1.2)
       railties (>= 3.2, < 4.2)
@@ -578,6 +574,10 @@ GEM
       teaspoon (>= 1.0.0)
     test-unit (3.1.7)
       power_assert
+    text_helpers (0.6.1)
+      activesupport
+      i18n (>= 0.6.8)
+      redcarpet (>= 3.3.3)
     therubyracer (0.12.2)
       libv8 (~> 3.16.14.0)
       ref
@@ -671,7 +671,6 @@ DEPENDENCIES
   pmu (~> 1.0.0)!
   prawn (= 0.12)
   prawn_rails (= 0.0.11)
-  projects (~> 0.0.1)!
   pry-byebug (~> 2.0.0)
   pry-rails (~> 0.3.2)
   quiet_assets
@@ -697,6 +696,7 @@ DEPENDENCIES
   synaccess_connect (= 0.2.2)!
   teaspoon-jasmine
   test-unit (~> 3.0)
+  text_helpers
   therubyracer
   thin
   timecop (~> 0.6.3)
