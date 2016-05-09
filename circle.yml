@@ -26,7 +26,15 @@ test:
         parallel: true
         files:
           - spec/**/*_spec.rb
-          - vendor/engines/**/spec/**/*_spec.rb
+          - vendor/engines/c2po/spec/**/*_spec.rb
+          - vendor/engines/dataprobe/spec/**/*_spec.rb
+          - vendor/engines/jxml/spec/**/*_spec.rb
+          - vendor/engines/nu/spec/**/*_spec.rb
+          - vendor/engines/nu_cardconnect/spec/**/*_spec.rb
+          - vendor/engines/nucs/spec/**/*_spec.rb
+          - vendor/engines/pmu/spec/**/*_spec.rb
+          - vendor/engines/split_accounts/spec/**/*_spec.rb
+
   post:
     - bundle exec teaspoon
       --suppress-log
