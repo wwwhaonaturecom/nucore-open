@@ -55,7 +55,7 @@ class Reports::ExportRaw
 
   def column_headers
     report_hash.keys.map do |key|
-      text(".headers.#{key}")
+      text(".headers.#{key}", default: key.to_s.titleize)
     end
   end
 
@@ -129,6 +129,7 @@ class Reports::ExportRaw
       statemented_on: -> (od) { od.statement.created_at if od.statement },
       journal_date: -> (od) { od.journal.journal_date if od.journal },
       reconciled_note: :reconciled_note,
+      reconciled_at: :reconciled_at,
     }
   end
 

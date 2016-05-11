@@ -193,7 +193,7 @@ RSpec.describe OrderManagement::OrderDetailsController do
   describe "update reservation" do
     before :each do
       @action = :update
-      @method = :post
+      @method = :put
       @params = { facility_id: facility.url_name, order_id: order_detail.order_id, id: order_detail.id }
     end
 
@@ -361,7 +361,7 @@ RSpec.describe OrderManagement::OrderDetailsController do
 
         before :each do
           @action = :update
-          @method = :post
+          @method = :put
           @params = { facility_id: facility.url_name, order_id: order_detail.order_id, id: order_detail.id }
         end
 
@@ -477,7 +477,7 @@ RSpec.describe OrderManagement::OrderDetailsController do
     before :each do
       sign_in @admin
       @action = :update
-      @method = :post
+      @method = :put
       @params = { facility_id: facility.url_name, order_id: order_detail.order_id, id: order_detail.id }
     end
 
@@ -557,6 +557,23 @@ RSpec.describe OrderManagement::OrderDetailsController do
         do_request
         expect(assigns(:order_detail).dispute_resolved_at).to be_nil
         expect(order_detail.reload.dispute_resolved_at).to be_nil
+      end
+    end
+
+    describe "reconciling", :timecop_freeze do
+      before do
+        order_detail.change_status!(OrderStatus.complete.first)
+        order_detail.update_attributes(reviewed_at: 1.day.ago)
+        @params[:order_detail] = { order_status_id: OrderStatus.reconciled_status.id }
+      end
+
+      it "make the order reconciled" do
+        expect { do_request }.to change { order_detail.reload.state }.to("reconciled")
+        expect(order_detail.order_status).to eq(OrderStatus.reconciled_status)
+      end
+
+      it "sets the reconciled_at to now" do
+        expect { do_request }.to change { order_detail.reload.reconciled_at }.to(Time.current.change(usec: 0))
       end
     end
   end

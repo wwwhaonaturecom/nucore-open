@@ -6,6 +6,19 @@ module Projects
       ::AbilityExtensionManager.extensions << "Projects::AbilityExtension"
       Facility.send :include, Projects::FacilityExtension
       NavTab::LinkCollection.send :include, Projects::LinkCollectionExtension
+      ::OrderDetails::ParamUpdater.send :include, Projects::OrderDetails::ParamUpdaterExtension
+      OrderDetail.send :include, Projects::OrderDetailExtension
+
+      ViewHook.add_hook "order_management.order_details.edit",
+                        "after_order_status",
+                        "projects/shared/select_project"
+
+      TransactionSearch.searchers[:projects] = Projects::ProjectSearcher
+      ViewHook.add_hook "shared.transactions.search",
+                        "end_of_first_column",
+                        "projects/shared/transactions/search"
+
+      ::Reports::ExportRaw.transformers << "Projects::ExportRawTransformer"
     end
 
     initializer :append_migrations do |app|
