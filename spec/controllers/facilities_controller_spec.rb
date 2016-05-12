@@ -5,10 +5,10 @@ require "transaction_search_spec_helper"
 RSpec.describe FacilitiesController do
   render_views
 
-  it "should route" do
-    expect(get: "/facilities").to route_to(controller: "facilities", action: "index")
-    expect(get: "/facilities/url_name").to route_to(controller: "facilities", action: "show", id: "url_name")
-    expect(get: "/facilities/url_name/manage").to route_to(controller: "facilities", action: "manage", id: "url_name")
+  it "routes", :aggregate_failures do
+    expect(get: "/#{facilities_route}").to route_to(controller: "facilities", action: "index")
+    expect(get: "/#{facilities_route}/url_name").to route_to(controller: "facilities", action: "show", id: "url_name")
+    expect(get: "/#{facilities_route}/url_name/manage").to route_to(controller: "facilities", action: "manage", id: "url_name")
   end
 
   before(:all) { create_users }
@@ -58,7 +58,7 @@ RSpec.describe FacilitiesController do
 
     it_should_allow :admin do
       expect(facility).to be_valid
-      expect(response).to redirect_to "/facilities/anf/manage"
+      expect(response).to redirect_to manage_facility_path("anf")
     end
 
     describe "as an admin" do
@@ -308,7 +308,13 @@ RSpec.describe FacilitiesController do
   end
 
   context "transactions" do
-    it_behaves_like "transactions", :transactions
+    it_behaves_like "transactions", :transactions do
+      it "has a default date set" do
+        sign_in @admin
+        do_request
+        expect(controller.params[:date_range][:start]).to be_present
+      end
+    end
   end
 
   context "disputed_orders" do
