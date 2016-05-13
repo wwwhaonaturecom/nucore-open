@@ -1,26 +1,21 @@
 require "rails_helper"
-require "controller_spec_helper"
 
-RSpec.describe GeneralReportsController do
-  before(:all) { create_users }
+RSpec.describe Reports::GeneralReportsController do
 
-  before :each do
-    @authable = FactoryGirl.create :facility
+  let(:facility) { FactoryGirl.create(:setup_facility) }
+  let(:order) { FactoryGirl.create(:purchased_order, product: item, ordered_at: 1.month.ago) }
+  let!(:order_detail) { order.order_details.first }
+  let(:item) { FactoryGirl.create(:setup_item, facility: facility) }
+  let!(:pmu_department) {PmuDepartment.create!(pmu: "PMUDEPT", nufin_id: order_detail.account.dept) }
+  let(:user) { FactoryGirl.create(:user, :facility_director, facility: facility) }
+
+  it "renders a PMU report" do
+    sign_in user
+    xhr :get, :index, report_by: :department, facility_id: facility.url_name,
+      date_range_field: "ordered_at", date_start: 1.month.ago, status_filter: [OrderStatus.new_os.first.id]
+
+    expect(assigns[:rows].length).to eq(1)
+    expect(assigns[:rows].first.first).to eq("PMUDEPT")
   end
 
-  it "should render a PMU report" do
-    maybe_grant_always_sign_in :director
-    expect(@controller).to receive(:render_report).with(6, "Name")
-
-    begin
-      get :department, facility_id: @authable.url_name
-    rescue ActionView::MissingTemplate
-      # I don't care about what template is rendered.
-      # The main application's general_reports_controller_spec
-      # tests the innards of the controller well. All I care
-      # about is whether or not the correct method is called
-      # with the right parameters. I'd love to test the block
-      # param but I don't see a way to do it w/ Mocha
-    end
-  end
 end

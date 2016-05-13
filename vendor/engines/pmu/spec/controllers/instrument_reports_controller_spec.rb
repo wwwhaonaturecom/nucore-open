@@ -1,26 +1,21 @@
 require "rails_helper"
-require "controller_spec_helper"
 
-RSpec.describe InstrumentReportsController do
-  before(:all) { create_users }
+RSpec.describe Reports::InstrumentReportsController do
 
-  before :each do
-    @authable = FactoryGirl.create :facility
-  end
+  let(:facility) { FactoryGirl.create(:setup_facility) }
+  let(:instrument) { FactoryGirl.create(:setup_instrument, facility: facility) }
+  let!(:reservation) { FactoryGirl.create(:completed_reservation, product: instrument) }
+  let(:order_detail) { reservation.order_detail }
+  let!(:pmu_department) {PmuDepartment.create!(pmu: "PMUDEPT", nufin_id: order_detail.account.dept) }
+  let(:user) { FactoryGirl.create(:user, :facility_director, facility: facility) }
 
   it "should render a PMU report" do
-    maybe_grant_always_sign_in :director
-    expect(@controller).to receive(:render_report).with(8, "Name")
+    sign_in user
+    xhr :get, :index, report_by: :department, facility_id: facility.url_name,
+      date_start: 1.month.ago, date_end: Time.current
 
-    begin
-      get :department, facility_id: @authable.url_name
-    rescue ActionView::MissingTemplate
-      # I don't care about what template is rendered.
-      # The main application's general_reports_controller_spec
-      # tests the innards of the controller well. All I care
-      # about is whether or not the correct method is called
-      # with the right parameters. I'd love to test the block
-      # param but I don't see a way to do it w/ Mocha
-    end
+    expect(assigns[:rows].length).to eq(1)
+    expect(assigns[:rows].first.first(3)).to eq([instrument.name, "PMUDEPT", "1"])
   end
+
 end
