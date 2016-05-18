@@ -13,6 +13,8 @@ module Projects
               uniqueness: { case_sensitive: false, scope: :facility_id }
 
     scope :active, -> { where(active: true) }
+    scope :inactive, -> { where(active: false) }
+    scope :display_order, -> { order(:name) }
 
     def to_s
       name
