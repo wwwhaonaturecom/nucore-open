@@ -19,7 +19,7 @@ RSpec.describe FacilitiesController do
     let(:facility) { FactoryGirl.create(:facility) }
 
     it "does not allow updating card connect information" do
-      put :update, facility_id: facility.url_name,
+      patch :update, id: facility.url_name,
                    facility: { card_connect_merchant_id: "123" }
 
       expect(facility.reload.card_connect_merchant_id).not_to eq("123")

@@ -107,13 +107,10 @@ class NucsValidator
   def latest_expiration
     return Time.zone.now + 3.years if Whitelist.includes?(@chart_string)
 
-    where = {
-      fund: @fund,
-      department: @department,
-    }
+    where = { fund: @fund, department: @department }
+    where[:project] = @project if @project.present?
 
-    where[:project] = @project if @project
-    gls = NucsGl066.find(:all, conditions: where)
+    gls = NucsGl066.where(where)
     gls.delete_if { |gl| (@project.nil? && gl.project && gl.project != NUCS_BLANK) }
 
     latest_date = nil
@@ -198,7 +195,7 @@ class NucsValidator
     where[:activity] = @activity if @activity && grant?
     where[:project] = @project if @project
     where[:account] = account if account
-    gls = NucsGl066.where(where).all
+    gls = NucsGl066.where(where)
     raise UnknownGL066Error.new(where) if gls.empty?
     gls
   end

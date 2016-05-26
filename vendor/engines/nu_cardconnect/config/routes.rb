@@ -3,5 +3,5 @@ NuCardconnect::Engine.routes.draw do
   post "/statements/:uuid/process", to: "nu_cardconnect/payments#process_payment", as: "process_statement"
 
   get "/facilities/:id/merchant_account", to: "nu_cardconnect/merchant_accounts#edit", as: "edit_facility_merchant_account"
-  put "/facilities/:id/merchant_account", to: "nu_cardconnect/merchant_accounts#update", as: "facility_merchant_account"
+  patch "/facilities/:id/merchant_account", to: "nu_cardconnect/merchant_accounts#update", as: "facility_merchant_account"
 end

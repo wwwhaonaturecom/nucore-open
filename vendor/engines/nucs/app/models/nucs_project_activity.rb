@@ -1,7 +1,7 @@
 class NucsProjectActivity < NucsGe001
 
-  validates_format_of(:project, with: /^\d{8,15}$/)
-  validates_format_of(:activity, with: /^\d{2,15}$/)
+  validates_format_of(:project, with: /\A\d{8,15}\z/)
+  validates_format_of(:activity, with: /\A\d{2,15}\z/)
 
   def self.create_from_source(tokens)
     attrs = { project: tokens[0], activity: tokens[1] }

@@ -7,6 +7,8 @@ RSpec.describe NuCardconnect::PaymentsController do
   let(:account) { FactoryGirl.create(:purchase_order_account, :with_account_owner, owner: user) }
   let(:statement) { FactoryGirl.create(:statement, facility: facility, account: account, created_by_user: user) }
 
+  before { @routes = NuCardconnect::Engine.routes }
+
   describe "#pay" do
     it "does not allow access by id" do
       get :pay, uuid: statement.id

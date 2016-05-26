@@ -3,12 +3,12 @@ class NucsGl066 < ActiveRecord::Base
   include NUCore::Database::DateHelper
   include NucsSourcedFromFile
 
-  validates_format_of(:budget_period, with: /^(-|\d{4,8})$/)
-  validates_format_of(:fund, with: /^[A-Z0-9]{3,5}$/)
-  validates_format_of(:department, with: /^[A-Z0-9]{7,10}$/)
-  validates_format_of(:project, with: /^(-|\d{8,15})$/)
-  validates_format_of(:activity, with: /^(-|\d{2,15})$/)
-  validates_format_of(:account, with: /^(-|\d{5,10})$/)
+  validates_format_of(:budget_period, with: /\A(-|\d{4,8})\z/)
+  validates_format_of(:fund, with: /\A[A-Z0-9]{3,5}\z/)
+  validates_format_of(:department, with: /\A[A-Z0-9]{7,10}\z/)
+  validates_format_of(:project, with: /\A(-|\d{8,15})\z/)
+  validates_format_of(:activity, with: /\A(-|\d{2,15})\z/)
+  validates_format_of(:account, with: /\A(-|\d{5,10})\z/)
 
   #
   # If no date was specified during import one will be calculated
@@ -32,9 +32,9 @@ class NucsGl066 < ActiveRecord::Base
   end
 
   def self.tokenize_source_line(source_line)
-    if source_line =~ /^\d{4,4}\||\d{2,2}-[A-Z]{3,3}-\d{2,2}\|\d{2,2}-[A-Z]{3,3}-\d{2,2}$/
+    if source_line =~ /\A\d{4,4}\||\d{2,2}-[A-Z]{3,3}-\d{2,2}\|\d{2,2}-[A-Z]{3,3}-\d{2,2}\z/
       tokens = source_line.split(NUCS_TOKEN_SEPARATOR)
-    elsif source_line =~ /^-\|(812|820)/
+    elsif source_line =~ /\A-\|(812|820)/
       tokens = source_line.split(NUCS_TOKEN_SEPARATOR)
       tokens[0] = current_fiscal_year
     else
