@@ -1,0 +1,6 @@
+test:
+  adapter: oracle_enhanced
+  database: localhost:1521/xe
+  username: nucore_nu_test
+  password: password
+  encoding: utf8
