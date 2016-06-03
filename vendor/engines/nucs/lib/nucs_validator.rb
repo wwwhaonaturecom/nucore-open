@@ -110,7 +110,7 @@ class NucsValidator
     where = { fund: @fund, department: @department }
     where[:project] = @project if @project.present?
 
-    gls = NucsGl066.where(where)
+    gls = NucsGl066.where(where).to_a
     gls.delete_if { |gl| (@project.nil? && gl.project && gl.project != NUCS_BLANK) }
 
     latest_date = nil

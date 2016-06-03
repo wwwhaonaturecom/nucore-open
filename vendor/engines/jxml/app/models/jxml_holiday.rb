@@ -4,7 +4,8 @@ class JxmlHoliday < ActiveRecord::Base
 
   def self.is?(date)
     day_of_week = date.cwday
-    day_of_week == 6 || day_of_week == 7 || find_by_date(date.to_time).present?
+    return true if day_of_week > 5
+    where(date: date..date.end_of_day).present?
   end
 
   def self.today?

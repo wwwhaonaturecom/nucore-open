@@ -8,7 +8,7 @@ gem "protected_attributes"
 gem "rails_config",     "0.3.3"
 
 ## database
-gem "activerecord-oracle_enhanced-adapter", "1.6.0"
+gem "activerecord-oracle_enhanced-adapter", "~> 1.6.0"
 gem "ruby-oci8",        "~> 2.2.0"
 
 ## auth

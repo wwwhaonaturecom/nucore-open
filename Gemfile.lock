@@ -91,7 +91,7 @@ GEM
       activemodel (= 4.2.6)
       activesupport (= 4.2.6)
       arel (~> 6.0)
-    activerecord-oracle_enhanced-adapter (1.6.0)
+    activerecord-oracle_enhanced-adapter (1.6.7)
     activesupport (4.2.6)
       i18n (~> 0.7)
       json (~> 1.7, >= 1.7.7)
@@ -685,7 +685,7 @@ PLATFORMS
 
 DEPENDENCIES
   aasm (~> 4.10.1)
-  activerecord-oracle_enhanced-adapter (= 1.6.0)
+  activerecord-oracle_enhanced-adapter (~> 1.6.0)
   awesome_nested_set (= 3.0.3)
   awesome_print (= 1.1.0)
   aws-ses
