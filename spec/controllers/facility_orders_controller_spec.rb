@@ -136,7 +136,8 @@ RSpec.describe FacilityOrdersController do
 
     describe "with an order detail with no cost assigned" do
       it "renders" do
-        expect(@order_detail.cost).to be_nil
+        expect(@order_detail.actual_cost).to be_nil
+        expect(@order_detail.estimated_cost).to be_nil
         expect { do_request }.not_to raise_error
       end
     end
@@ -356,9 +357,9 @@ RSpec.describe FacilityOrdersController do
 
     def assert_merge_order(original_order, product, detail_count = 1, original_detail_count = 0)
       expect(original_order.reload.order_details.size).to eq(original_detail_count)
-      merges = Order.where(merge_with_order_id: original_order.id).all
+      merges = Order.where(merge_with_order_id: original_order.id)
       expect(merges.size).to eq(1)
-      merge_order = merges[0]
+      merge_order = merges.first
       expect(merge_order.merge_order).to eq(original_order)
       expect(merge_order.facility_id).to eq(original_order.facility_id)
       expect(merge_order.account_id).to eq(original_order.account_id)
