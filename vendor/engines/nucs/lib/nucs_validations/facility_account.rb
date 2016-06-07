@@ -4,7 +4,7 @@ module NucsValidations::FacilityAccount
 
   included do
     validates_format_of :revenue_account,
-                        with: /^[45]/,
+                        with: /\A[45]/,
                         unless: :nucs_facility_account_whitelisted?,
                         message: proc { I18n.t("activerecord.errors.facility_account.revenue_account.format") }
     validates :revenue_account,

@@ -129,9 +129,8 @@ RSpec.describe NucsValidator do
 
       it "validates a non-grant chart string on a revenue account" do
         define_ge001(chart_string)
-        assert_nothing_raised do
-          NucsValidator.new(chart_string, revenue_account).account_is_open!
-        end
+        expect { NucsValidator.new(chart_string, revenue_account).account_is_open! }
+          .not_to raise_error
       end
 
       describe "bad fund" do
@@ -195,9 +194,8 @@ RSpec.describe NucsValidator do
 
       it "validates a non-grant chart string on a non-revenue account" do
         define_gl066(chart_string)
-        assert_nothing_raised do
-          NucsValidator.new(chart_string, account).account_is_open!
-        end
+        expect { NucsValidator.new(chart_string, account).account_is_open! }
+          .not_to raise_error
       end
 
       describe "bad fund" do
@@ -239,81 +237,71 @@ RSpec.describe NucsValidator do
 
   it "recognizes an expired chart string on a GL066 entry with dates" do
     define_gl066(non_grant_chart_string, expires_at: Time.zone.today - 1)
-    assert_raise NucsErrors::DatedGL066Error do
-      NucsValidator.new(non_grant_chart_string, non_revenue_account).account_is_open!
-    end
+    expect { NucsValidator.new(non_grant_chart_string, non_revenue_account).account_is_open! }
+      .to raise_error NucsErrors::DatedGL066Error
   end
 
   it "recognizes an uninitiated chart string on a GL066 entry with dates" do
     define_gl066(non_grant_chart_string, starts_at: Time.zone.today + 1, expires_at: Time.zone.today + 1.year)
-    assert_raise NucsErrors::DatedGL066Error do
-      NucsValidator.new(non_grant_chart_string, non_revenue_account).account_is_open!
-    end
+    expect { NucsValidator.new(non_grant_chart_string, non_revenue_account).account_is_open! }
+      .to raise_error NucsErrors::DatedGL066Error
   end
 
   it "recognizes an expired chart string on a GL066 entry without dates" do
     define_gl066(non_grant_chart_string, budget_period: "2000")
-    assert_raise NucsErrors::DatedGL066Error do
-      NucsValidator.new(non_grant_chart_string, non_revenue_account).account_is_open!
-    end
+    expect { NucsValidator.new(non_grant_chart_string, non_revenue_account).account_is_open! }
+      .to raise_error NucsErrors::DatedGL066Error
   end
 
   it "does not raise an error if chart string is expired, compared with a prior fulfillment date, and is in 90 day window" do
     today = Time.zone.today
     define_gl066(non_grant_chart_string, expires_at: today - 1)
-    assert_nothing_raised do
-      NucsValidator.new(non_grant_chart_string, non_revenue_account).account_is_open!((today - 2).to_datetime)
-    end
+    expect { NucsValidator.new(non_grant_chart_string, non_revenue_account).account_is_open!((today - 2).to_datetime) }
+      .not_to raise_error
   end
 
   it "does not raise an error if chart string has an expired and unexpired record and no fulfillment date is given." do
     today = Time.zone.today
     define_gl066(non_grant_chart_string, expires_at: today - 1.year)
     define_gl066(non_grant_chart_string, expires_at: today + 1.day)
-    assert_nothing_raised do
-      NucsValidator.new(non_grant_chart_string, non_revenue_account).account_is_open!
-    end
+    expect { NucsValidator.new(non_grant_chart_string, non_revenue_account).account_is_open! }
+      .not_to raise_error
   end
 
   it "does raise an error if chart string is expired, compared with a post fulfillment date, and is in 90 day window" do
     today = Time.zone.today
     define_gl066(non_grant_chart_string, expires_at: today - 1)
-    assert_raise NucsErrors::DatedGL066Error do
-      NucsValidator.new(non_grant_chart_string, non_revenue_account).account_is_open!(today.to_datetime)
-    end
+    expect { NucsValidator.new(non_grant_chart_string, non_revenue_account).account_is_open!(today.to_datetime) }
+      .to raise_error NucsErrors::DatedGL066Error
   end
 
   it "does raise an error if chart string is expired, compared with a prior fulfillment date, and is outside the 90 day window" do
     today = Time.zone.today
     Timecop.freeze today + 91.days do
       define_gl066(non_grant_chart_string, expires_at: today - 1)
-      assert_raise NucsErrors::DatedGL066Error do
-        NucsValidator.new(non_grant_chart_string, non_revenue_account).account_is_open!((today - 2).to_datetime)
-      end
+      expect { NucsValidator.new(non_grant_chart_string, non_revenue_account).account_is_open!((today - 2).to_datetime) }
+        .to raise_error NucsErrors::DatedGL066Error
     end
   end
 
   it "validates a grant chart string on a non-revenue account" do
     define_open_account(non_revenue_account, grant_chart_string)
-    assert_nothing_raised do
-      NucsValidator.new(grant_chart_string, non_revenue_account).account_is_open!
-    end
+    expect { NucsValidator.new(grant_chart_string, non_revenue_account).account_is_open! }
+      .not_to raise_error
   end
 
   it "requires an activity for a grant chart string on a non-revenue account" do
     define_open_account(non_revenue_account, grant_chart_string)
-    assert_raise NucsErrors::InputError do
-      chart_string = grant_chart_string[0...grant_chart_string.index("-01")]
-      NucsValidator.new(chart_string, non_revenue_account).account_is_open!
-    end
+    chart_string = grant_chart_string[0...grant_chart_string.index("-01")]
+    expect { NucsValidator.new(chart_string, non_revenue_account).account_is_open! }
+      .to raise_error NucsErrors::InputError
   end
 
   it "requires an activity for a non-grant chart string with project id on a non-revenue account" do
     define_open_account(non_revenue_account, non_grant_chart_string)
-    assert_raise NucsErrors::InputError do
-      chart_string = non_grant_chart_string[0...non_grant_chart_string.index("-01")]
-      NucsValidator.new(chart_string, non_revenue_account).account_is_open!
-    end
+    chart_string = non_grant_chart_string[0...non_grant_chart_string.index("-01")]
+    expect { NucsValidator.new(chart_string, non_revenue_account).account_is_open! }
+      .to raise_error NucsErrors::InputError
   end
 
   it "validates an activity for a grant chart string on a non-revenue account" do
@@ -323,24 +311,21 @@ RSpec.describe NucsValidator do
 
   it "confirms that an account is open for a chart string" do
     define_open_account(non_revenue_account, non_grant_chart_string)
-    assert_nothing_raised do
-      NucsValidator.new(non_grant_chart_string, non_revenue_account).account_is_open!
-    end
+    expect { NucsValidator.new(non_grant_chart_string, non_revenue_account).account_is_open! }
+      .not_to raise_error
   end
 
   it "recognizes a missing budget tree" do
     FactoryGirl.create(:nucs_grants_budget_tree)
     define_gl066(grant_chart_string)
-    assert_raise NucsErrors::UnknownBudgetTreeError do
-      NucsValidator.new(grant_chart_string, non_revenue_account).account_is_open!
-    end
+    expect { NucsValidator.new(grant_chart_string, non_revenue_account).account_is_open! }
+      .to raise_error NucsErrors::UnknownBudgetTreeError
   end
 
   it "recognizes a closed account for a chart string" do
     define_open_account(non_revenue_account, non_grant_chart_string, {}, budget_period: "2000")
-    assert_raise NucsErrors::DatedGL066Error do
-      NucsValidator.new(non_grant_chart_string, non_revenue_account).account_is_open!
-    end
+    expect { NucsValidator.new(non_grant_chart_string, non_revenue_account).account_is_open! }
+      .to raise_error NucsErrors::DatedGL066Error
   end
 
   it "confirms when all GE001 components are found" do
@@ -394,18 +379,17 @@ RSpec.describe NucsValidator do
   it "errors on blacklisted fund" do
     Blacklist::DISALLOWED_FUNDS.each do |fund|
       blacklisted = non_grant_chart_string.gsub("171-", "#{fund}-")
-      assert_raise NucsErrors::BlacklistedError do
-        NucsValidator.new(blacklisted)
-      end
+      expect { NucsValidator.new(blacklisted) }
+        .to raise_error NucsErrors::BlacklistedError
     end
   end
 
   it "errors on blacklisted account" do
     %w(0 1 2 3 4 6 8 9).each do |i|
       blacklisted = i + revenue_account[1..-1]
-      assert_raise NucsErrors::BlacklistedError do
-        NucsValidator.new(non_grant_chart_string, blacklisted)
-      end
+
+      expect { NucsValidator.new(non_grant_chart_string, blacklisted) }
+        .to raise_error NucsErrors::BlacklistedError
     end
   end
 
@@ -417,9 +401,8 @@ RSpec.describe NucsValidator do
     chart_string = grant_chart_string.gsub("191-", "111-")
     define_open_account(non_revenue_account, chart_string)
 
-    assert_raise NucsErrors::NotAllowedError do
-      NucsValidator.new(chart_string, non_revenue_account).account_is_open!
-    end
+    expect { NucsValidator.new(chart_string, non_revenue_account).account_is_open! }
+      .to raise_error NucsErrors::NotAllowedError
   end
 
   it "does not allow a project that does not start with 1 when fund >= 170 and <= 179" do
@@ -438,11 +421,8 @@ RSpec.describe NucsValidator do
     chart_string = grant_chart_string.gsub("191-", "411-").gsub("-01-", "-02-")
     define_open_account(non_revenue_account, chart_string)
 
-    exception = assert_raise NucsErrors::InputError do
-      NucsValidator.new(chart_string, non_revenue_account).account_is_open!
-    end
-
-    expect(exception.message).to be_end_with "activity"
+    expect { NucsValidator.new(chart_string, non_revenue_account).account_is_open! }
+      .to raise_error(NucsErrors::InputError, /activity\z/)
   end
 
   it "does not allow a project that does not start with 5 when fund >= 500 and <= 540" do
@@ -467,17 +447,14 @@ RSpec.describe NucsValidator do
 
   it "considers whitelisted chart strings always open" do
     validator = NucsValidator.new(Whitelist::ALLOWED_CHART_STRINGS[0], non_revenue_account)
-    assert_nothing_raised { validator.account_is_open! }
+    expect { validator.account_is_open! }.not_to raise_error
   end
 
   def assert_project_input_error(chart_string)
     define_open_account(non_revenue_account, chart_string)
 
-    exception = assert_raise NucsErrors::InputError do
-      NucsValidator.new(chart_string, non_revenue_account).account_is_open!
-    end
-
-    expect(exception.message).to be_end_with "project"
+    expect { NucsValidator.new(chart_string, non_revenue_account).account_is_open! }
+      .to raise_error(NucsErrors::InputError, /project\z/)
   end
 
   def assert_unknown_gl066(validator, chart_string = non_grant_chart_string, account = nil)
@@ -487,9 +464,8 @@ RSpec.describe NucsValidator do
       define_gl066(chart_string)
     end
 
-    assert_raise NucsErrors::UnknownGL066Error do
-      validator.account_is_open!
-    end
+    expect { validator.account_is_open! }
+      .to raise_error NucsErrors::UnknownGL066Error
   end
 
   def assert_unknown_ge001(validator, failed_component_name, chart_string = non_grant_chart_string)

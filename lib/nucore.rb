@@ -43,9 +43,9 @@ module NUCore
         def where_ids_in(ids)
           if NUCore::Database.oracle?
             queries = ids.each_slice(999).flat_map do |id_slice|
-              unscoped.where(id: id_slice).where_clauses
+              unscoped.where(id: id_slice).where_values
             end
-            where(queries.join(" OR "))
+            where(queries.reduce(:or))
           else
             where(id: ids)
           end
@@ -65,20 +65,6 @@ module NUCore
       Y2K_CUTOFF = 86
 
       module ClassMethods
-
-        #
-        # This method should be used anytime you need to reference a date column in a
-        # SQL query and the column values should be treated as a date, not a datetime.
-        # It will keep your code DB agnostic.
-        # [_date_column_name_]
-        #   The name of the column whose values should be treated as dates
-        # [_sql_fragment_]
-        #   Any SQL that makes sense to come after +date_column_name+ in the query.
-        #   Simply a convenience; the fragment is just concatenated to the returned value.
-        def dateize(date_column_name, sql_fragment = nil)
-          col_sql = NUCore::Database.oracle? ? "TRUNC(#{date_column_name})" : "DATE(#{date_column_name})"
-          sql_fragment ? col_sql + sql_fragment : col_sql
-        end
 
         def parse_2_digit_year_date(date_string)
           day, month, year = date_string.match(/\A(\d{1,2})\-?([A-Z]{3})\-?(\d\d)\z/).captures

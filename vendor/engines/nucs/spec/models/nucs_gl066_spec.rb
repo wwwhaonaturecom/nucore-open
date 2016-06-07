@@ -70,9 +70,8 @@ RSpec.describe NucsGl066 do
   end
 
   it "should raise an ImportError on malformed source lines" do
-    assert_raises NucsErrors::ImportError do
-      NucsGl066.tokenize_source_line("-|156|2243550|-|-|-||")
-    end
+    expect { NucsGl066.tokenize_source_line("-|156|2243550|-|-|-||") }
+      .to raise_error(NucsErrors::ImportError)
   end
 
   it "should return an invalid record when creating from a valid source line with invalid data" do
@@ -131,9 +130,7 @@ RSpec.describe NucsGl066 do
     end
 
     def fiscal_year_test(chart_string, date, expected_year)
-      Timecop.freeze Time.zone.parse(date)
-
-      assert_nothing_raised do
+      Timecop.freeze(Time.zone.parse(date)) do
         tokens = NucsGl066.tokenize_source_line chart_string
         expect(tokens.first).to eq(expected_year)
       end

@@ -39,7 +39,7 @@ class PmuDocument < Nokogiri::XML::SAX::Document
       @attrs[@value_sequence[@sequence_ndx]] = @value if @sequence_ndx < @value_sequence.length
     when "row"
       if @attrs[:nufin_id].present?
-        dept = PmuDepartment.find_or_create_by_nufin_id @attrs[:nufin_id]
+        dept = PmuDepartment.find_or_create_by(nufin_id: @attrs[:nufin_id])
         dept.update_attributes! @attrs
       end
     end

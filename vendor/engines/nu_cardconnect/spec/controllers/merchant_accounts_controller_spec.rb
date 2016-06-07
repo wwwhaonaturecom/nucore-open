@@ -5,9 +5,11 @@ RSpec.describe NuCardconnect::MerchantAccountsController do
   let(:admin) { FactoryGirl.create(:user, :administrator) }
   let(:director) { FactoryGirl.create(:user, :facility_director, facility: facility) }
 
+  before { @routes = NuCardconnect::Engine.routes }
+
   describe "edit" do
     def do_request
-      get :edit, facility_id: facility.url_name
+      get :edit, id: facility.url_name
     end
 
     describe "not logged in" do
@@ -40,7 +42,7 @@ RSpec.describe NuCardconnect::MerchantAccountsController do
     let(:params) {}
 
     def do_request
-      put :update, facility_id: facility.url_name, nu_cardconnect_merchant_account: params
+      patch :update, id: facility.url_name, nu_cardconnect_merchant_account: params
     end
 
     describe "not logged in" do
