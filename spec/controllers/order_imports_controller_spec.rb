@@ -2,7 +2,7 @@ require "rails_helper"
 require "controller_spec_helper"
 
 def fixture_file(filename)
-  ActionDispatch::TestProcess.fixture_file_upload(
+  fixture_file_upload(
     "#{Rails.root}/spec/files/order_imports/#{filename}",
     "text/csv",
   )
