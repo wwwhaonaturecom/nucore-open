@@ -64,11 +64,30 @@ engine's `gemspec`, not app's `Gemfile`.
 
 _We should consider `optional` groups in Bundler 1.10 to see if this helps_
 
-## Commits
+## Commits & PRs
 
-Prefix your commits and pull requests with the ticket number. `[#12345] Fix critical issue`
+We like a tidy and informative Git history. This helps with release notes as well
+as making it easier to cherry-pick features and bug fixes into fork releases without
+needing to pull in other features that might have been merged into master.
 
-[TODO]
+Prefix your commits and pull requests with the ticket number. `[#12345] Fix critical issue` Provide explanations of the issue and decisions where possible. This is important
+because the ticket number is not always publicly-accessible.
+
+When creating a PR, use `git rebase` to squash your commits into a coherent story.
+Commits like "typo" and "fix specs" are not particularly informative and should be squashed prior to PR creation. This makes review easier. Once the PR has been
+reviewed and you have received feedback, try not to alter existing commits. In this case,
+"fix spec" and the like are acceptable.
+
+If the PR has gotten stale (i.e. cannot be cleanly merged), prefer `git rebase master`
+over `git merge master` to clean up the conflicts. Assuming the conflicts are trivial
+(e.g. Gemfile.lock or schema.rb), this likely does not warrant much re-reviewing.
+
+When merging PRs, prefer Github's "Squash & merge" over creating a merge commit.
+This keeps the commit history on master informative, while still providing links
+to the PR and the inner history. The exception is when
+
+We encourage committers to merge their own commits once they have received the
+"thumbs up" from the maintainers.
 
 ## Other
 
