@@ -114,6 +114,7 @@ group :test do
   gem "ci_reporter_rspec"
   gem "codeclimate_circle_ci_coverage"
   gem "capybara"
+  gem "capybara-email"
   gem "poltergeist"
 end
 
