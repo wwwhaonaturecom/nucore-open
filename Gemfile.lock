@@ -665,6 +665,7 @@ GEM
     unicorn (5.1.0)
       kgio (~> 2.6)
       raindrops (~> 0.7)
+    vuejs-rails (1.0.24)
     warden (1.2.6)
       rack (>= 1.0)
     web-console (3.2.0)
@@ -772,6 +773,7 @@ DEPENDENCIES
   uglifier (~> 2.7.2)
   unicorn
   vestal_versions (= 1.2.4.3)!
+  vuejs-rails
   web-console
   whenever
   will_paginate (~> 3.0.5)

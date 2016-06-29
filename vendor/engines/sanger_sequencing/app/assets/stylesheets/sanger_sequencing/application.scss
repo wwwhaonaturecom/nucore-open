@@ -11,3 +11,14 @@
  *= require_self
  *= require_tree .
  */
+
+
+[v-cloak] {
+  display: none;
+}
+
+.sangerSequencing--colorCoded__box {
+  display: block;
+  width: 1.7em;
+  height: 1.7em;
+}
