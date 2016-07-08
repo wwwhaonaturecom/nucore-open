@@ -63,6 +63,7 @@ gem "oj", "~> 2.12.14"
 gem "rollbar", "~> 2.8.0"
 
 ## custom
+gem "acgt", "~> 0.0.1", path: "vendor/engines/acgt"
 gem "c2po", "~> 1.0.0", path: "vendor/engines/c2po"
 gem "dataprobe", "~> 1.0.0", path: "vendor/engines/dataprobe"
 gem "nu", "~> 1.0.0", path: "vendor/engines/nu"

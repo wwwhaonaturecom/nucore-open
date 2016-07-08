@@ -14,6 +14,11 @@ GIT
       nokogiri (> 1.5)
 
 PATH
+  remote: vendor/engines/acgt
+  specs:
+    acgt (0.0.1)
+
+PATH
   remote: vendor/engines/c2po
   specs:
     c2po (1.0.0)
@@ -687,6 +692,7 @@ PLATFORMS
 
 DEPENDENCIES
   aasm (~> 4.10.1)
+  acgt (~> 0.0.1)!
   activerecord-oracle_enhanced-adapter (~> 1.6.0)
   awesome_nested_set (= 3.0.3)
   awesome_print (= 1.1.0)
