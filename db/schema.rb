@@ -185,8 +185,8 @@ ActiveRecord::Schema.define(version: 20160715220430) do
 
   create_table "journal_cutoff_dates", force: :cascade do |t|
     t.datetime "cutoff_date"
-    t.datetime "created_at"
-    t.datetime "updated_at"
+    t.datetime "created_at",  null: false
+    t.datetime "updated_at",  null: false
   end
 
   create_table "journal_rows", force: :cascade do |t|
@@ -424,8 +424,8 @@ ActiveRecord::Schema.define(version: 20160715220430) do
     t.string   "source_id"
     t.decimal  "amount",                     precision: 10, scale: 2,               null: false
     t.integer  "paid_by_id",     limit: nil
-    t.datetime "created_at"
-    t.datetime "updated_at"
+    t.datetime "created_at",                                                        null: false
+    t.datetime "updated_at",                                                        null: false
     t.decimal  "processing_fee",             precision: 10, scale: 2, default: 0.0, null: false
   end
 
@@ -771,9 +771,9 @@ ActiveRecord::Schema.define(version: 20160715220430) do
   add_foreign_key "order_imports", "facilities", name: "fk_order_imports_facilities"
   add_foreign_key "orders", "accounts", name: "sys_c008808"
   add_foreign_key "orders", "facilities", name: "orders_facility_id_fk"
-  add_foreign_key "payments", "accounts"
-  add_foreign_key "payments", "statements"
-  add_foreign_key "payments", "users", column: "paid_by_id"
+  add_foreign_key "payments", "accounts", name: "payments_account_id_fk"
+  add_foreign_key "payments", "statements", name: "payments_statement_id_fk"
+  add_foreign_key "payments", "users", column: "paid_by_id", name: "payments_paid_by_id_fk"
   add_foreign_key "price_group_members", "price_groups", name: "sys_c008583"
   add_foreign_key "price_groups", "facilities", name: "sys_c008578"
   add_foreign_key "price_policies", "price_groups", name: "sys_c008589"
