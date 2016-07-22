@@ -39,7 +39,7 @@ module ProductsHelper
   end
 
   def product_url_hint(product)
-    product_url_name = product.try(:url_name) || "url-name"
+    product_url_name = product.try(:url_name).presence || "url-name"
 
     url_name_hint = send("facility_#{product.class.name.downcase}_url",
                          current_facility.url_name,
@@ -58,12 +58,12 @@ module ProductsHelper
   end
 
   def public_calendar_availability_options(product)
-    if product.available?
+    if product.available? && product.online?
       { class: ["icon-calendar", "available"],
-        title: t("instruments.public_schedule.available") }
+        title: text("instruments.public_schedule.available") }
     else
       { class: ["icon-calendar", "in-use"],
-        title: t("instruments.public_schedule.in-use") }
+        title: text("instruments.public_schedule.in-use") }
     end
   end
 

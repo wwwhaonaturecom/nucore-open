@@ -80,8 +80,7 @@ RSpec.describe FileUploadsController do
         facility_id: @authable.url_name,
         product: "services",
         product_id: @service.url_name,
-        fileData: fixture_file_upload("#{Rails.root}/spec/files/flash_file.swf", "application/x-shockwave-flash"),
-        Filename: "#{Rails.root}/spec/files/flash_file.swf",
+        qqfile: fixture_file_upload("#{Rails.root}/spec/files/flash_file.swf", "application/x-shockwave-flash"),
         file_type: "info",
         order_detail_id: @order_detail.id,
       }
@@ -98,6 +97,16 @@ RSpec.describe FileUploadsController do
 
       it_should_allow_all(facility_operators) do
         is_expected.to respond_with :success
+      end
+
+      describe "with a duplicate filename" do
+        let!(:existing_file) { FactoryGirl.create(:stored_file, :results, order_detail: @order_detail, name: "flash_file.swf") }
+
+        it "returns an error" do
+          sign_in @admin
+          do_request
+          expect(response.body).to eq("Filename already exists for this order")
+        end
       end
     end
 

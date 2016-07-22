@@ -94,6 +94,7 @@ api:
 feature:
   billing_administrator_on: true
   create_users_on: true
+  netids_on: true
   limit_short_description_on: true
   manage_payment_sources_with_users_on: true
   password_update_on: true
@@ -107,6 +108,7 @@ feature:
   split_accounts_on: true
   print_order_detail_on: false
   user_based_price_groups_on: true
+  my_files_on: true
 
 # This may be overridden in settings.local.yml if your fork is using S3, so
 # be sure to check there for configuration

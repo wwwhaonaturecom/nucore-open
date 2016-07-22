@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20160602232926) do
+ActiveRecord::Schema.define(version: 20160715220430) do
 
   create_table "account_users", force: :cascade do |t|
     t.integer  "account_id", limit: nil,                null: false
@@ -93,6 +93,16 @@ ActiveRecord::Schema.define(version: 20160602232926) do
   end
 
   add_index "delayed_jobs", ["priority", "run_at"], name: "delayed_jobs_priority", tablespace: "bc_nucore"
+
+  create_table "email_events", force: :cascade do |t|
+    t.integer  "user_id",      limit: nil, null: false
+    t.string   "key",                      null: false
+    t.datetime "last_sent_at",             null: false
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  add_index "email_events", ["user_id", "key"], name: "i_email_events_user_id_key", unique: true
 
   create_table "external_service_passers", force: :cascade do |t|
     t.integer  "external_service_id", limit: nil
@@ -569,18 +579,6 @@ ActiveRecord::Schema.define(version: 20160602232926) do
   add_index "products", ["schedule_id"], name: "i_instruments_schedule_id", tablespace: "bc_nucore"
   add_index "products", ["url_name"], name: "index_products_on_url_name", tablespace: "bc_nucore"
 
-  create_table "projects", force: :cascade do |t|
-    t.string   "name",                                   null: false
-    t.text     "description"
-    t.integer  "facility_id", limit: nil,                null: false
-    t.datetime "created_at",                             null: false
-    t.datetime "updated_at",                             null: false
-    t.boolean  "active",      limit: nil, default: true, null: false
-  end
-
-  add_index "projects", ["facility_id", "name"], name: "i_projects_facility_id_name", unique: true
-  add_index "projects", ["facility_id"], name: "index_projects_on_facility_id"
-
   create_table "relays", force: :cascade do |t|
     t.integer  "instrument_id",       limit: nil
     t.string   "ip",                  limit: 15
@@ -600,34 +598,19 @@ ActiveRecord::Schema.define(version: 20160602232926) do
     t.integer  "order_detail_id",  limit: nil
     t.integer  "product_id",       limit: nil,                null: false
     t.datetime "reserve_start_at",                            null: false
-    t.datetime "reserve_end_at",                              null: false
+    t.datetime "reserve_end_at"
     t.datetime "actual_start_at"
     t.datetime "actual_end_at"
     t.datetime "canceled_at"
     t.integer  "canceled_by",                  precision: 38
     t.string   "canceled_reason",  limit: 50
     t.string   "admin_note"
+    t.string   "type"
   end
 
   add_index "reservations", ["order_detail_id"], name: "res_od_uniq_fk", unique: true
   add_index "reservations", ["product_id", "reserve_start_at"], name: "i_res_pro_id_res_sta_at", tablespace: "bc_nucore"
   add_index "reservations", ["product_id"], name: "i_reservations_product_id", tablespace: "bc_nucore"
-
-  create_table "sanger_sequencing_samples", force: :cascade do |t|
-    t.integer  "submission_id", limit: nil, null: false
-    t.datetime "created_at",                null: false
-    t.datetime "updated_at",                null: false
-  end
-
-  add_index "sanger_sequencing_samples", ["submission_id"], name: "i_san_seq_sam_sub_id"
-
-  create_table "sanger_sequencing_submissions", force: :cascade do |t|
-    t.integer  "order_detail_id", limit: nil
-    t.datetime "created_at",                  null: false
-    t.datetime "updated_at",                  null: false
-  end
-
-  add_index "sanger_sequencing_submissions", ["order_detail_id"], name: "i_san_seq_sub_ord_det_id"
 
   create_table "schedule_rules", force: :cascade do |t|
     t.integer "instrument_id",    limit: nil,                                        null: false
@@ -774,6 +757,7 @@ ActiveRecord::Schema.define(version: 20160602232926) do
   add_foreign_key "bi_netids", "facilities", name: "sys_c0011408"
   add_foreign_key "bundle_products", "products", column: "bundle_product_id", name: "fk_bundle_prod_prod"
   add_foreign_key "bundle_products", "products", name: "fk_bundle_prod_bundle"
+  add_foreign_key "email_events", "users"
   add_foreign_key "facility_accounts", "facilities", name: "fk_facilities"
   add_foreign_key "instrument_statuses", "products", column: "instrument_id", name: "fk_int_stats_product"
   add_foreign_key "order_details", "accounts", name: "fk_od_accounts"
@@ -797,10 +781,8 @@ ActiveRecord::Schema.define(version: 20160602232926) do
   add_foreign_key "products", "facilities", name: "sys_c008556"
   add_foreign_key "products", "facility_accounts", name: "fk_facility_accounts"
   add_foreign_key "products", "schedules", name: "fk_instruments_schedule"
-  add_foreign_key "projects", "facilities", name: "projects_facility_id_fk"
   add_foreign_key "reservations", "order_details", name: "res_ord_det_id_fk"
   add_foreign_key "reservations", "products", name: "reservations_product_id_fk"
-  add_foreign_key "sanger_sequencing_samples", "sanger_sequencing_submissions", column: "submission_id", name: "sys_c0012430", on_delete: :cascade
   add_foreign_key "schedule_rules", "products", column: "instrument_id", name: "sys_c008573"
   add_foreign_key "schedules", "facilities", name: "fk_schedules_facility"
   add_foreign_key "statements", "facilities", name: "fk_statement_facilities"

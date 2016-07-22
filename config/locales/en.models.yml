@@ -75,6 +75,10 @@ en:
             base:
               conflict: The reservation conflicts with another reservation.
               conflict_in_cart: The reservation conflicts with another reservation in your cart. Please purchase or remove it then continue.
+        stored_file:
+          attributes:
+            name:
+              taken: "Filename already exists for this order"
         account_user:
           attributes:
             user_id:
@@ -126,6 +130,8 @@ en:
       nufs_account:
         one: Chart String
         other: Chart Strings
+      offline_reservation:
+        one: Offline
       reservation:
         one: Reservation
         other: Reservations
@@ -278,6 +284,7 @@ en:
         canceled_by_user: Canceled By
         canceled_by: Canceled By
         canceled_at: Canceled At
+        type: Type
       statement:
         id: "Invoice #"
         created_by: Sent By

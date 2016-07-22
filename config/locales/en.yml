@@ -512,6 +512,12 @@ en:
         price_policy: "* Clicking 'Save' will attempt to estimate the cost by quantity"
         default: "* Changing the quantity will automatically update the price fields"
 
+  offline_reservations:
+    edit:
+      update: Update the note
+    new:
+      mark_offline: Take instrument offline
+
   order_management:
     order_details:
       edit:
@@ -674,6 +680,7 @@ en:
         view:
           order_form: "View Order Form"
           order_file: "View Order File"
+          zip: "Download all as zip..."
       submit:
         dispute: "Dispute Purchase"
       th:
@@ -919,10 +926,6 @@ en:
     export_html: Export
 
   file_uploads:
-    widget:
-      error_loading: Please enable Javascript and install Adobe Flash Player.
-      start: Start Upload
-      clear_queue: Clear Queue
     sample_result:
       title: Results Files
       count: "%{count} Results Files"
@@ -1045,12 +1048,29 @@ en:
         max_res: "Maximum Reservation Minutes"
         cancel_hours: "Minimum Cancelation Hours"
         cancel_mins: "Automatic Cancelation Minutes"
+    offline:
+      note: Instrument is down
+      notice: |
+        This instrument is currently down.
+        Contact the !facility_downcase! for more information.
+        You may place reservations, but if the instrument is still down at your
+        scheduled time they will be canceled at no charge.
+
     public_schedule:
       title: Schedule
       place_reservation: Place Reservation
       icon: Public Schedule
       available: Available
       in-use: In Use
+    schedule:
+      administrative_reservations: Administrative Reservations
+      add_admin_reservation: Add Admin Reservation
+      admin: Admin
+      bring_instrument_online: Bring Instrument Online
+      instrument_is_offline: This instrument is currently offline
+      mark_instrument_offline: Mark Instrument Offline
+      no_upcoming_admin_reservations: There are no upcoming administrative reservations.
+      reservations_calendar: Reservations Calendar
 
     instrument_fields:
       show_details: "Show reservation details (name, email, etc) on schedule"

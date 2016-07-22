@@ -66,7 +66,8 @@ class SangerSequencing.WellPlateBuilder
   # Private
 
   _render: ->
-    @_plateCount = Math.max(1, Math.ceil(@samples().length / @_fillOrder().length))
+    wellsInPlate = @_fillOrder().length - @reservedCells.length
+    @_plateCount = Math.max(1, Math.ceil(@samples().length / wellsInPlate))
 
     samples = @samples()
     allPlates = []
@@ -86,7 +87,13 @@ class SangerSequencing.WellPlateBuilder
         else
           new SangerSequencing.Sample.Blank
       else
-        new SangerSequencing.Sample.Reserved
+        # Reserved will actually take up a cell, while ReservedButUnused is
+        # for when we have not actually reached that cell in the fill order,
+        # so it will instead be treated as blank.
+        if samples.length > 0
+          new SangerSequencing.Sample.Reserved
+        else
+          new SangerSequencing.Sample.ReservedButUnused
 
        sample
 
