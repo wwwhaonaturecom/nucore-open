@@ -1,7 +1,7 @@
 FactoryGirl.define do
   factory :stored_file do
     swf_uploaded_data { fixture_file_upload("#{Rails.root}/spec/files/flash_file.swf", "application/x-shockwave-flash") }
-    name "#{Rails.root}/spec/files/flash_file.swf"
+    sequence(:name) { |n| "flash_file-#{n}.swf" }
     file_type "info"
   end
 
@@ -17,5 +17,10 @@ FactoryGirl.define do
     file_type { "template" }
     name { "template.csv" }
     association :creator, factory: :user
+  end
+
+  trait :results do
+    template
+    file_type { "sample_result" }
   end
 end

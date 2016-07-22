@@ -78,6 +78,9 @@ Nucore::Application.routes.draw do
       get "status",          to: 'instruments#instrument_status'
       get "switch",          to: 'instruments#switch'
 
+      put "bring_online", to: "offline_reservations#bring_online"
+      resources :offline_reservations, only: [:new, :create, :edit, :update]
+
       resources :schedule_rules, except: [:show]
       resources :product_access_groups
       resources :price_policies, controller: "instrument_price_policies", except: [:show]
@@ -322,11 +325,13 @@ Nucore::Application.routes.draw do
     resources :order_details, only: [:show, :edit, :update] do
       put :cancel, on: :member
       put :dispute, on: :member
-      get :order_file
-      post :upload_order_file
-      get :remove_order_file
-      get "sample_results/:stored_file_id", to: "order_details#sample_results", as: "sample_results"
-      get "template_results/:stored_file_id", to: "order_details#template_results", as: "template_results"
+      get :order_file, controller: "order_detail_stored_files"
+      post :upload_order_file, controller: "order_detail_stored_files"
+      get :remove_order_file, controller: "order_detail_stored_files"
+
+      get :sample_results, to: "order_detail_stored_files#sample_results_zip", as: "sample_results_zip"
+      get "sample_results/:id", to: "order_detail_stored_files#sample_results", as: "sample_results"
+      get "template_results/:id", to: "order_detail_stored_files#template_results", as: "template_results"
 
       resources :reservations, except: [:index] do
         get "/move",               to: 'reservations#earliest_move_possible'
@@ -348,6 +353,8 @@ Nucore::Application.routes.draw do
   # reservations
   get "reservations", to: 'reservations#list', as: "reservations"
   get "reservations(/:status)", to: 'reservations#list', as: "reservations_status"
+
+  resources :my_files, only: [:index] if SettingsHelper.feature_on?(:my_files)
 
   # file upload routes
   get   "/#{I18n.t("facilities_downcase")}/:facility_id/:product/:product_id/files/upload",                                   to: 'file_uploads#upload',                as: "upload_product_file"

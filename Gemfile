@@ -40,6 +40,8 @@ gem "font-awesome-rails", "~> 3.2.0"
 gem "nested_form_fields"
 gem "text_helpers"
 gem "chosen-rails"
+gem "fine_uploader", path: "vendor/engines/fine_uploader"
+gem "rubyzip"
 
 ## controllers
 gem "prawn",            "0.12"
@@ -52,7 +54,7 @@ gem "skylight"
 
 ## other
 gem "delayed_job_active_record", "~> 4.0.1"
-gem "fog"
+gem "fog-aws"
 gem "rake"
 gem "spreadsheet", "~> 1.1.2"
 gem "exception_notification", "~> 4.0.1"
