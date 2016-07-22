@@ -10,7 +10,7 @@ RSpec.describe Acgt::OrderDetailSerializer do
         {
           order_id: order_detail.to_s,
           ordered_at: "2015-12-01T10:30:00-06:00",
-          purchased_for: { name: user.to_s, email: user.email },
+          purchased_for: { first_name: user.first_name, last_name: user.last_name, email: user.email },
           status: order_detail.order_status.name,
           service_type: "premium",
           note: order_detail.note,

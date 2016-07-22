@@ -27,7 +27,7 @@ module Acgt
       {
         order_id: order_detail.to_s,
         ordered_at: ordered_at.iso8601,
-        purchased_for: { name: user.to_s, email: user.email },
+        purchased_for: UserSerializer.new(user).to_h,
         status: order_status_name,
         service_type: "premium", # TODO: may also be "standard"
         note: order_detail.note,
