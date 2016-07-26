@@ -185,8 +185,8 @@ ActiveRecord::Schema.define(version: 20160720200222) do
 
   create_table "journal_cutoff_dates", force: :cascade do |t|
     t.datetime "cutoff_date"
-    t.datetime "created_at"
-    t.datetime "updated_at"
+    t.datetime "created_at",  null: false
+    t.datetime "updated_at",  null: false
   end
 
   create_table "journal_rows", force: :cascade do |t|
@@ -424,8 +424,8 @@ ActiveRecord::Schema.define(version: 20160720200222) do
     t.string   "source_id"
     t.decimal  "amount",                     precision: 10, scale: 2,               null: false
     t.integer  "paid_by_id",     limit: nil
-    t.datetime "created_at"
-    t.datetime "updated_at"
+    t.datetime "created_at",                                                        null: false
+    t.datetime "updated_at",                                                        null: false
     t.decimal  "processing_fee",             precision: 10, scale: 2, default: 0.0, null: false
   end
 
@@ -729,8 +729,7 @@ ActiveRecord::Schema.define(version: 20160720200222) do
   add_index "users", ["uid"], name: "index_users_on_uid", tablespace: "bc_nucore"
   add_index "users", ["username"], name: "index_users_on_username", unique: true, tablespace: "bc_nucore"
 
-  create_table "versions", id: false, force: :cascade do |t|
-    t.integer  "id",                limit: nil,                null: false
+  create_table "versions", force: :cascade do |t|
     t.integer  "versioned_id",      limit: nil
     t.string   "versioned_type"
     t.integer  "user_id",           limit: nil
@@ -754,9 +753,8 @@ ActiveRecord::Schema.define(version: 20160720200222) do
   add_index "versions", ["version_number"], name: "index_versions_on_number", tablespace: "bc_nucore"
   add_index "versions", ["versioned_id", "versioned_type"], name: "i_ver_ver_id_ver_typ", tablespace: "bc_nucore"
 
-  add_foreign_key "account_users", "accounts", name: "fk_accounts"
   add_foreign_key "accounts", "facilities", name: "fk_account_facility_id"
-  add_foreign_key "bi_netids", "facilities", name: "sys_c0011408"
+  add_foreign_key "bi_netids", "facilities", name: "sys_c0019397"
   add_foreign_key "bundle_products", "products", column: "bundle_product_id", name: "fk_bundle_prod_prod"
   add_foreign_key "bundle_products", "products", name: "fk_bundle_prod_bundle"
   add_foreign_key "email_events", "users"
@@ -773,9 +771,9 @@ ActiveRecord::Schema.define(version: 20160720200222) do
   add_foreign_key "order_imports", "facilities", name: "fk_order_imports_facilities"
   add_foreign_key "orders", "accounts", name: "sys_c008808"
   add_foreign_key "orders", "facilities", name: "orders_facility_id_fk"
-  add_foreign_key "payments", "accounts"
-  add_foreign_key "payments", "statements"
-  add_foreign_key "payments", "users", column: "paid_by_id"
+  add_foreign_key "payments", "accounts", name: "payments_account_id_fk"
+  add_foreign_key "payments", "statements", name: "payments_statement_id_fk"
+  add_foreign_key "payments", "users", column: "paid_by_id", name: "payments_paid_by_id_fk"
   add_foreign_key "price_group_members", "price_groups", name: "sys_c008583"
   add_foreign_key "price_groups", "facilities", name: "sys_c008578"
   add_foreign_key "price_policies", "price_groups", name: "sys_c008589"
