@@ -30,44 +30,16 @@ module Acgt
         purchased_for: UserSerializer.new(user).to_h,
         status: order_status_name,
         service_type: "premium", # TODO: may also be "standard"
-        note: order_detail.note,
+        note: order_detail.note.to_s,
       }
     end
 
-    def samples # TODO: pull values from the database; these are examples
-      [
-        {
-          sample_id: 1123, # TODO: get from sanger_sequencing_samples.id
-          template: {
-            name: "sample1",
-            concentration: "50", # units are ng/uL according to the form
-            high_gc: false,
-            hair_pin: true,
-            type: "plasmid", # may be "plasmid" or "unpurified PCR"
-            pcr_product_size: "20", # TODO: units not specified on the form; possibly uL?
-          },
-          primer: {
-            name: "t7_forward",
-            concentration: "200", # units are pmol/uL according to the form
-          },
-        },
+    def samples
+      submission.samples.map { |sample| SampleSerializer.new(sample).to_h }
+    end
 
-        {
-          sample_id: 1124,
-          template: {
-            name: "sample2",
-            concentration: "20",
-            high_gc: true,
-            hair_pin: false,
-            type: "unpurified PCR",
-            pcr_product_size: "100",
-          },
-          primer: {
-            name: "t7_reverse",
-            concentration: "500",
-          },
-        },
-      ]
+    def submission
+      @submission ||= SangerSequencing::Submission.find_by(order_detail: order_detail)
     end
 
   end

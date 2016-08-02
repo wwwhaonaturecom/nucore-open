@@ -37,7 +37,7 @@ module Api
 
       def load_order_detail
         order_id, order_detail_id = params[:id].split(/\-/, 2)
-        @order_detail = Order.find(order_id).order_details.find(order_detail_id)
+        @order_detail = Order.purchased.find(order_id).order_details.find(order_detail_id)
       end
 
       def load_order_details

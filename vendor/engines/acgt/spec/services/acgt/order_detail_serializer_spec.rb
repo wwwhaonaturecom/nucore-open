@@ -13,7 +13,7 @@ RSpec.describe Acgt::OrderDetailSerializer do
           purchased_for: { first_name: user.first_name, last_name: user.last_name, email: user.email },
           status: order_detail.order_status.name,
           service_type: "premium",
-          note: order_detail.note,
+          note: order_detail.note.to_s,
         }
       end
 
@@ -21,10 +21,47 @@ RSpec.describe Acgt::OrderDetailSerializer do
         expected_hash.merge(samples: expected_samples)
       end
 
-      let(:expected_samples) do # TODO: replace these hardcoded example values
+      let(:order) { FactoryGirl.create(:purchased_order, product: service, ordered_at: ordered_at) }
+      let(:order_detail) { order.order_details.first }
+      let(:ordered_at) { DateTime.parse("2015-12-01T10:30:00-06:00") }
+      let(:service) { FactoryGirl.create(:setup_service) }
+      let(:user) { order.user }
+
+      context "when not requesting embedded samples" do
+        let(:with_samples) { false }
+        it { is_expected.to match(expected_hash) }
+      end
+
+      context "when requesting embedded samples" do
+        let(:submission) { FactoryGirl.create(:sanger_sequencing_submission, order_detail: order_detail) }
+        let!(:sample1) do
+          FactoryGirl.create(:sanger_sequencing_sample,
+            submission: submission,
+            customer_sample_id: "sample1",
+            template_concentration: "50",
+            hair_pin: true,
+            template_type: "plasmid",
+            pcr_product_size: "20",
+            primer_name: "t7_forward",
+            primer_concentration: "200")
+        end
+
+        let!(:sample2) do
+          FactoryGirl.create(:sanger_sequencing_sample,
+            submission: submission,
+            customer_sample_id: "sample2",
+            template_concentration: "20",
+            high_gc: true,
+            template_type: "pcr",
+            pcr_product_size: "100",
+            primer_name: "t7_reverse",
+            primer_concentration: "500")
+        end
+
+        let(:expected_samples) do # TODO: replace these hardcoded example values
         [
           {
-            sample_id: 1123,
+            sample_id: sample1.id,
             template: {
               name: "sample1",
               concentration: "50",
@@ -40,13 +77,13 @@ RSpec.describe Acgt::OrderDetailSerializer do
           },
 
           {
-            sample_id: 1124,
+            sample_id: sample2.id,
             template: {
               name: "sample2",
               concentration: "20",
               high_gc: true,
               hair_pin: false,
-              type: "unpurified PCR",
+              type: "pcr",
               pcr_product_size: "100",
             },
             primer: {
@@ -57,18 +94,6 @@ RSpec.describe Acgt::OrderDetailSerializer do
         ]
       end
 
-      let(:order) { FactoryGirl.create(:purchased_order, product: service, ordered_at: ordered_at) }
-      let(:order_detail) { order.order_details.first }
-      let(:ordered_at) { DateTime.parse("2015-12-01T10:30:00-06:00") }
-      let(:service) { FactoryGirl.create(:setup_service) }
-      let(:user) { order.user }
-
-      context "when not requesting embedded samples" do
-        let(:with_samples) { false }
-        it { is_expected.to match(expected_hash) }
-      end
-
-      context "when requesting embedded samples" do
         let(:with_samples) { true }
         it { is_expected.to match(expected_hash_with_samples) }
       end

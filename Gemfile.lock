@@ -17,6 +17,7 @@ PATH
   remote: vendor/engines/acgt
   specs:
     acgt (0.0.1)
+      sanger_sequencing
 
 PATH
   remote: vendor/engines/c2po
@@ -61,6 +62,12 @@ PATH
   remote: vendor/engines/pmu
   specs:
     pmu (1.0.0)
+
+PATH
+  remote: vendor/engines/sanger_sequencing
+  specs:
+    sanger_sequencing (0.0.1)
+      rails (~> 4.0)
 
 PATH
   remote: vendor/engines/split_accounts
@@ -651,6 +658,7 @@ DEPENDENCIES
   rubocop
   ruby-oci8 (~> 2.2.0)
   rubyzip
+  sanger_sequencing!
   sass-rails (~> 5.0.4)
   shoulda-matchers (~> 2.8.0)
   simple_form (~> 3.2.1)

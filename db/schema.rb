@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20160720200222) do
+ActiveRecord::Schema.define(version: 20160726183956) do
 
   create_table "account_users", force: :cascade do |t|
     t.integer  "account_id", limit: nil,                null: false
@@ -157,6 +157,7 @@ ActiveRecord::Schema.define(version: 20160720200222) do
     t.boolean  "show_instrument_availability", limit: nil, default: false, null: false
     t.string   "card_connect_merchant_id"
     t.string   "order_notification_recipient"
+    t.boolean  "sanger_sequencing_enabled",    limit: nil, default: false, null: false
   end
 
   add_index "facilities", ["abbreviation"], name: "sys_c008532", unique: true, tablespace: "bc_nucore"
@@ -612,6 +613,41 @@ ActiveRecord::Schema.define(version: 20160720200222) do
   add_index "reservations", ["order_detail_id"], name: "res_od_uniq_fk", unique: true
   add_index "reservations", ["product_id", "reserve_start_at"], name: "i_res_pro_id_res_sta_at", tablespace: "bc_nucore"
   add_index "reservations", ["product_id"], name: "i_reservations_product_id", tablespace: "bc_nucore"
+  create_table "sanger_sequencing_batches", force: :cascade do |t|
+    t.integer  "created_by_id",   limit: nil
+    t.text     "well_plates_raw"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+    t.integer  "facility_id",     limit: nil
+  end
+
+  add_index "sanger_sequencing_batches", ["created_by_id"], name: "i_san_seq_bat_cre_by_id"
+  add_index "sanger_sequencing_batches", ["facility_id"], name: "i_san_seq_bat_fac_id"
+
+  create_table "sanger_sequencing_samples", force: :cascade do |t|
+    t.integer  "submission_id",          limit: nil,                                null: false
+    t.datetime "created_at"
+    t.datetime "updated_at"
+    t.string   "customer_sample_id"
+    t.integer  "template_concentration",             precision: 38
+    t.boolean  "high_gc",                limit: nil,                default: false, null: false
+    t.boolean  "hair_pin",               limit: nil,                default: false, null: false
+    t.string   "template_type"
+    t.integer  "pcr_product_size",                   precision: 38
+    t.string   "primer_name"
+    t.integer  "primer_concentration",               precision: 38
+  end
+
+  add_index "sanger_sequencing_samples", ["submission_id"], name: "i_san_seq_sam_sub_id"
+
+  create_table "sanger_sequencing_submissions", force: :cascade do |t|
+    t.integer  "order_detail_id", limit: nil
+    t.datetime "created_at"
+    t.datetime "updated_at"
+    t.integer  "batch_id",        limit: nil
+  end
+
+  add_index "sanger_sequencing_submissions", ["order_detail_id"], name: "i_san_seq_sub_ord_det_id"
 
   create_table "schedule_rules", force: :cascade do |t|
     t.integer "instrument_id",    limit: nil,                                        null: false
@@ -784,6 +820,9 @@ ActiveRecord::Schema.define(version: 20160720200222) do
   add_foreign_key "reservations", "order_details", name: "res_ord_det_id_fk"
   add_foreign_key "reservations", "products", name: "reservations_product_id_fk"
   add_foreign_key "schedule_rules", "products", column: "instrument_id", name: "sys_c008573"
+  add_foreign_key "sanger_sequencing_batches", "facilities"
+  add_foreign_key "sanger_sequencing_samples", "sanger_sequencing_submissions", column: "submission_id", on_delete: :cascade
+  add_foreign_key "sanger_sequencing_submissions", "sanger_sequencing_batches", column: "batch_id", on_delete: :nullify
   add_foreign_key "schedules", "facilities", name: "fk_schedules_facility"
   add_foreign_key "statements", "facilities", name: "fk_statement_facilities"
   add_foreign_key "stored_files", "order_details", name: "fk_files_od"

@@ -12,4 +12,6 @@ Gem::Specification.new do |s|
   s.description = ""
 
   s.files = Dir["{app,config,lib,spec}/**/*"]
+
+  s.add_dependency "sanger_sequencing"
 end

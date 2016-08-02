@@ -1,0 +1,48 @@
+= content_for :head_content do
+  = stylesheet_link_tag "acgt/application"
+
+= simple_form_for @submission, html: { data: { fetch_ids_url: fetch_ids_sanger_sequencing_submission_path(@submission) } } do |f|
+  = hidden_field_tag :referer, params[:referer]
+  = hidden_field_tag :success_url, params[:success_url]
+  %table.table.table-striped.table-tight
+    %thead
+      %tr
+        %th{colspan: 7}
+          .text-center Template
+        %th.acgt__tableSpacer
+        %th{colspan: 2}
+          .text-center Primer
+      %tr{style: "border-top: none"}
+        %th= SangerSequencing::Sample.human_attribute_name(:customer_sample_id)
+        %th= SangerSequencing::Sample.human_attribute_name(:id)
+        %th= SangerSequencing::Sample.human_attribute_name(:template_concentration)
+        %th= SangerSequencing::Sample.human_attribute_name(:high_gc)
+        %th= SangerSequencing::Sample.human_attribute_name(:hair_pin)
+        %th= SangerSequencing::Sample.human_attribute_name(:template_type)
+        %th= SangerSequencing::Sample.human_attribute_name(:pcr_product_size)
+        %th.acgt__tableSpacer
+        %th= SangerSequencing::Sample.human_attribute_name(:primer_name)
+        %th= SangerSequencing::Sample.human_attribute_name(:primer_concentration)
+
+    %tbody
+      = f.nested_fields_for :samples, wrapper: false, class_name: "SangerSequencing::Sample", wrapper_tag: :tr do |sf|
+        %td
+          = sf.input :customer_sample_id, label: false, input_html: { value: sf.object.form_customer_sample_id, class: "js--customerSampleId acgt__customerSampleId" }
+          = sf.input :id, as: :hidden, input_html: { class: "js--sampleId" }
+        %td.js--sampleId= sf.object.id
+        %td= sf.input :template_concentration, as: :string, label: false, input_html: { class: "acgt__numericInput" }
+        %td= sf.input :high_gc, label: false
+        %td= sf.input :hair_pin, label: false
+        %td= sf.input :template_type, label: false, as: :select, collection: ["Plasmid", "PCR"], input_html: { class: "acgt__templateType" }
+        %td= sf.input :pcr_product_size, as: :string, label: false, input_html: { class: "acgt__numericInput" }
+        %td.acgt__tableSpacer
+        %td= sf.input :primer_name, label: false, input_html: { class: "acgt__primerName" }
+        %td= sf.input :primer_concentration, as: :string, label: false, input_html: { class: "acgt__numericInput" }
+
+        %td
+          = sf.remove_nested_fields_link text("views.sanger_sequencing.submissions.form.remove"), tabindex: -1
+          = sf.input :_destroy, as: :hidden
+    %tfoot
+      %td{colspan: 11}= f.add_nested_fields_link :samples, text("views.sanger_sequencing.submissions.form.add"), class: "btn btn-success"
+
+  = f.submit text("views.sanger_sequencing.submissions.form.submit"), class: "btn btn-primary"

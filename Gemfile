@@ -65,7 +65,7 @@ gem "oj", "~> 2.12.14"
 gem "rollbar", "~> 2.8.0"
 
 ## custom
-gem "acgt", "~> 0.0.1", path: "vendor/engines/acgt"
+
 gem "c2po", "~> 1.0.0", path: "vendor/engines/c2po"
 gem "dataprobe", "~> 1.0.0", path: "vendor/engines/dataprobe"
 gem "nu", "~> 1.0.0", path: "vendor/engines/nu"
@@ -74,7 +74,9 @@ gem "pmu", "~> 1.0.0", path: "vendor/engines/pmu"
 gem "jxml", "~> 1.0.0", path: "vendor/engines/jxml"
 gem "nu_cardconnect", "~> 0.0.1", path: "vendor/engines/nu_cardconnect"
 # gem "projects", "~> 0.0.1", path: "vendor/engines/projects"
-# gem "sanger_sequencing", "~> 0.0.1", path: "vendor/engines/sanger_sequencing"
+gem "sanger_sequencing", path: "vendor/engines/sanger_sequencing"
+# ACGT needs to be after sanger so that its views and locales take precedence
+gem "acgt", "~> 0.0.1", path: "vendor/engines/acgt"
 gem "split_accounts", "~> 0.0.1", path: "vendor/engines/split_accounts"
 gem "synaccess_connect", "0.2.2", github: "tablexi/synaccess"
 
