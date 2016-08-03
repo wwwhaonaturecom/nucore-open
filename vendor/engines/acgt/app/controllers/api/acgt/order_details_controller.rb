@@ -47,7 +47,7 @@ module Api
       end
 
       def date_from_param
-        params[:date].to_date
+        params[:date].try(:to_date) || Date.today
       end
 
     end
