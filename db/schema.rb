@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20160802202924) do
+ActiveRecord::Schema.define(version: 20160803182750) do
 
   create_table "account_users", force: :cascade do |t|
     t.integer  "account_id", limit: nil,                null: false
@@ -573,6 +573,7 @@ ActiveRecord::Schema.define(version: 20160802202924) do
     t.integer  "lock_window",                           precision: 38, default: 0,     null: false
     t.text     "training_request_contacts"
     t.boolean  "note_available_to_users",   limit: nil,                default: false, null: false
+    t.string   "acgt_service_type"
   end
 
   add_index "products", ["facility_account_id"], name: "i_products_facility_account_id", tablespace: "bc_nucore"

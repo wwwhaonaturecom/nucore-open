@@ -12,7 +12,7 @@ RSpec.describe Acgt::OrderDetailSerializer do
           ordered_at: "2015-12-01T10:30:00-06:00",
           purchased_for: { first_name: user.first_name, last_name: user.last_name, email: user.email },
           status: order_detail.order_status.name,
-          service_type: "premium",
+          service_type: "standard",
           note: order_detail.note.to_s,
         }
       end
@@ -24,7 +24,7 @@ RSpec.describe Acgt::OrderDetailSerializer do
       let(:order) { FactoryGirl.create(:purchased_order, product: service, ordered_at: ordered_at) }
       let(:order_detail) { order.order_details.first }
       let(:ordered_at) { DateTime.parse("2015-12-01T10:30:00-06:00") }
-      let(:service) { FactoryGirl.create(:setup_service) }
+      let(:service) { FactoryGirl.create(:setup_service, acgt_service_type: "standard") }
       let(:user) { order.user }
 
       context "when not requesting embedded samples" do

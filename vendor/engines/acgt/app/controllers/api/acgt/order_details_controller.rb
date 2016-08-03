@@ -21,10 +21,6 @@ module Api
 
       private
 
-      def facility
-        @facility ||= Facility.find_by(url_name: "zed") # TODO: temporarily restrict to Zed Test Facility
-      end
-
       def order_detail_as_hash
         ::Acgt::OrderDetailSerializer.new(@order_detail).to_h(with_samples: true)
       end
@@ -41,9 +37,10 @@ module Api
       end
 
       def load_order_details
+        # doing the pluck is significantly faster than letting oracle use a subquery
+        product_ids = Product.where.not(acgt_service_type: nil).pluck(:id)
         @order_details =
-          facility
-          .order_details # TODO: restrict to configured product_ids
+          OrderDetail.where(product: product_ids)
           .joins(:order)
           .where("orders.ordered_at >= ?", date_from_param.beginning_of_day)
           .where("orders.ordered_at <= ?", date_from_param.end_of_day)
