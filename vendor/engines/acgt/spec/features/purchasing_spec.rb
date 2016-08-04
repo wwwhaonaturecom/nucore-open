@@ -32,7 +32,7 @@ RSpec.describe "Purchasing a Sequencing service from ACGT", :aggregate_failures 
       click_link "Complete Online Order Form"
     end
 
-    it "saves the form with all the extra fields" do
+    def fill_in_first_row
       page.first(customer_id_selector).set("TEST123")
       page.first(input_selector("template_concentration")).set("12345")
       page.first(input_selector("high_gc")).set(true)
@@ -41,6 +41,10 @@ RSpec.describe "Purchasing a Sequencing service from ACGT", :aggregate_failures 
       page.first(input_selector("pcr_product_size")).set("543")
       page.first(input_selector("primer_name")).set("primer1")
       page.first(input_selector("primer_concentration")).set("963")
+    end
+
+    it "saves the form with all the extra fields" do
+      fill_in_first_row
       click_button "Save Submission"
 
       sample = SangerSequencing::Sample.find_by(customer_sample_id: "TEST123")
@@ -52,6 +56,49 @@ RSpec.describe "Purchasing a Sequencing service from ACGT", :aggregate_failures 
       expect(sample).to be_high_gc
       expect(sample).to be_hair_pin
       expect(SangerSequencing::Sample.count).to eq(5)
+    end
+
+    describe "filling in with the fill buttons", :js do
+      before do
+        fill_in_first_row
+        page.all(".js--sangerFillColumnFromFirst, .js--sangerCheckAll").each { |btn| btn.click }
+        click_button "Save Submission"
+      end
+
+      it "fills in all the fields with the first row's data" do
+        samples = SangerSequencing::Sample.all
+        expect(samples.map(&:template_concentration)).to all(eq(12345))
+        expect(samples).to all(be_high_gc)
+        expect(samples).to all(be_hair_pin)
+        expect(samples.map(&:template_type)).to all(eq("Plasmid"))
+        expect(samples.map(&:pcr_product_size)).to all(eq(543))
+        expect(samples.map(&:primer_name)).to all(eq("primer1"))
+        expect(samples.map(&:primer_concentration)).to all(eq(963))
+      end
+    end
+
+    describe "adding another row", :js do
+      let(:quantity) { 1 }
+
+      before do
+        fill_in_first_row
+        click_link "Add"
+        # wait until the new row is ready
+        expect(page).to have_css("#{customer_id_selector}:enabled", count: 2)
+        click_button "Save Submission"
+      end
+
+      it "fills in all the fields with the first row's data" do
+        samples = SangerSequencing::Sample.all
+        expect(samples.size).to eq(2)
+        expect(samples.map(&:template_concentration)).to all(eq(12345))
+        expect(samples).to all(be_high_gc)
+        expect(samples).to all(be_hair_pin)
+        expect(samples.map(&:template_type)).to all(eq("Plasmid"))
+        expect(samples.map(&:pcr_product_size)).to all(eq(543))
+        expect(samples.map(&:primer_name)).to all(eq("primer1"))
+        expect(samples.map(&:primer_concentration)).to all(eq(963))
+      end
     end
 
     describe "saving and returning to the form" do
