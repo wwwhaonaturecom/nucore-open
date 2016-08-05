@@ -40,7 +40,7 @@ module Api
         # doing the pluck is significantly faster than letting oracle use a subquery
         product_ids = Product.where.not(acgt_service_type: nil).pluck(:id)
         @order_details =
-          OrderDetail.where(product: product_ids)
+          ::OrderDetail.where(product: product_ids)
           .joins(:order)
           .where("orders.ordered_at >= ?", date_from_param.beginning_of_day)
           .where("orders.ordered_at <= ?", date_from_param.end_of_day)
