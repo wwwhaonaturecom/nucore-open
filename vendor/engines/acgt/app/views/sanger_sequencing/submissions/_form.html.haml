@@ -9,11 +9,11 @@
     %thead
       %tr
         %th{colspan: 7}
-          .text-center Template
+          .text-center= SangerSequencing::Sample.human_attribute_name(:template)
         %th.acgt__tableSpacer
         %th{colspan: 2}
-          .text-center Primer
-      %tr{style: "border-top: none"}
+          .text-center= SangerSequencing::Sample.human_attribute_name(:primer)
+      %tr
         %th
           = SangerSequencing::Sample.human_attribute_name(:customer_sample_id)
           .clearfix= acgt_clear_column_button(:customer_sample_id)
