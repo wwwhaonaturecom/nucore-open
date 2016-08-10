@@ -2,6 +2,18 @@ en:
   sanger_sequencing:
     route: "acgt"
 
+  views:
+    sanger_sequencing:
+      submissions:
+        form:
+          as_plate: Submit as a plate
+          as_individual: Submit as individual samples
+          fill_columns: "Fill by columns"
+          fill_rows: "Fill by rows"
+          template: Template
+          primer: Primer
+          position: Position
+
   activerecord:
     attributes:
       sanger_sequencing/sample:

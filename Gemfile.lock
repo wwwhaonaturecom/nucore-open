@@ -387,10 +387,9 @@ GEM
       ruby-rc4
       ttfunk
     pkg-config (1.1.7)
-    poltergeist (1.9.0)
+    poltergeist (1.10.0)
       capybara (~> 2.1)
       cliver (~> 0.3.1)
-      multi_json (~> 1.0)
       websocket-driver (>= 0.2.0)
     power_assert (0.3.0)
     powerpack (0.1.1)

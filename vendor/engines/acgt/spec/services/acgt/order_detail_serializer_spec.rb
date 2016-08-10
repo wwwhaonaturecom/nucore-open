@@ -43,7 +43,8 @@ RSpec.describe Acgt::OrderDetailSerializer do
             template_type: "plasmid",
             pcr_product_size: "20",
             primer_name: "t7_forward",
-            primer_concentration: "200")
+            primer_concentration: "200",
+            well_position: "A01")
         end
 
         let!(:sample2) do
@@ -55,13 +56,15 @@ RSpec.describe Acgt::OrderDetailSerializer do
             template_type: "pcr",
             pcr_product_size: "100",
             primer_name: "t7_reverse",
-            primer_concentration: "500")
+            primer_concentration: "500",
+            well_position: "A02")
         end
 
         let(:expected_samples) do # TODO: replace these hardcoded example values
         [
           {
             sample_id: sample1.id,
+            well_position: "A01",
             template: {
               name: "sample1",
               concentration: "50",
@@ -78,6 +81,7 @@ RSpec.describe Acgt::OrderDetailSerializer do
 
           {
             sample_id: sample2.id,
+            well_position: "A02",
             template: {
               name: "sample2",
               concentration: "20",

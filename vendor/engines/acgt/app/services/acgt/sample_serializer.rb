@@ -5,6 +5,7 @@ module Acgt
     def to_h
       {
         sample_id: id,
+        well_position: well_position,
         template: {
           name: customer_sample_id,
           concentration: template_concentration.to_s, # units are ng/uL according to the form

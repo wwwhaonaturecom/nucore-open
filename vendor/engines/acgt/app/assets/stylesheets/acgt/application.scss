@@ -15,6 +15,19 @@
   width: 1em;
 }
 
-th.acgt__tableSpacer {
+th.acgt__tableSpacer,
+th.acgt__noBorder {
   border: none;
+}
+
+.acgt__plateOptions {
+  text-align: right;
+}
+
+.acgt__sampleTable {
+  width: 100%;
+}
+
+.acgt__pcrProductSizeColumn {
+  width: 6em;
 }
