@@ -77,7 +77,7 @@ Nucore::Application.configure do
   # config.force_ssl = true
 
   config.middleware.use ExceptionNotification::Rack,
-                        ignored_exceptions: ["ActionController::UnknownHttpMethod"] + ExceptionNotifier.ignored_exceptions,
+                        ignore_exceptions: ["ActionController::UnknownHttpMethod"] + ExceptionNotifier.ignored_exceptions,
                         email: {
                           sender_address: Settings.email.exceptions.sender,
                           exception_recipients: Settings.email.exceptions.recipients,

@@ -85,7 +85,7 @@ Nucore::Application.configure do
   config.assets.precompile += %w( *.js ) # precompile all js files
 
   config.middleware.use ExceptionNotification::Rack,
-                        ignored_exceptions: ["ActionController::UnknownHttpMethod"] + ExceptionNotifier.ignored_exceptions,
+                        ignore_exceptions: ["ActionController::UnknownHttpMethod"] + ExceptionNotifier.ignored_exceptions,
                         email: {
                           sender_address: Settings.email.exceptions.sender,
                           exception_recipients: Settings.email.exceptions.recipients,
