@@ -44,6 +44,7 @@ module Api
           .joins(:order)
           .where("orders.ordered_at >= ?", date_from_param.beginning_of_day)
           .where("orders.ordered_at <= ?", date_from_param.end_of_day)
+          .order(:id)
       end
 
       def date_from_param

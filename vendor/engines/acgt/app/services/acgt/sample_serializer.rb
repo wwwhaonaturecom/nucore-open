@@ -5,6 +5,7 @@ module Acgt
     def to_h
       {
         sample_id: id,
+        well_plate_number: well_plate_number,
         well_position: well_position,
         template: {
           name: customer_sample_id,

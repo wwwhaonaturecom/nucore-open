@@ -8,14 +8,21 @@
       %caption= local_assigns[:caption]
     %thead
       %tr
-        %th{colspan: 7}
+        - if submission.plate_format?
+          %th
+          %th
+          %th.acgt__tableSpacer
+        %th{colspan: 6}
           .text-center= SangerSequencing::Sample.human_attribute_name(:template)
         %th.acgt__tableSpacer
         %th{colspan: 2}
           .text-center= SangerSequencing::Sample.human_attribute_name(:primer)
       %tr
+        - if submission.plate_format?
+          %th Plate #
+          %th Position
+          %th.acgt__tableSpacer
         %th= SangerSequencing::Sample.human_attribute_name(:customer_sample_id)
-        %th= SangerSequencing::Sample.human_attribute_name(:id)
         %th= SangerSequencing::Sample.human_attribute_name(:template_concentration)
         %th= SangerSequencing::Sample.human_attribute_name(:high_gc)
         %th= SangerSequencing::Sample.human_attribute_name(:hair_pin)
@@ -28,8 +35,11 @@
     %tbody
       - submission.samples.each do |sample|
         %tr
+          - if submission.plate_format?
+            %td= sample.well_plate_number
+            %td= sample.well_position
+            %td.acgt__tableSpacer
           %td= sample.customer_sample_id
-          %td= sample.id
           %td= sample.template_concentration
           %td= t_boolean(sample.high_gc) if sample.high_gc?
           %td= t_boolean(sample.hair_pin) if sample.hair_pin?

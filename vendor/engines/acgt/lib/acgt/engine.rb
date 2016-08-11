@@ -4,6 +4,7 @@ module Acgt
 
     config.to_prepare do
       SangerSequencing::SubmissionsController.send(:include, Acgt::SubmissionsControllerExtension)
+      SangerSequencing::Submission.send(:include, Acgt::SubmissionExtension)
     end
 
     initializer :append_migrations do |app|

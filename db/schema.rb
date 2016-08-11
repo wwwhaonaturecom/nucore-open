@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20160808202724) do
+ActiveRecord::Schema.define(version: 20160809184954) do
 
   create_table "account_users", force: :cascade do |t|
     t.integer  "account_id", limit: nil,                null: false
@@ -638,6 +638,7 @@ ActiveRecord::Schema.define(version: 20160808202724) do
     t.string   "primer_name"
     t.integer  "primer_concentration",               precision: 38
     t.string   "well_position"
+    t.integer  "well_plate_number",                  precision: 38
   end
 
   add_index "sanger_sequencing_samples", ["submission_id"], name: "i_san_seq_sam_sub_id"

@@ -14,10 +14,12 @@ describe "AcgtPlateMode", ->
 
       <div class='js--acgt__platePosition'>
         <span class='js--acgt__positionText' id='test-position1'></span>
+        <input type='hidden' class='js--acgt__plateNumber', id='test-input-plate-number1' />
         <input type='hidden' class='js--acgt__positionInput' id='test-input-position1' />
       </div>
       <div class='js--acgt__platePosition'>
         <span class='js--acgt__positionText' id='test-position2'></span>
+        <input type='hidden' class='js--acgt__plateNumber', id='test-input-plate-number1' />
         <input type='hidden' class='js--acgt__positionInput' id='test-input-position2' />
       </div>
     </form>
@@ -62,6 +64,21 @@ describe "AcgtPlateMode", ->
       it "has the correct fill order", ->
         expect($("#test-fill-order").val()).toEqual("rows_first")
 
+    describe "with more than 96 items", ->
+      beforeEach ->
+        for [1..95]
+          last = $(".js--acgt__platePosition").last()
+          newPosition = last.clone()
+          last.after(newPosition)
+        @plateMode.render()
+
+      it "has the correct plate order for the last item", ->
+        expect($(".js--acgt__positionInput").last().val()).toEqual("A01")
+        expect($(".js--acgt__plateNumber").last().val()).toEqual("2")
+
+      it "has the correct display for the first item", ->
+        expect("#test-position1").toContainText("Plate 1")
+
     describe "clicking the plate mode toggle", ->
       beforeEach ->
         $("#test-toggle").trigger("click")
@@ -74,8 +91,7 @@ describe "AcgtPlateMode", ->
         expect($("#test-toggle").text()).toEqual("Change to plate")
 
       it "clears out the plate position inputs", ->
-        expect("#test-input-position1").toHaveValue("")
-        expect("#test-input-position2").toHaveValue("")
+        expect($("#test-input-position1").val()).toEqual("")
 
   it "starting in individual mode", ->
     beforeEach ->

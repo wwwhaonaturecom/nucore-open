@@ -77,6 +77,8 @@ RSpec.describe "Purchasing a Sequencing service from ACGT", :aggregate_failures 
       expect(samples.map(&:primer_name)).to all(eq("primer1"))
       expect(samples.map(&:primer_concentration)).to all(eq(963))
       expect(SangerSequencing::Submission.last.well_plate_fill_order).to be_blank
+      expect(samples.map(&:well_plate_number)).to all(be_blank)
+      expect(samples.map(&:well_position)).to all(be_blank)
     end
   end
 
@@ -103,6 +105,7 @@ RSpec.describe "Purchasing a Sequencing service from ACGT", :aggregate_failures 
 
       # Saving
       click_button "Save Submission"
+      expect(SangerSequencing::Sample.pluck(:well_plate_number)).to eq([1, 1, 1])
       expect(SangerSequencing::Sample.pluck(:well_position)).to eq(["A01", "A02", "A03"])
       expect(SangerSequencing::Submission.last.well_plate_fill_order).to eq("rows_first")
     end

@@ -7,7 +7,7 @@
   = hidden_field_tag :success_url, params[:success_url]
   = f.input :well_plate_fill_order, as: :hidden, input_html: { class: "js--acgt__fillOrder" }
   .acgt__plateOptions
-    = link_to text("as_plate"), "#", data: { toggle_text: text("as_individual"), plate_mode: plate_format? }, class: "js--acgt__togglePlateMode"
+    = link_to text("as_plate"), "#", data: { toggle_text: text("as_individual"), plate_mode: @submission.plate_format? }, class: "js--acgt__togglePlateMode"
   .clearfix
 
   %table.table.table-striped.table-tight.acgt__sampleTable
@@ -54,7 +54,8 @@
       = f.nested_fields_for :samples, wrapper: false, class_name: "SangerSequencing::Sample", wrapper_tag: :tr do |sf|
         %td.js--acgt__platePosition
           %span.js--acgt__positionText
-          = sf.input :well_position, label: false, as: :hidden, input_html: { class: "js--acgt__positionInput" }
+          = sf.input :well_position, as: :hidden, input_html: { class: "js--acgt__positionInput" }
+          = sf.input :well_plate_number, label: false, as: :hidden, input_html: { class: "js--acgt__plateNumber" }
         %td
           = sf.input :customer_sample_id, label: false, input_html: { value: sf.object.form_customer_sample_id, class: "js--customerSampleId acgt__customerSampleId" }
           = sf.input :id, as: :hidden, input_html: { class: "js--sampleId" }

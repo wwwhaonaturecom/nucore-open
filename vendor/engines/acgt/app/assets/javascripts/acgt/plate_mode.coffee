@@ -46,13 +46,26 @@ class exports.AcgtPlateMode
     @_featureToggleLink().trigger("click") if @_featureToggleLink().data("plate-mode")
 
   _fillWellPlatePositions: =>
-    fillOrder = @_fillStrategies[@_fillStrategy].fillOrder()
+    @_fillVisibleWellPlatePositions()
+    @_positionElements().filter(":hidden").each (i, elem) =>
+      $(elem).find(".js--acgt__plateNumber, .js--acgt__positionInput").val("")
 
-    @_positionElements().each (i, elem) =>
-      # set to blank instead of disabling so that blank gets submitted
-      positionString = if @_plateMode then fillOrder[i % 96] else ""
-      $(elem).find(".js--acgt__positionText").text positionString
+  _fillVisibleWellPlatePositions: =>
+    fillOrder = @_fillStrategies[@_fillStrategy].fillOrder()
+    visible = @_positionElements().filter(":visible")
+    count = visible.length
+    visible.each (i, elem) =>
+      plateNumber = Math.floor(i / 96) + 1
+      $(elem).find(".js--acgt__plateNumber").val(plateNumber)
+
+      positionString = fillOrder[i % 96]
       $(elem).find(".js--acgt__positionInput").val(positionString)
+
+      # Only display the plate numbers if we go over 96
+      if count > 96
+        positionString = "Plate #{plateNumber} - #{positionString}"
+      $(elem).find(".js--acgt__positionText").text positionString
+
 
   _initFillStrategy: ->
     @_fillStrategy = @_setFillOrderInput().val() || Object.keys(@_fillStrategies)[0]
