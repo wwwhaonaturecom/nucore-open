@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20160804224838) do
+ActiveRecord::Schema.define(version: 20160808202724) do
 
   create_table "account_users", force: :cascade do |t|
     t.integer  "account_id", limit: nil,                null: false
@@ -647,6 +647,7 @@ ActiveRecord::Schema.define(version: 20160804224838) do
     t.datetime "created_at"
     t.datetime "updated_at"
     t.integer  "batch_id",        limit: nil
+    t.string   "well_plate_fill_order"
   end
 
   add_index "sanger_sequencing_submissions", ["order_detail_id"], name: "i_san_seq_sub_ord_det_id"

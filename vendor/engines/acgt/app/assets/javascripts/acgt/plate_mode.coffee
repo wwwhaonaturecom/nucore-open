@@ -9,13 +9,14 @@ class exports.AcgtPlateMode
 
     @_initToggles()
     @_initNestedFormFieldListener()
-    @_toggleStrategy()
+    @_initFillStrategy()
     @_initInPlateMode()
 
     @render()
 
   render: ->
     @_disablePlateFeaturesIfOff()
+    @_setFillOrder()
     @_fillWellPlatePositions()
 
   _initToggles: ->
@@ -45,7 +46,7 @@ class exports.AcgtPlateMode
     @_featureToggleLink().trigger("click") if @_featureToggleLink().data("plate-mode")
 
   _fillWellPlatePositions: =>
-    fillOrder = @_fillStrategy.fillOrder()
+    fillOrder = @_fillStrategies[@_fillStrategy].fillOrder()
 
     @_positionElements().each (i, elem) =>
       # set to blank instead of disabling so that blank gets submitted
@@ -53,16 +54,26 @@ class exports.AcgtPlateMode
       $(elem).find(".js--acgt__positionText").text positionString
       $(elem).find(".js--acgt__positionInput").val(positionString)
 
+  _initFillStrategy: ->
+    @_fillStrategy = @_setFillOrderInput().val() || Object.keys(@_fillStrategies)[0]
+
+  _fillStrategies:
+    "columns_first": new SangerSequencing.ColumnsFirstOrderingStrategy()
+    "rows_first": new SangerSequencing.RowsFirstOrderingStrategy()
+
   _toggleStrategy: ->
-    @_strategyToggle = !@_strategyToggle
-    if @_strategyToggle
-      @_fillStrategy = new SangerSequencing.ColumnsFirstOrderingStrategy()
-    else
-      @_fillStrategy = new SangerSequencing.RowsFirstOrderingStrategy()
+    @_fillStrategy = if @_fillStrategy == "columns_first" then "rows_first" else "columns_first"
     @render()
+
+  _setFillOrder: ->
+    mode = if @_plateMode then @_fillStrategy else ""
+    @_setFillOrderInput().val(mode)
 
   _disablePlateFeaturesIfOff: ->
     $(".js--acgt__plateModeOn, .js--acgt__platePosition").toggle(@_plateMode)
+
+  _setFillOrderInput: ->
+    $(".js--acgt__fillOrder")
 
   _featureToggleLink: ->
     $(".js--acgt__togglePlateMode")

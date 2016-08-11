@@ -5,6 +5,7 @@ describe "AcgtPlateMode", ->
 
   fixture.set "
     <form>
+      <input type='hidden' class='js--acgt__fillOrder' id='test-fill-order' value=''>
       <a href='#' data-toggle-text='Change to individual' data-plate-mode='' class='js--acgt__togglePlateMode' id='test-toggle'>Change to plate</a>
 
       <div class='js--acgt__plateModeOn' id='test-plateMode'></div>
@@ -41,6 +42,9 @@ describe "AcgtPlateMode", ->
       expect("#test-position2").toHaveText("B01")
       expect("#test-input-position2").toHaveValue("B01")
 
+    it "has the correct fill order", ->
+      expect($("#test-fill-order").val()).toEqual("columns_first")
+
     describe "clicking the row/column toggle", ->
       beforeEach ->
         $("#test-fill-toggle").trigger("click")
@@ -54,6 +58,9 @@ describe "AcgtPlateMode", ->
 
         expect("#test-position2").toHaveText("A02")
         expect("#test-input-position2").toHaveValue("A02")
+
+      it "has the correct fill order", ->
+        expect($("#test-fill-order").val()).toEqual("rows_first")
 
     describe "clicking the plate mode toggle", ->
       beforeEach ->
@@ -84,6 +91,9 @@ describe "AcgtPlateMode", ->
 
     it "has the correct toggle text", ->
       expect($("#test-toggle").text()).toEqual("Change to plate")
+
+    it "has a blank fill order", ->
+      expect($("#test-fill-order").val()).toEqual("")
 
     describe "clicking the plate mode toggle", ->
       beforeEach ->

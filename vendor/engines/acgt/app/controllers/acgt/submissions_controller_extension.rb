@@ -7,13 +7,14 @@ module Acgt
     included do
       skip_before_action :assert_sanger_enabled_for_facility
 
+      permitted_submission_params.concat [:well_plate_fill_order]
       permitted_sample_attributes.concat [:template_concentration, :high_gc, :hair_pin, :template_name, :pcr_product_size,
         :template_type, :primer_name, :primer_concentration, :well_position]
       helper_method :plate_format?
     end
 
     def plate_format?
-      @submission.samples.first.well_position?
+      @submission.well_plate_fill_order?
     end
 
   end

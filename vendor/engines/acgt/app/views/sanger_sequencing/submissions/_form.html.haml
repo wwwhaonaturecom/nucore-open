@@ -5,6 +5,7 @@
 = simple_form_for @submission, html: { data: { fetch_ids_url: fetch_ids_sanger_sequencing_submission_path(@submission) } } do |f|
   = hidden_field_tag :referer, params[:referer]
   = hidden_field_tag :success_url, params[:success_url]
+  = f.input :well_plate_fill_order, as: :hidden, input_html: { class: "js--acgt__fillOrder" }
   .acgt__plateOptions
     = link_to text("as_plate"), "#", data: { toggle_text: text("as_individual"), plate_mode: plate_format? }, class: "js--acgt__togglePlateMode"
   .clearfix
@@ -22,7 +23,7 @@
         %th.acgt__noBorder.js--acgt__plateModeOn
           = text("position")
           %br
-          = link_to text("fill_columns"), "#", data: { toggle_text: text("fill_rows") }, class: "js--acgt__togglePlateFillOrder js--acgt__plateModeOn btn btn-mini"
+          = link_to text("fill_rows"), "#", data: { toggle_text: text("fill_columns") }, class: "js--acgt__togglePlateFillOrder js--acgt__plateModeOn btn btn-mini"
         %th
           = SangerSequencing::Sample.human_attribute_name(:customer_sample_id)
           .clearfix= acgt_clear_column_button(:customer_sample_id)
