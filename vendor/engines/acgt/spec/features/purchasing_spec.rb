@@ -18,15 +18,15 @@ RSpec.describe "Purchasing a Sequencing service from ACGT", :aggregate_failures 
     ".nested_sanger_sequencing_submission_samples input[name*=#{field}]"
   end
 
-  def fill_in_first_row
-    page.first(customer_id_selector).set("TEST123")
-    page.first(input_selector("template_concentration")).set("12345")
-    page.first(input_selector("high_gc")).set(true)
-    page.first(input_selector("hair_pin")).set(true)
-    page.first("select[name*=template_type] option[value=Plasmid]").select_option
-    page.first(input_selector("pcr_product_size")).set("543")
-    page.first(input_selector("primer_name")).set("primer1")
-    page.first(input_selector("primer_concentration")).set("963")
+  def fill_in_row(customer_sample, row = 0)
+    page.all(customer_id_selector)[row].set("TEST123")
+    page.all(input_selector("template_concentration"))[row].set("12345")
+    page.all(input_selector("high_gc"))[row].set(true)
+    page.all(input_selector("hair_pin"))[row].set(true)
+    page.all("select[name*=template_type] option[value=Plasmid]")[row].select_option
+    page.all(input_selector("pcr_product_size"))[row].set("543")
+    page.all(input_selector("primer_name"))[row].set("primer1")
+    page.all(input_selector("primer_concentration"))[row].set("963")
   end
 
   let(:quantity) { 5 }
@@ -45,7 +45,11 @@ RSpec.describe "Purchasing a Sequencing service from ACGT", :aggregate_failures 
   end
 
   it "saves the form with all the extra fields" do
-    fill_in_first_row
+    fill_in_row("TEST123")
+    fill_in_row("TEST124", 1)
+    fill_in_row("TEST125", 2)
+    fill_in_row("TEST126", 3)
+    fill_in_row("TEST127", 4)
     click_button "Save Submission"
 
     sample = SangerSequencing::Sample.find_by(customer_sample_id: "TEST123")
@@ -62,7 +66,7 @@ RSpec.describe "Purchasing a Sequencing service from ACGT", :aggregate_failures 
 
   describe "filling in with the fill buttons", :js do
     before do
-      fill_in_first_row
+      fill_in_row("TEST123")
       page.all(".js--sangerFillColumnFromFirst, .js--sangerCheckAll").each { |btn| btn.click }
       click_button "Save Submission"
     end
@@ -87,6 +91,8 @@ RSpec.describe "Purchasing a Sequencing service from ACGT", :aggregate_failures 
     before { click_link "Submit as a plate" }
 
     it "supports the various plate mode features" do
+      fill_in_row("TEST123")
+      fill_in_row("TEST124", 1)
       # Starting place
       expect(page).to have_content("A01")
       expect(page).to have_content("B01")
@@ -103,6 +109,8 @@ RSpec.describe "Purchasing a Sequencing service from ACGT", :aggregate_failures 
       expect(page).to have_content("A02")
       expect(page).to have_content("A03")
 
+      fill_in_row("TEST125", 2)
+
       # Saving
       click_button "Save Submission"
       expect(SangerSequencing::Sample.pluck(:well_plate_number)).to eq([1, 1, 1])
@@ -115,7 +123,7 @@ RSpec.describe "Purchasing a Sequencing service from ACGT", :aggregate_failures 
     let(:quantity) { 1 }
 
     before do
-      fill_in_first_row
+      fill_in_row("TEST123")
       click_link "Add"
       # wait until the new row is ready
       expect(page).to have_css("#{customer_id_selector}:enabled", count: 2)
