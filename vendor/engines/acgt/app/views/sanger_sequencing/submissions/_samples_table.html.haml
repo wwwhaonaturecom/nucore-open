@@ -3,9 +3,9 @@
   = stylesheet_link_tag "acgt/application"
 
 %div
+  %p.text-center
+    %strong= text("caption", order_detail: submission.order_detail)
   %table.table.table-striped.table-tight
-    - if local_assigns[:caption]
-      %caption= local_assigns[:caption]
     %thead
       %tr
         - if submission.plate_format?

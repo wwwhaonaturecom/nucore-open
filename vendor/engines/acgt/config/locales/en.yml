@@ -4,6 +4,9 @@ en:
 
   views:
     sanger_sequencing:
+      orders:
+        receipt:
+          print: "" # intentionally left blank
       submissions:
         form:
           as_plate: Submit as a plate
@@ -13,6 +16,8 @@ en:
           template: Template
           primer: Primer
           position: Position
+        samples_table:
+          caption: "Please be sure to include your order number #%{order_detail} with your submission"
 
   activerecord:
     attributes:
