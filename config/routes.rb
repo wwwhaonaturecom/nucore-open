@@ -258,8 +258,6 @@ Nucore::Application.routes.draw do
       post "reconcile", to: 'facility_journals#reconcile'
     end
 
-    get "bulk_email", to: 'bulk_email#search'
-
     resources :price_groups do
       member do
         get "users"

@@ -65,7 +65,7 @@ gem "oj", "~> 2.12.14"
 gem "rollbar", "~> 2.8.0"
 
 ## custom
-
+gem "bulk_email", path: "vendor/engines/bulk_email"
 gem "c2po", "~> 1.0.0", path: "vendor/engines/c2po"
 gem "dataprobe", "~> 1.0.0", path: "vendor/engines/dataprobe"
 gem "nu", "~> 1.0.0", path: "vendor/engines/nu"
@@ -103,7 +103,7 @@ group :development, :test do
   gem "pry-rails",         "~> 0.3.2"
   gem "pry-byebug",        "~> 2.0.0"
   gem "quiet_assets"
-  gem "rspec-rails",       "~> 3.4.2"
+  gem "rspec-rails",       "~> 3.5.1"
   gem "rspec-activejob"
   gem "shoulda-matchers",  "~> 2.8.0", require: false
   gem "rspec-collection_matchers"
