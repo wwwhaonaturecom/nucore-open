@@ -1,4 +1,13 @@
 namespace :acgt do
+
+  desc "Query ACGT API and update statuses for OrderDetails"
+  task update_order_details: :environment do
+    Rails.logger = Logger.new(STDOUT)
+    Rails.logger.level = Logger::INFO
+    Acgt::OrderDetailStatusUpdater.update_all
+  end
+
+  desc "Create three services for ACGT products"
   task :create_services, [:url_name] => :environment do |_t, args|
     include Rails.application.routes.url_helpers
 

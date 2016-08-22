@@ -6,7 +6,7 @@ module Api
 
       respond_to :json
 
-      http_basic_authenticate_with name: "acgt", password: "TODO"
+      http_basic_authenticate_with name: Settings.acgt.nucore.username, password: Settings.acgt.nucore.password
 
       before_action :load_order_details, only: [:index]
       before_action :load_order_detail, only: [:show]
@@ -37,10 +37,8 @@ module Api
       end
 
       def load_order_details
-        # doing the pluck is significantly faster than letting oracle use a subquery
-        product_ids = Product.where.not(acgt_service_type: nil).pluck(:id)
         @order_details =
-          ::OrderDetail.where(product: product_ids)
+          ::Acgt.order_details
           .joins(:order)
           .where("orders.ordered_at >= ?", date_from_param.beginning_of_day)
           .where("orders.ordered_at <= ?", date_from_param.end_of_day)

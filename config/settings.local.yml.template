@@ -12,3 +12,12 @@
 #   path: ":class/:attachment/:id_partition/:style/:safe_filename"
 
 # rollbar: ROLLBAR_ACCESS_TOKEN
+
+acgt:
+  base_url: "https://www.acgtinc.com/core/K1TgVczxUo/"
+  api:
+    username: "nucore"
+    password: "password"
+  nucore:
+    username: "acgt"
+    password: "TODO"
