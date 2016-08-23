@@ -86,7 +86,7 @@ class OrderRowImporter
   private
 
   def account_number
-    @account_number ||= @row[HEADERS[:chart_string]].try(:strip)
+    @account_number ||= parse_field(:chart_string)
   end
 
   def add_product_to_order
@@ -108,16 +108,12 @@ class OrderRowImporter
     end
   end
 
-  def chart_string_field
-    @chart_string_field ||= @row[HEADERS[:chart_string]].try(:strip)
-  end
-
   def fulfillment_date
     @fulfillment_date ||= parse_usa_import_date(fulfillment_date_field)
   end
 
   def fulfillment_date_field
-    @fulfillment_date_field ||= @row[HEADERS[:fulfillment_date]].try(:strip)
+    @fulfillment_date_field ||= parse_field(:fulfillment_date)
   end
 
   def has_valid_headers?
@@ -131,7 +127,7 @@ class OrderRowImporter
   end
 
   def note
-    @note ||= @row[HEADERS[:notes]].try(:strip)
+    @note ||= parse_field(:notes)
   end
 
   def order
@@ -139,7 +135,7 @@ class OrderRowImporter
   end
 
   def order_date_field
-    @order_date_field ||= @row[HEADERS[:order_date]].try(:strip)
+    @order_date_field ||= parse_field(:order_date)
   end
 
   def product
@@ -152,7 +148,7 @@ class OrderRowImporter
   end
 
   def product_field
-    @product_field ||= @row[HEADERS[:product_name]].try(:strip)
+    @product_field ||= parse_field(:product_name)
   end
 
   def purchase_order!
@@ -168,7 +164,7 @@ class OrderRowImporter
   end
 
   def user_field
-    @user_field ||= @row[HEADERS[:user]].try(:strip)
+    @user_field ||= parse_field(:user)
   end
 
   def validate_account
@@ -227,6 +223,10 @@ class OrderRowImporter
 
   def validate_user
     add_error("Invalid username or email") if user.blank?
+  end
+
+  def parse_field(field)
+    @row[HEADERS[field]].to_s.encode("UTF-8").strip
   end
 
 end

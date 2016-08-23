@@ -143,6 +143,8 @@ class OrderImport < ActiveRecord::Base
     begin
       row_importer = OrderRowImporter.new(row, self)
       row_importer.import
+    rescue Encoding::UndefinedConversionError => e
+      row_importer.add_error("Invalid encoding error. Please ensure the file is saved as UTF-8")
     rescue => e
       ActiveSupport::Notifications.instrument("background_error",
                                               exception: e, information: "Failed to bulk import: #{upload_file_path}")
