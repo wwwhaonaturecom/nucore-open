@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20160809184954) do
+ActiveRecord::Schema.define(version: 20160812230426) do
 
   create_table "account_users", force: :cascade do |t|
     t.integer  "account_id", limit: nil,                null: false
@@ -614,16 +614,27 @@ ActiveRecord::Schema.define(version: 20160809184954) do
   add_index "reservations", ["order_detail_id"], name: "res_od_uniq_fk", unique: true
   add_index "reservations", ["product_id", "reserve_start_at"], name: "i_res_pro_id_res_sta_at", tablespace: "bc_nucore"
   add_index "reservations", ["product_id"], name: "i_reservations_product_id", tablespace: "bc_nucore"
+  create_table "sanger_seq_product_groups", force: :cascade do |t|
+    t.integer  "product_id", limit: nil, null: false
+    t.string   "group",                  null: false
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  add_index "sanger_seq_product_groups", ["product_id"], name: "i_san_seq_pro_gro_pro_id", unique: true
+
   create_table "sanger_sequencing_batches", force: :cascade do |t|
     t.integer  "created_by_id",   limit: nil
     t.text     "well_plates_raw"
     t.datetime "created_at"
     t.datetime "updated_at"
     t.integer  "facility_id",     limit: nil
+    t.string   "group"
   end
 
   add_index "sanger_sequencing_batches", ["created_by_id"], name: "i_san_seq_bat_cre_by_id"
   add_index "sanger_sequencing_batches", ["facility_id"], name: "i_san_seq_bat_fac_id"
+  add_index "sanger_sequencing_batches", ["group"], name: "i_san_seq_bat_gro"
 
   create_table "sanger_sequencing_samples", force: :cascade do |t|
     t.integer  "submission_id",          limit: nil,                                null: false
@@ -824,6 +835,7 @@ ActiveRecord::Schema.define(version: 20160809184954) do
   add_foreign_key "reservations", "order_details", name: "res_ord_det_id_fk"
   add_foreign_key "reservations", "products", name: "reservations_product_id_fk"
   add_foreign_key "schedule_rules", "products", column: "instrument_id", name: "sys_c008573"
+  add_foreign_key "sanger_seq_product_groups", "products"
   add_foreign_key "sanger_sequencing_batches", "facilities"
   add_foreign_key "sanger_sequencing_samples", "sanger_sequencing_submissions", column: "submission_id", on_delete: :cascade
   add_foreign_key "sanger_sequencing_submissions", "sanger_sequencing_batches", column: "batch_id", on_delete: :nullify
