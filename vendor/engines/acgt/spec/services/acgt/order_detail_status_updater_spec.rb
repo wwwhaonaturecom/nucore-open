@@ -5,10 +5,23 @@ RSpec.describe Acgt::OrderDetailStatusUpdater do
 
   describe "#update" do
     let(:order_detail) { instance_double("OrderDetail", new?: true, complete?: false) }
-    before { allow(Acgt::OrderDetailApi).to receive(:find).and_return(api) }
+    let(:api) { Acgt::OrderDetailApi.new(order_detail) }
+    before do
+      allow(api).to receive(:status) { status }
+      allow(Acgt::OrderDetailApi).to receive(:find).and_return(api)
+    end
 
-    describe "when it is submitted" do
-      let(:api) { instance_double("Acgt::OrderDetailApi", in_process?: true, complete?: false) }
+    describe "when it is processing" do
+      let(:status) { "submit" }
+
+      it "changes the status to In Process" do
+        expect(order_detail).not_to receive(:change_status!)
+        updater.update
+      end
+    end
+
+    describe "when it is processing" do
+      let(:status) { "package received" }
 
       it "changes the status to In Process" do
         expect(order_detail).to receive(:change_status!).with(OrderStatus.inprocess.first)
@@ -23,7 +36,7 @@ RSpec.describe Acgt::OrderDetailStatusUpdater do
     end
 
     describe "when it is completed" do
-      let(:api) { instance_double("Acgt::OrderDetailApi", complete?: true, in_process?: false) }
+      let(:status) { "completed" }
 
       it "changes the status to complete" do
         expect(order_detail).to receive(:change_status!).with(OrderStatus.complete_status)
@@ -33,6 +46,15 @@ RSpec.describe Acgt::OrderDetailStatusUpdater do
       it "does not try to change if already complete" do
         expect(order_detail).to receive(:complete?) { true }
         expect(order_detail).not_to receive(:change_status!)
+        updater.update
+      end
+    end
+
+    describe "when it is canceled" do
+      let(:status) { "cancel" }
+
+      it "changes the status to canceled" do
+        expect(order_detail).to receive(:change_status!).with(OrderStatus.canceled_status)
         updater.update
       end
     end

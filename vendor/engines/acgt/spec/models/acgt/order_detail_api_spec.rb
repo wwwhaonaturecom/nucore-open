@@ -32,8 +32,39 @@ RSpec.describe Acgt::OrderDetailApi do
         }.to_json
       end
 
-      it "is submitted" do
+      it "is is new" do
+        expect(api).to be_new
+
+        expect(api).not_to be_in_process
+        expect(api).not_to be_complete
+        expect(api).not_to be_canceled
+      end
+    end
+
+    describe "when the response says it is Repeated" do
+      let(:json) do
+        {
+          order: [
+            {
+              orderid: "301172-349110",
+              orderstatus: "Repeated",
+              orderdate: "2016-05-20T14:38:23Z",
+              completeddate: "",
+              firstname: "Kwang",
+              lastname: "Shin",
+              emailaddress: "kwang_shin@acgtinc.com",
+              samplenumber: "0"
+            }
+          ]
+        }.to_json
+      end
+
+      it "is is in process" do
         expect(api).to be_in_process
+
+        expect(api).not_to be_new
+        expect(api).not_to be_complete
+        expect(api).not_to be_canceled
       end
     end
 
@@ -57,7 +88,37 @@ RSpec.describe Acgt::OrderDetailApi do
 
       it "is completed" do
         expect(api).to be_complete
+
+        expect(api).not_to be_new
         expect(api).not_to be_in_process
+        expect(api).not_to be_canceled
+      end
+    end
+
+    describe "when it is canceled" do
+      let(:json) do
+        {
+          order: [
+            {
+              orderid: "301172-349110",
+              orderstatus: "Cancel",
+              orderdate: "2016-05-20T14:38:23Z",
+              completeddate: "",
+              firstname: "Kwang",
+              lastname: "Shin",
+              emailaddress: "kwang_shin@acgtinc.com",
+              samplenumber: "0"
+            }
+          ]
+        }.to_json
+      end
+
+      it "is canceled" do
+        expect(api).to be_canceled
+
+        expect(api).not_to be_new
+        expect(api).not_to be_in_process
+        expect(api).not_to be_complete
       end
     end
 

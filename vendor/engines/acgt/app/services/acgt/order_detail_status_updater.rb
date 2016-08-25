@@ -29,6 +29,8 @@ module Acgt
         order_detail.change_status!(OrderStatus.inprocess.first)
       elsif !order_detail.complete? && api.complete?
         order_detail.change_status!(OrderStatus.complete_status)
+      elsif api.canceled?
+        order_detail.change_status!(OrderStatus.canceled_status)
       end
     end
 

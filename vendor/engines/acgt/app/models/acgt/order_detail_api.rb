@@ -4,6 +4,8 @@ module Acgt
 
   class OrderDetailApi
 
+    VALID_STATUSES = %w(Submit Package\ Received Repeated Completed Cancel)
+
     attr_reader :order_detail_id
 
     def initialize(order_detail_id)
@@ -16,12 +18,27 @@ module Acgt
       api
     end
 
+    def new?
+      status == "submit"
+    end
+
     def complete?
       status == "completed"
     end
 
     def in_process?
-      status != "new" && !complete?
+      !new? && !complete? && !canceled?
+    end
+
+    def canceled?
+      status == "cancel"
+    end
+
+    def status
+      # TODO: Consider removing this later once everything is stabilized and we
+      # know they're giving us the values they said they would.
+      raise "Invalid Status from ACGT" unless order["orderstatus"].in?(VALID_STATUSES)
+      order["orderstatus"].downcase
     end
 
     def orders
@@ -33,10 +50,6 @@ module Acgt
     end
 
     private
-
-    def status
-      order["orderstatus"].downcase
-    end
 
     def response
       return @response if @response
