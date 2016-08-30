@@ -41,6 +41,10 @@ module Acgt
       order["orderstatus"].downcase
     end
 
+    def sample_count
+      order["samplenumber"].to_i
+    end
+
     def orders
       response.with_indifferent_access["order"]
     end

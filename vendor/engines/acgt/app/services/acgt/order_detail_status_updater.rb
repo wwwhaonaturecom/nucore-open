@@ -28,6 +28,7 @@ module Acgt
       if order_detail.new? && api.in_process?
         order_detail.change_status!(OrderStatus.inprocess.first)
       elsif !order_detail.complete? && api.complete?
+        order_detail.quantity = api.sample_count
         order_detail.change_status!(OrderStatus.complete_status)
       elsif api.canceled?
         order_detail.change_status!(OrderStatus.canceled_status)

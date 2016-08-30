@@ -26,7 +26,7 @@ RSpec.describe Acgt::OrderDetailApi do
               firstname: "Kwang",
               lastname: "Shin",
               emailaddress: "kwang_shin@acgtinc.com",
-              samplenumber: "0"
+              samplenumber: "12"
             }
           ]
         }.to_json
@@ -38,6 +38,10 @@ RSpec.describe Acgt::OrderDetailApi do
         expect(api).not_to be_in_process
         expect(api).not_to be_complete
         expect(api).not_to be_canceled
+      end
+
+      it "gets the sample count" do
+        expect(api.sample_count).to eq(12)
       end
     end
 
@@ -53,7 +57,7 @@ RSpec.describe Acgt::OrderDetailApi do
               firstname: "Kwang",
               lastname: "Shin",
               emailaddress: "kwang_shin@acgtinc.com",
-              samplenumber: "0"
+              samplenumber: "1"
             }
           ]
         }.to_json
@@ -80,7 +84,7 @@ RSpec.describe Acgt::OrderDetailApi do
               firstname: "Kwang",
               lastname: "Shin",
               emailaddress: "kwang_shin@acgtinc.com",
-              samplenumber: "0"
+              samplenumber: "1"
             }
           ]
         }.to_json
@@ -107,7 +111,7 @@ RSpec.describe Acgt::OrderDetailApi do
               firstname: "Kwang",
               lastname: "Shin",
               emailaddress: "kwang_shin@acgtinc.com",
-              samplenumber: "0"
+              samplenumber: "1"
             }
           ]
         }.to_json

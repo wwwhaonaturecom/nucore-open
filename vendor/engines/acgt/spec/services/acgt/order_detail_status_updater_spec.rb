@@ -4,7 +4,7 @@ RSpec.describe Acgt::OrderDetailStatusUpdater do
   subject(:updater) { described_class.new(order_detail) }
 
   describe "#update" do
-    let(:order_detail) { instance_double("OrderDetail", new?: true, complete?: false) }
+    let(:order_detail) { instance_double("OrderDetail", new?: true, complete?: false, :quantity= => nil) }
     let(:api) { Acgt::OrderDetailApi.new(order_detail) }
     before do
       allow(api).to receive(:status) { status }
@@ -37,8 +37,10 @@ RSpec.describe Acgt::OrderDetailStatusUpdater do
 
     describe "when it is completed" do
       let(:status) { "completed" }
+      before { allow(api).to receive(:sample_count).and_return(4) }
 
       it "changes the status to complete" do
+        expect(order_detail).to receive(:quantity=).with(4)
         expect(order_detail).to receive(:change_status!).with(OrderStatus.complete_status)
         updater.update
       end
