@@ -29,6 +29,8 @@
           .clearfix= acgt_clear_column_button(:customer_sample_id)
         %th
           = SangerSequencing::Sample.human_attribute_name(:template_concentration)
+          %br
+          = text("units.template_concentration")
           = acgt_fill_clear_links(:template_concentration)
         %th
           = SangerSequencing::Sample.human_attribute_name(:high_gc)
@@ -41,6 +43,8 @@
           = acgt_fill_clear_links(:template_type)
         %th.acgt__pcrProductSizeColumn
           = SangerSequencing::Sample.human_attribute_name(:pcr_product_size)
+          %br
+          = text("units.pcr_product_size")
           = acgt_fill_clear_links(:pcr_product_size)
         %th.acgt__tableSpacer
         %th
@@ -48,6 +52,8 @@
           = acgt_fill_clear_links(:primer_name)
         %th
           = SangerSequencing::Sample.human_attribute_name(:primer_concentration)
+          %br
+          = text("units.primer_concentration")
           = acgt_fill_clear_links(:primer_concentration)
         %th.acgt__noBorder
     %tbody
@@ -75,3 +81,4 @@
       %td{colspan: 11}= f.add_nested_fields_link :samples, text("views.sanger_sequencing.submissions.form.add"), class: "btn btn-success"
 
   = f.submit text("views.sanger_sequencing.submissions.form.submit"), class: "btn btn-primary"
+  = link_to text("shared.cancel"), :cart

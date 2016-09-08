@@ -8,6 +8,7 @@ module Acgt
       validates :template_type, :primer_name, presence: true, on: :update
       validates :pcr_product_size, presence: true, if: :pcr?, on: :update
       validates :template_concentration, :primer_concentration, presence: true, if: :standard_product?, on: :update
+      validates :customer_sample_id, :primer_name, length: { maximum: 10 }
     end
 
     private

@@ -16,6 +16,10 @@ en:
           template: Template
           primer: Primer
           position: Position
+          units:
+            template_concentration: (ng/ul)
+            pcr_product_size: (base pairs)
+            primer_concentration: (pmol/ul)
         samples_table:
           caption: "Please be sure to include your order number #%{order_detail} with your submission"
 
