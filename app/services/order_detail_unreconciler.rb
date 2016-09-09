@@ -12,6 +12,7 @@ class OrderDetailUnreconciler
   def perform!(dry_run = false)
     OrderDetail.transaction do
       @order_details.find_each do |od|
+        Rails.logger.info "Unreconciling Order #{od}"
         od.update(state: "complete", order_status: complete_status, reconciled_at: nil)
       end
       raise ActiveRecord::Rollback if dry_run
