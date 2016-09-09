@@ -232,14 +232,14 @@ ActiveRecord::Schema.define(version: 20160908162845) do
   end
 
   create_table "notifications", force: :cascade do |t|
-    t.string    "type",                     null: false
-    t.integer   "subject_id",   limit: nil, null: false
-    t.string    "subject_type",             null: false
-    t.integer   "user_id",      limit: nil, null: false
-    t.string    "notice",                   null: false
-    t.timestamp "dismissed_at", limit: 6
-    t.datetime  "created_at",               null: false
-    t.datetime  "updated_at",               null: false
+    t.string   "type",                     null: false
+    t.integer  "subject_id",   limit: nil, null: false
+    t.string   "subject_type",             null: false
+    t.integer  "user_id",      limit: nil, null: false
+    t.string   "notice",                   null: false
+    t.datetime "dismissed_at"
+    t.datetime "created_at",               null: false
+    t.datetime "updated_at",               null: false
   end
 
   add_index "notifications", ["user_id"], name: "index_notifications_on_user_id", tablespace: "bc_nucore"
@@ -372,15 +372,15 @@ ActiveRecord::Schema.define(version: 20160908162845) do
   add_index "order_details", ["statement_id"], name: "i_order_details_statement_id", tablespace: "bc_nucore"
 
   create_table "order_imports", force: :cascade do |t|
-    t.integer   "upload_file_id", limit: nil,                                null: false
-    t.integer   "error_file_id",  limit: nil
-    t.boolean   "fail_on_error",  limit: nil,                default: true
-    t.boolean   "send_receipts",  limit: nil,                default: false
-    t.integer   "created_by",                 precision: 38,                 null: false
-    t.datetime  "created_at",                                                null: false
-    t.datetime  "updated_at",                                                null: false
-    t.integer   "facility_id",    limit: nil
-    t.timestamp "processed_at",   limit: 6
+    t.integer  "upload_file_id", limit: nil,                                null: false
+    t.integer  "error_file_id",  limit: nil
+    t.boolean  "fail_on_error",  limit: nil,                default: true
+    t.boolean  "send_receipts",  limit: nil,                default: false
+    t.integer  "created_by",                 precision: 38,                 null: false
+    t.datetime "created_at",                                                null: false
+    t.datetime "updated_at",                                                null: false
+    t.integer  "facility_id",    limit: nil
+    t.datetime "processed_at"
   end
 
   add_index "order_imports", ["created_by"], name: "i_order_imports_created_by", tablespace: "bc_nucore"
@@ -757,23 +757,23 @@ ActiveRecord::Schema.define(version: 20160908162845) do
   add_index "user_roles", ["user_id", "facility_id", "role"], name: "i_use_rol_use_id_fac_id_rol", tablespace: "bc_nucore"
 
   create_table "users", force: :cascade do |t|
-    t.string    "username",                                                     null: false
-    t.string    "first_name"
-    t.string    "last_name"
-    t.string    "email",                                           default: "", null: false
-    t.string    "encrypted_password"
-    t.string    "password_salt"
-    t.integer   "sign_in_count",                    precision: 38, default: 0
-    t.datetime  "current_sign_in_at"
-    t.datetime  "last_sign_in_at"
-    t.string    "current_sign_in_ip"
-    t.string    "last_sign_in_ip"
-    t.datetime  "created_at",                                                   null: false
-    t.datetime  "updated_at",                                                   null: false
-    t.string    "reset_password_token"
-    t.datetime  "reset_password_sent_at"
-    t.integer   "uid",                              precision: 38
-    t.timestamp "deactivated_at",         limit: 6
+    t.string   "username",                                           null: false
+    t.string   "first_name"
+    t.string   "last_name"
+    t.string   "email",                                 default: "", null: false
+    t.string   "encrypted_password"
+    t.string   "password_salt"
+    t.integer  "sign_in_count",          precision: 38, default: 0
+    t.datetime "current_sign_in_at"
+    t.datetime "last_sign_in_at"
+    t.string   "current_sign_in_ip"
+    t.string   "last_sign_in_ip"
+    t.datetime "created_at",                                         null: false
+    t.datetime "updated_at",                                         null: false
+    t.string   "reset_password_token"
+    t.datetime "reset_password_sent_at"
+    t.integer  "uid",                    precision: 38
+    t.datetime "deactivated_at"
   end
 
   add_index "users", ["email"], name: "index_users_on_email", unique: true, tablespace: "bc_nucore"
