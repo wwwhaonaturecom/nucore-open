@@ -240,4 +240,16 @@ namespace :nu do
       account.update_attributes(expires_at: validator.latest_expiration)
     end
   end
+
+  task unreconcile_order_details_132310: :environment do
+    Rails.logger = Logger.new(STDOUT)
+    Rails.logger.level = Logger::INFO
+
+    order_details = Facility.find_by(url_name: "anessimcenter")
+      .order_details
+      .where(fulfilled_at: Time.local(2015, 6, 26)..Time.local(2016, 9, 1))
+      .reconciled
+
+    OrderDetailUnreconciler.new(order_details).perform!
+  end
 end
