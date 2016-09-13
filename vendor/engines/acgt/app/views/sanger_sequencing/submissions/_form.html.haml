@@ -63,7 +63,7 @@
           = sf.input :well_position, as: :hidden, input_html: { class: "js--acgt__positionInput" }
           = sf.input :well_plate_number, label: false, as: :hidden, input_html: { class: "js--acgt__plateNumber" }
         %td
-          = sf.input :customer_sample_id, label: false, input_html: { value: sf.object.form_customer_sample_id, class: "js--customerSampleId acgt__customerSampleId" }
+          = sf.input :customer_sample_id, label: false, input_html: { class: "js--templateName acgt__customerSampleId" }
           = sf.input :id, as: :hidden, input_html: { class: "js--sampleId" }
         %td= sf.input :template_concentration, as: :string, label: false, input_html: { class: "acgt__numericInput" }
         %td= sf.input :high_gc, label: false

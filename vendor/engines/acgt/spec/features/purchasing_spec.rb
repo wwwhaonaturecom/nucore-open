@@ -19,7 +19,7 @@ RSpec.describe "Purchasing a Sequencing service from ACGT", :aggregate_failures 
   end
 
   def fill_in_row(customer_sample, row = 0)
-    page.all(customer_id_selector)[row].set("TEST123")
+    page.all(customer_id_selector)[row].set(customer_sample)
     page.all(input_selector("template_concentration"))[row].set("12345")
     page.all(input_selector("high_gc"))[row].set(true)
     page.all(input_selector("hair_pin"))[row].set(true)
@@ -45,15 +45,13 @@ RSpec.describe "Purchasing a Sequencing service from ACGT", :aggregate_failures 
   end
 
   it "saves the form with all the extra fields" do
-    fill_in_row("TEST123")
-    fill_in_row("TEST124", 1)
-    fill_in_row("TEST125", 2)
-    fill_in_row("TEST126", 3)
-    fill_in_row("TEST127", 4)
+    5.times do |i|
+      fill_in_row("TEST12#{i}", i)
+    end
     click_button "Save Submission"
 
-    sample = SangerSequencing::Sample.find_by(customer_sample_id: "TEST123")
-    expect(sample.template_concentration).to eq(12345)
+    sample = SangerSequencing::Sample.find_by!(customer_sample_id: "TEST120")
+    expect(sample.template_concentration).to eq(12_345)
     expect(sample.template_type).to eq("Plasmid")
     expect(sample.pcr_product_size).to eq(543)
     expect(sample.primer_name).to eq("primer1")
@@ -66,14 +64,17 @@ RSpec.describe "Purchasing a Sequencing service from ACGT", :aggregate_failures 
 
   describe "filling in with the fill buttons", :js do
     before do
-      fill_in_row("TEST123")
-      page.all(".js--sangerFillColumnFromFirst, .js--sangerCheckAll").each { |btn| btn.click }
+      5.times do |i|
+        fill_in_row("TEST123#{i}", i)
+      end
+
+      page.all(".js--sangerFillColumnFromFirst, .js--sangerCheckAll").each(&:click)
       click_button "Save Submission"
     end
 
     it "fills in all the fields with the first row's data" do
       samples = SangerSequencing::Sample.all
-      expect(samples.map(&:template_concentration)).to all(eq(12345))
+      expect(samples.map(&:template_concentration)).to all(eq(12_345))
       expect(samples).to all(be_high_gc)
       expect(samples).to all(be_hair_pin)
       expect(samples.map(&:template_type)).to all(eq("Plasmid"))
@@ -114,7 +115,7 @@ RSpec.describe "Purchasing a Sequencing service from ACGT", :aggregate_failures 
       # Saving
       click_button "Save Submission"
       expect(SangerSequencing::Sample.pluck(:well_plate_number)).to eq([1, 1, 1])
-      expect(SangerSequencing::Sample.pluck(:well_position)).to eq(["A01", "A02", "A03"])
+      expect(SangerSequencing::Sample.pluck(:well_position)).to eq(%w(A01 A02 A03))
       expect(SangerSequencing::Submission.last.well_plate_fill_order).to eq("rows_first")
     end
   end
@@ -133,7 +134,7 @@ RSpec.describe "Purchasing a Sequencing service from ACGT", :aggregate_failures 
     it "fills in all the fields with the first row's data" do
       samples = SangerSequencing::Sample.all
       expect(samples.size).to eq(2)
-      expect(samples.map(&:template_concentration)).to all(eq(12345))
+      expect(samples.map(&:template_concentration)).to all(eq(12_345))
       expect(samples).to all(be_high_gc)
       expect(samples).to all(be_hair_pin)
       expect(samples.map(&:template_type)).to all(eq("Plasmid"))
