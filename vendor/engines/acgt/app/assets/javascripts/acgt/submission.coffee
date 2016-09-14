@@ -26,7 +26,7 @@ $ ->
 
     copyValuesFromLastRow: (evt) =>
       $previousRow = $(evt.target).prev()
-      $(evt.target).find("input:not(.js--customerSampleId):not(:hidden), select").each (i, elem) =>
+      $(evt.target).find("input:not(.js--templateName):not(:hidden), select").each (i, elem) =>
         fieldName = elem.name.match(/\[(\w+)\]$/)[1]
         # This uses a wildcard match, so be careful if any field is a substring
         # of another field name
