@@ -29,7 +29,7 @@ class User < ActiveRecord::Base
   has_many :user_roles, dependent: :destroy
   has_many :facilities, through: :user_roles
   has_many :training_requests, dependent: :destroy
-
+  has_many :stored_files, through: :order_details, class_name: "StoredFile"
   validates_presence_of :username, :first_name, :last_name
   validates :email, presence: true, email_format: true
   validates_uniqueness_of :username, :email
@@ -56,7 +56,7 @@ class User < ActiveRecord::Base
   end
 
   def self.sort_last_first
-    order(:last_name, :first_name)
+    order("LOWER(users.last_name), LOWER(users.first_name)")
   end
 
   # finds all user role mappings for a this user in a facility
@@ -109,15 +109,10 @@ class User < ActiveRecord::Base
   end
 
   # Find the users for a facility
-  # TODO: move this to facility?
   def self.find_users_by_facility(facility)
-    find_by_sql(<<-SQL)
-      SELECT u.*
-      FROM #{User.table_name} u
-      LEFT JOIN #{UserRole.table_name} ur ON u.id=ur.user_id
-      WHERE ur.facility_id = #{facility.id}
-      ORDER BY LOWER(ur.role), LOWER(u.last_name), LOWER(u.first_name)
-    SQL
+    facility
+      .users
+      .sort_last_first
   end
 
   #

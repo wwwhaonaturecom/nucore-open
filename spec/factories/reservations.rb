@@ -1,10 +1,26 @@
 FactoryGirl.define do
   factory :reservation do
+    transient do
+      duration nil
+    end
+
+    after(:build) do |reservation, evaluator|
+      if evaluator.duration.present? && reservation.reserve_start_at.present?
+        reservation.reserve_end_at = reservation.reserve_start_at + evaluator.duration
+      end
+    end
+
     reserve_start_at { Time.zone.parse("#{Date.today} 10:00:00") + 1.day }
     reserve_end_at { reserve_start_at + 1.hour }
 
     trait :canceled do
       canceled_at { 1.minute.ago }
+    end
+
+    trait :inprocess do
+      after(:create) do |reservation|
+        reservation.order_detail.to_inprocess
+      end
     end
 
     trait :yesterday do
@@ -16,7 +32,7 @@ FactoryGirl.define do
     end
 
     trait :later_today do
-      reserve_start_at { Time.now + 2.hours }
+      reserve_start_at { 2.hours.from_now }
     end
 
     trait :running do
@@ -38,6 +54,22 @@ FactoryGirl.define do
 
     trait :tomorrow do
       reserve_start_at { 1.day.from_now }
+    end
+  end
+
+  factory :admin_reservation, class: AdminReservation, parent: :reservation do
+    order_detail nil
+  end
+
+  factory :offline_reservation, class: OfflineReservation, parent: :reservation do
+    admin_note "Out of order"
+    category "out_of_order"
+    order_detail nil
+
+    OfflineReservation::CATEGORIES.each do |category_label|
+      trait category_label.to_sym do
+        category category_label
+      end
     end
   end
 

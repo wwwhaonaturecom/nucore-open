@@ -4,7 +4,7 @@ require "product_shared_examples"
 RSpec.describe Instrument do
   it_should_behave_like "ReservationProduct", :instrument
 
-  let(:facility) { create :facility }
+  let(:facility) { FactoryGirl.create(:setup_facility) }
   let(:facility_account) { facility.facility_accounts.create attributes_for(:facility_account) }
   subject(:instrument) { build :instrument, facility: facility, facility_account: facility_account }
 
@@ -103,48 +103,51 @@ RSpec.describe Instrument do
   it { is_expected.to validate_inclusion_of(:reserve_interval).in_array Instrument::RESERVE_INTERVALS }
 
   describe "shared schedules" do
-    context "default schedule" do
-      it "should create a default schedule" do
-        @instrument = FactoryGirl.build(:instrument,
-                                        facility: facility,
-                                        facility_account: facility_account,
-                                        schedule: nil)
-        expect(@instrument.schedule).to be_nil
-        expect(@instrument.save).to be true
-        expect(@instrument.schedule).to be
-      end
+    subject(:instrument) do
+      FactoryGirl.build(:instrument,
+                        facility: facility,
+                        facility_account: facility_account,
+                        schedule: schedule)
+    end
 
-      it "should not create a new schedule when defined" do
-        @schedule = FactoryGirl.create(:schedule, facility: facility)
-        @instrument = FactoryGirl.build(:instrument,
-                                        facility: facility,
-                                        facility_account: facility_account,
-                                        schedule: @schedule)
-        expect(@instrument.schedule).to be
-        expect(@instrument.save).to be true
-        expect(@instrument.schedule).to eq(@schedule)
+    context "when no schedule is defined" do
+      let(:schedule) { nil }
+
+      it "creates a default schedule", :aggregate_failures do
+        expect { instrument.save! }.to change(instrument, :schedule).from(nil)
       end
     end
 
-    describe "schedule_sharing?" do
-      context "one instrument" do
-        before :each do
-          @facility = FactoryGirl.create(:setup_facility)
-          @instrument = FactoryGirl.create(:setup_instrument, facility: @facility)
+    context "when a schedule is defined" do
+      let(:schedule) { FactoryGirl.create(:schedule, facility: facility) }
+
+      it "does not create a new schedule" do
+        expect { instrument.save! }
+          .not_to change(instrument, :schedule).from(schedule)
+      end
+    end
+
+    describe "#schedule_sharing?" do
+      let!(:instrument1) { FactoryGirl.create(:setup_instrument) }
+      let!(:instrument2) { FactoryGirl.create(:setup_instrument, facility: facility, schedule: schedule2) }
+
+      context "when the instruments use different schedules" do
+        let(:schedule2) { nil }
+
+        it "does not consider the instruments to be sharing", :aggregate_failures do
+          expect(instrument1).not_to be_schedule_sharing
+          expect(instrument2).not_to be_schedule_sharing
+          expect(instrument1.schedule).not_to eq(instrument2.schedule)
         end
+      end
 
-        it "should not be sharing" do
-          expect(@instrument).not_to be_schedule_sharing
-        end
+      context "when the instruments use the same schedule" do
+        let(:schedule2) { instrument1.schedule }
 
-        context "two instruments" do
-          before :each do
-            @instrument2 = FactoryGirl.create(:setup_instrument, facility: @facility, schedule: @instrument.schedule)
-          end
-
-          it "should be sharing" do
-            expect(@instrument).to be_schedule_sharing
-          end
+        it "considers the instruments to be sharing", :aggregate_failures do
+          expect(instrument1).to be_schedule_sharing
+          expect(instrument2).to be_schedule_sharing
+          expect(instrument1.schedule).to eq(instrument2.schedule)
         end
       end
     end
@@ -388,7 +391,10 @@ RSpec.describe Instrument do
     it "should allow 1 hour reservations between 9 and 5, using duration_value, duration_unit virtual attribute" do
       # 9 am - 10 am
       @start        = Time.zone.now.end_of_day + 1.second + 9.hours
-      @reservation1 = @instrument.reservations.create(reserve_start_at: @start, duration_value: 60, duration_unit: "minutes")
+      @reservation1 = @instrument.reservations.create(reserve_start_at: @start,
+                                                      duration_value: 60,
+                                                      duration_unit: "minutes",
+                                                      split_times: true)
       assert @reservation1.valid?
       assert_equal 60, @reservation1.reload.duration_mins
     end
@@ -396,18 +402,28 @@ RSpec.describe Instrument do
     it "should not allow overlapping reservations between 9 and 5" do
       # 10 am - 11 am
       @start        = Time.zone.now.end_of_day + 1.second + 10.hours
-      @reservation1 = @instrument.reservations.create(reserve_start_at: @start, reserve_end_at: @start + 1.hour)
+      @reservation1 = @instrument.reservations.create(reserve_start_at: @start,
+                                                      reserve_end_at: @start + 1.hour,
+                                                      split_times: true)
       assert @reservation1.valid?
       # not allow 10 am - 11 am
-      @reservation2 = @instrument.reservations.create(reserve_start_at: @start, reserve_end_at: @start + 1.hour)
+      @reservation2 = @instrument.reservations.create(reserve_start_at: @start,
+                                                      reserve_end_at: @start + 1.hour,
+                                                      split_times: true)
       expect(@reservation2.errors[:base]).not_to be_empty
       # not allow 9:30 am - 10:30 am
-      @reservation2 = @instrument.reservations.create(reserve_start_at: @start - 30.minutes, reserve_end_at: @start + 30.minutes)
+      @reservation2 = @instrument.reservations.create(reserve_start_at: @start - 30.minutes,
+                                                      reserve_end_at: @start + 30.minutes,
+                                                      split_times: true)
       expect(@reservation2.errors[:base]).not_to be_empty
       # not allow 9:30 am - 10:30 am, using reserve_start_date, reserve_start_hour, reserve_start_min, reserve_start_meridian
-      @options      = { reserve_start_date: @start.to_s, reserve_start_hour: "9", reserve_start_min: "30",
-                        reserve_start_meridian: "am", duration_value: "60", duration_unit: "minutes" }
-      @reservation2 = @instrument.reservations.create(@options)
+      @reservation2 = @instrument.reservations.create(reserve_start_date: @start.to_s,
+                                                      reserve_start_hour: "9",
+                                                      reserve_start_min: "30",
+                                                      reserve_start_meridian: "am",
+                                                      duration_value: "60",
+                                                      duration_unit: "minutes",
+                                                      split_times: true)
       expect(@reservation2.errors[:base]).not_to be_empty
       # not allow 9:30 am - 11:30 am
       @reservation2 = @instrument.reservations.create(reserve_start_at: @start - 30.minutes, reserve_end_at: @start + 90.minutes)
@@ -500,7 +516,10 @@ RSpec.describe Instrument do
     it "should find next available reservation with pending reservations" do
       # add reservation for tomorrow morning at 9 am
       @start        = Time.zone.now.end_of_day + 1.second + 9.hours
-      @reservation1 = @instrument.reservations.create(reserve_start_at: @start, duration_value: 60, duration_unit: "minutes")
+      @reservation1 = @instrument.reservations.create(reserve_start_at: @start,
+                                                      duration_value: 60,
+                                                      duration_unit: "minutes",
+                                                      split_times: true)
       assert @reservation1.valid?
       # find next reservation after 12 am tomorrow at 10 am tomorrow
       @next_reservation = @instrument.next_available_reservation(after = Time.zone.now.end_of_day + 1.second)
@@ -773,6 +792,63 @@ RSpec.describe Instrument do
             it { is_expected.to be_available }
           end
         end
+      end
+    end
+  end
+
+  describe "#online!" do
+    before { instrument.save! }
+
+    context "when the instrument is offline" do
+      let!(:offline_reservation) do
+        instrument
+          .offline_reservations
+          .create!(
+            admin_note: "Down",
+            category: "out_of_order",
+            reserve_start_at: 1.day.ago,
+          )
+      end
+
+      it "switches the instrument to be online" do
+        expect { instrument.online! }
+          .to change { instrument.online? }.from(false).to(true)
+          .and change { offline_reservation.reload.reserve_end_at }.from(nil)
+      end
+    end
+
+    context "when the instrument is online" do
+      it "remains online" do
+        expect { instrument.online! }
+          .not_to change(instrument, :online?).from(true)
+      end
+    end
+  end
+
+  describe "#offline? and #online?" do
+    before { instrument.save! }
+
+    context "when an offline reservation does not exist" do
+      it "is online", :aggregate_failures do
+        is_expected.to be_online
+        is_expected.not_to be_offline
+      end
+    end
+
+    context "when an offline reservation exists", :aggregate_failures do
+      let!(:offline_reservation) do
+        instrument
+          .offline_reservations
+          .create!(
+            admin_note: "Down",
+            category: "out_of_order",
+            reserve_start_at: 1.day.ago,
+          )
+      end
+
+      it "is offline", :aggregate_failures do
+        is_expected.to be_offline
+        is_expected.not_to be_online
       end
     end
   end

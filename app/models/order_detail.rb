@@ -50,6 +50,7 @@ class OrderDetail < ActiveRecord::Base
   has_many   :journal_rows, inverse_of: :order_detail
   has_many   :notifications, as: :subject, dependent: :destroy
   has_many   :stored_files, dependent: :destroy
+  has_many   :sample_results_files, -> { sample_result }, class_name: "StoredFile"
 
   delegate :edit_url, to: :external_service_receiver, allow_nil: true
   delegate :invoice_number, to: :statement, prefix: true
@@ -186,15 +187,6 @@ class OrderDetail < ActiveRecord::Base
       .where("order_details.state NOT IN('canceled', 'reconciled')")
   end
 
-  def self.unreconciled_accounts(facility, account_type)
-    joins(:order, :account)
-      .select("DISTINCT(order_details.account_id) AS account_id")
-      .where("orders.facility_id" => facility.id)
-      .where("accounts.type" => account_type)
-      .where("order_details.state" => "complete")
-      .where("statement_id IS NOT NULL")
-  end
-
   scope :in_review, lambda { |facility|
     all.joins(:product)
       .where(products: { facility_id: facility.id })
@@ -285,8 +277,7 @@ class OrderDetail < ActiveRecord::Base
 
   scope :statemented, lambda { |facility|
     joins(:order)
-      .order(created_at: :desc)
-      .where("orders.facility_id" => facility.id)
+      .where(orders: { facility_id: facility.id })
       .where.not(statement_id: nil)
   }
 
@@ -462,6 +453,10 @@ class OrderDetail < ActiveRecord::Base
   # OrderDetail#to_complete
   def complete!
     change_status!(OrderStatus.complete_status)
+  end
+
+  def force_complete!
+    update(state: "complete", order_status: OrderStatus.complete_status)
   end
 
   def backdate_to_complete!(event_time = Time.zone.now)

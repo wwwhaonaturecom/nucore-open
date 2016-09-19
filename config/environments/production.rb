@@ -42,7 +42,9 @@ Nucore::Application.configure do
   # Disable delivery errors, bad email addresses will be ignored
   config.action_mailer.raise_delivery_errors = false
   config.action_mailer.delivery_method       = :smtp
-  config.action_mailer.default_url_options   = { host: "nucore.northwestern.edu", protocol: "https" }
+  Rails.application.routes.default_url_options =
+    config.action_mailer.default_url_options   = { host: "nucore.northwestern.edu", protocol: "https" }
+
   config.action_mailer.smtp_settings         = {
     address: "smtprelay.northwestern.edu",
     port: 25,
@@ -75,6 +77,7 @@ Nucore::Application.configure do
   # config.force_ssl = true
 
   config.middleware.use ExceptionNotification::Rack,
+                        ignore_exceptions: ["ActionController::UnknownHttpMethod"] + ExceptionNotifier.ignored_exceptions,
                         email: {
                           sender_address: Settings.email.exceptions.sender,
                           exception_recipients: Settings.email.exceptions.recipients,

@@ -20,6 +20,10 @@ Dir[Rails.root.join("spec/support/**/*.rb")].each { |f| require f }
 
 RSpec.configure do |config|
 
+  # rspec-rails by default excludes stack traces from within vendor Lots of our
+  # engines are under vendor, so we don't want to exclude them
+  config.backtrace_exclusion_patterns.delete(%r{vendor/})
+
   config.use_transactional_fixtures = true
 
   require "capybara/poltergeist"
@@ -63,8 +67,6 @@ RSpec.configure do |config|
     # initialize price groups
     @nupg = PriceGroup.find_or_create_by(name: Settings.price_group.name.base, is_internal: true, display_order: 1)
     @nupg.save(validate: false)
-    @ccpg = PriceGroup.find_or_create_by(name: Settings.price_group.name.cancer_center, is_internal: true, display_order: 2)
-    @ccpg.save(validate: false)
     @epg = PriceGroup.find_or_create_by(name: Settings.price_group.name.external, is_internal: false, display_order: 3)
     @epg.save(validate: false)
 
@@ -104,6 +106,9 @@ RSpec.configure do |config|
   config.after type: :feature do
     Warden.test_reset!
   end
+
+  require "rspec/active_job"
+  config.include(RSpec::ActiveJob)
 
 end
 

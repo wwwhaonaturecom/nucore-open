@@ -1,0 +1,37 @@
+en:
+  sanger_sequencing:
+    route: "acgt"
+
+  views:
+    sanger_sequencing:
+      orders:
+        receipt:
+          print: "" # intentionally left blank
+      submissions:
+        form:
+          as_plate: Submit as a plate
+          as_individual: Submit as individual samples
+          fill_columns: "Fill by columns"
+          fill_rows: "Fill by rows"
+          template: Template
+          primer: Primer
+          position: Position
+          units:
+            template_concentration: (ng/ul)
+            pcr_product_size: (base pairs)
+            primer_concentration: (pmol/ul)
+        samples_table:
+          caption: "Please be sure to include your order number #%{order_detail} with your submission"
+
+  activerecord:
+    attributes:
+      sanger_sequencing/sample:
+        template: Template
+        template_concentration: Concentration
+        high_gc: High GC
+        hair_pin: Hair Pin
+        template_type: Type
+        pcr_product_size: Size of PCR Product
+        primer: Primer
+        primer_name: Name
+        primer_concentration: Concentration

@@ -9,6 +9,10 @@ class StoredFile < ActiveRecord::Base
   validates_presence_of   :product_id,      if: ->(o) { o.file_type == "info" || o.file_type == "template" }
   validates_presence_of   :order_detail_id, if: ->(o) { o.file_type == "template_result" || o.file_type == "sample_result" }
   validates_inclusion_of  :file_type, in: %w(info template template_result sample_result import_error import_upload)
+  validates :name, uniqueness: { scope: :order_detail_id }, if: :order_detail_id?
+
+  delegate :user, to: :order_detail
+  delegate :sample_result?, :template_result?, to: :type_inquirer
 
   scope :import_error, -> { where(file_type: "import_error") }
   scope :import_upload, -> { where(file_type: "import_upload") }
@@ -29,6 +33,12 @@ class StoredFile < ActiveRecord::Base
   def swf_uploaded_data=(data)
     data.content_type = MIME::Types.type_for(data.original_filename).first.to_s
     self.file = data
+  end
+
+  private
+
+  def type_inquirer
+    ActiveSupport::StringInquirer.new(file_type)
   end
 
 end

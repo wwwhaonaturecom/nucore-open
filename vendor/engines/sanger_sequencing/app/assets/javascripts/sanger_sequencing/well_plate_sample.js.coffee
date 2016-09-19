@@ -1,27 +1,46 @@
 class SangerSequencing.Sample
   constructor: (@attributes) -> undefined
 
-  toString: ->
+  customerSampleId: ->
     @attributes.customer_sample_id
 
-  submission_id: ->
+  displayId: ->
+    @attributes.id
+
+  submissionId: ->
     @attributes.submission_id
 
   id: ->
     @attributes.id
 
   class @Blank
-    toString: ->
+    submissionId: ->
       ""
-    submission_id: ->
+    customerSampleId: ->
+      ""
+    displayId: ->
       ""
     id: ->
       ""
 
-  class @Reserved
-    toString: ->
+  # Treated as blank in the backend, but displays like reserved
+  class @ReservedButUnused
+    submissionId: ->
+      ""
+    customerSampleId: ->
       "reserved"
-    submission_id: ->
+    displayId: ->
       ""
     id: ->
       ""
+
+
+  class @Reserved
+    submissionId: ->
+      ""
+    customerSampleId: ->
+      "reserved"
+    displayId: ->
+      ""
+    id: ->
+      "reserved"

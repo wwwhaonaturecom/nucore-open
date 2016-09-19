@@ -4,7 +4,8 @@ module Reservations::Validations
 
   included do
     validates_uniqueness_of :order_detail_id, allow_nil: true
-    validates_presence_of :product_id, :reserve_start_at, :reserve_end_at
+    validates :product_id, :reserve_start_at, presence: true
+    validates :reserve_end_at, presence: true, if: :end_at_required?
     validate :does_not_conflict_with_other_reservation,
              :instrument_is_available_to_reserve,
              :satisfies_minimum_length,
@@ -20,6 +21,14 @@ module Reservations::Validations
 
     validate :starts_before_ends
     validate :duration_is_interval
+
+    validates :category,
+              inclusion: { in: -> (r) { r.class::CATEGORIES }, allow_blank: false },
+              if: -> (r) { r.class.const_defined?(:CATEGORIES) }
+
+    validates :category,
+              absence: true,
+              unless: -> (r) { r.class.const_defined?(:CATEGORIES) }
   end
 
   # Validation Methods

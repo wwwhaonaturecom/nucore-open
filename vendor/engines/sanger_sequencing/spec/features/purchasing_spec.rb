@@ -14,14 +14,10 @@ RSpec.describe "Purchasing a Sanger Sequencing service", :aggregate_failures do
     FactoryGirl.create(:account_price_group_member, account: account, price_group: price_policy.price_group)
   end
 
-  before do
-    login_as user
-  end
-
-  describe "submission form" do
+  shared_examples_for "purchasing a sanger product and filling out the form" do
     let(:quantity) { 5 }
     let(:customer_id_selector) { ".nested_sanger_sequencing_submission_samples input[type=text]" }
-    let(:cart_quantity_selector) { ".edit_order input[type=text]" }
+    let(:cart_quantity_selector) { ".edit_order input[name^=quantity]" }
     before do
       visit facility_service_path(facility, service)
       click_link "Add to cart"
@@ -93,20 +89,6 @@ RSpec.describe "Purchasing a Sanger Sequencing service", :aggregate_failures do
           expect(page.first(customer_id_selector).value).to be_blank
           expect(SangerSequencing::Sample.pluck(:customer_sample_id)).not_to include("")
         end
-
-        it "deletes blanks from the end" do
-          page.all(customer_id_selector).last.set("")
-          click_button "Save Submission"
-
-          expect(SangerSequencing::Sample.count).to eq(4)
-        end
-
-        it "does not save if they are all blank" do
-          page.all(customer_id_selector).each { |textbox| textbox.set("") }
-          click_button "Save Submission"
-
-          expect(page).to have_content("You must have at least one sample")
-        end
       end
 
       describe "and more samples were created in another page" do
@@ -135,6 +117,7 @@ RSpec.describe "Purchasing a Sanger Sequencing service", :aggregate_failures do
 
       describe "after purchasing" do
         before do
+          page.first(customer_id_selector).set("TEST123")
           click_button "Save Submission"
           click_button "Purchase"
           expect(Order.first).to be_purchased
@@ -147,12 +130,36 @@ RSpec.describe "Purchasing a Sanger Sequencing service", :aggregate_failures do
           visit edit_sanger_sequencing_submission_path(SangerSequencing::Submission.last)
           expect(page.status_code).to eq(404)
         end
+
+        it "renders the sample ID on the receipt" do
+          expect(page).to have_content "Receipt"
+          expect(page).to have_content "TEST123"
+        end
       end
     end
   end
 
+  describe "as a normal user" do
+    before do
+      login_as user
+    end
+
+    it_behaves_like "purchasing a sanger product and filling out the form"
+  end
+
+  describe "while acting as another user" do
+    let(:admin) { FactoryGirl.create(:user, :administrator) }
+    before do
+      login_as admin
+      visit facility_user_switch_to_path(facility, user)
+    end
+
+    it_behaves_like "purchasing a sanger product and filling out the form"
+  end
+
   describe "when the facility does not have sanger enabled" do
     before do
+      login_as user
       facility.update_attributes(sanger_sequencing_enabled: false)
       visit facility_service_path(facility, service)
       click_link "Add to cart"

@@ -90,19 +90,21 @@ en:
 
   shared:
     cancel: Cancel
+    create: Create
     confirm_message: Are you sure?
     delete: Delete
     edit: Edit
     not_applicable: N/A
     remove: Remove
     save: Save
-    create: Create
     select_all: Select All
     select_none: Select None
+    upload: Upload
     unassigned: Unassigned
     footer:
       copyright_html: "&copy; Copyright 2010&ndash;%{to_date} Northwestern University"
       logo_alt: "Northwestern Logo"
+      logo_file: "logo.jpg"
     problem_order_details:
       actual_usage_missing: Actual Usage Missing
       assign_price_policies: Assign Price Policies
@@ -512,6 +514,19 @@ en:
         price_policy: "* Clicking 'Save' will attempt to estimate the cost by quantity"
         default: "* Changing the quantity will automatically update the price fields"
 
+  offline_reservations:
+    categories:
+      out_of_order: Out of Order
+      maintenance: Maintenance
+      operator_not_available: Operator not Available
+      instrument_not_available: Instrument not Available
+      other: Other
+
+    edit:
+      update: Update the note
+    new:
+      mark_offline: Take instrument offline
+
   order_management:
     order_details:
       edit:
@@ -674,6 +689,7 @@ en:
         view:
           order_form: "View Order Form"
           order_file: "View Order File"
+          zip: "Download all as zip..."
       submit:
         dispute: "Dispute Purchase"
       th:
@@ -904,25 +920,7 @@ en:
         users: "Number of Users"
         accounts: "Number of Payment Sources"
 
-  bulk_email:
-    title: Bulk Email
-    search_type:
-      customers: Customers
-      account_owners: Account Owners
-      customers_and_account_owners: Customers and Account Owners
-      authorized_users: Authorized Users
-    dates:
-      label: Orders or Reservations
-      start: Starting
-      end: Ending
-    no_results: No users found
-    export_html: Export
-
   file_uploads:
-    widget:
-      error_loading: Please enable Javascript and install Adobe Flash Player.
-      start: Start Upload
-      clear_queue: Clear Queue
     sample_result:
       title: Results Files
       count: "%{count} Results Files"
@@ -971,6 +969,7 @@ en:
       date_start: Start Date
       date_end: End Date
       auto_cancel_name: 'Auto Cancel'
+      total: Total
     export:
       export: Export
       raw: Export Raw
@@ -1045,12 +1044,28 @@ en:
         max_res: "Maximum Reservation Minutes"
         cancel_hours: "Minimum Cancelation Hours"
         cancel_mins: "Automatic Cancelation Minutes"
+    offline:
+      note: Instrument is down
+      notice: |
+        This instrument is currently down.
+        Contact the !facility_downcase! for more information.
+        You may place reservations, but if the instrument is still down at your
+        scheduled time they will be canceled at no charge.
+
     public_schedule:
       title: Schedule
       place_reservation: Place Reservation
       icon: Public Schedule
       available: Available
-      in-use: In Use
+      unavailable: Unavailable
+    schedule:
+      administrative_reservations: Administrative Reservations
+      add_admin_reservation: Add Admin Reservation
+      bring_instrument_online: Bring Instrument Online
+      instrument_is_offline: This instrument is currently offline
+      mark_instrument_offline: Mark Instrument Offline
+      no_upcoming_admin_reservations: There are no upcoming administrative reservations.
+      reservations_calendar: Reservations Calendar
 
     instrument_fields:
       show_details: "Show reservation details (name, email, etc) on schedule"

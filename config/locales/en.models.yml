@@ -45,6 +45,7 @@ en:
         incorrect: "is incorrect"
         bad_payment_source_format: "must be in format %{pattern_format}"
         subsidy_greater_than_cost: "cannot be greater than the Usage cost"
+        already_in_queue: Only one file may be in process at a time
         # Append your own errors here or at the model/attributes scope.
       full_messages:
         format: "%{attribute} %{message}"
@@ -75,6 +76,10 @@ en:
             base:
               conflict: The reservation conflicts with another reservation.
               conflict_in_cart: The reservation conflicts with another reservation in your cart. Please purchase or remove it then continue.
+        stored_file:
+          attributes:
+            name:
+              taken: "Filename already exists for this order"
         account_user:
           attributes:
             user_id:
@@ -105,6 +110,9 @@ en:
       account_user:
         one: Account User
         other: Account Users
+      admin_reservation:
+        one: Admin Reservation
+        other: Admin Reservations
       bundle:
         one: Bundle
         other: Bundles
@@ -126,6 +134,9 @@ en:
       nufs_account:
         one: Chart String
         other: Chart Strings
+      offline_reservation:
+        one: Offline Reservation
+        other: Offline Reservations
       reservation:
         one: Reservation
         other: Reservations
@@ -266,7 +277,9 @@ en:
         auto_logout: Auto-Relay Shutoff?
         auto_logout_minutes: Auto-Relay Shutoff After X Minutes
       reservation:
+        admin_note: Admin Note
         base: '' #handled by actual messages
+        category: Category
         to_s: Reservation
         reserve_to_s: Reservation
         reserve_start_date: Reserve Start
@@ -278,6 +291,7 @@ en:
         canceled_by_user: Canceled By
         canceled_by: Canceled By
         canceled_at: Canceled At
+        type: Type
       statement:
         id: "Invoice #"
         created_by: Sent By

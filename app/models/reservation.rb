@@ -21,7 +21,7 @@ class Reservation < ActiveRecord::Base
 
   # Represents a resevation time that is unavailable, but is not an admin reservation
   # Used by timeline view
-  attr_accessor     :blackout
+  attr_accessor :blackout
 
   # used for overriding certain restrictions
   attr_accessor :reserved_by_admin
@@ -42,32 +42,27 @@ class Reservation < ActiveRecord::Base
   # Scopes
   #####
 
+  scope :non_user, -> { where(type: %w(AdminReservation OfflineReservation)) }
+
   def self.active
     not_canceled
+      .user
       .where(orders: { state: ["purchased", nil] })
       .joins_order
   end
+
+  scope :ends_in_the_future, lambda {
+    where("reserve_end_at IS NULL OR reserve_end_at > ?", Time.current)
+  }
 
   def self.joins_order
     joins("LEFT JOIN order_details ON order_details.id = reservations.order_detail_id")
       .joins("LEFT JOIN orders ON orders.id = order_details.order_id")
   end
 
-  def self.admin
-    where(order_detail_id: nil)
-  end
-
-  def self.not_canceled
-    where(canceled_at: nil)
-  end
-
-  def self.not_started
-    where(actual_start_at: nil)
-  end
-
-  def self.not_ended
-    where(actual_end_at: nil)
-  end
+  scope :not_canceled, -> { where(canceled_at: nil) }
+  scope :not_started, -> { where(actual_start_at: nil) }
+  scope :not_ended, -> { where(actual_end_at: nil) }
 
   def self.not_this_reservation(reservation)
     if reservation.id
@@ -76,6 +71,8 @@ class Reservation < ActiveRecord::Base
       all
     end
   end
+
+  scope :ongoing, -> { not_ended.where("actual_start_at <= ?", Time.current) }
 
   def self.today
     for_date(Time.zone.now)
@@ -118,8 +115,25 @@ class Reservation < ActiveRecord::Base
     where("actual_start_at IS NOT NULL AND actual_end_at IS NULL")
   end
 
+  def self.upcoming_offline(start_at_limit)
+    user
+      .where(product_id: OfflineReservation.current.pluck(:product_id))
+      .not_canceled
+      .not_ended
+      .merge(OrderDetail.purchased)
+      .joins(:order_detail)
+      .where(order_details: { state: %w(new inprocess), problem: false })
+      .where("reserve_start_at <= ?", start_at_limit)
+  end
+
+  scope :user, -> { where(type: nil) }
+
   # Instance Methods
   #####
+
+  def end_at_required?
+    true
+  end
 
   def start_reservation!
     product.schedule.products.map(&:started_reservations).flatten.each(&:complete!)
@@ -165,6 +179,10 @@ class Reservation < ActiveRecord::Base
     order.nil? && !blackout?
   end
 
+  def admin_removable?
+    true
+  end
+
   def blackout?
     blackout.present?
   end
@@ -172,15 +190,15 @@ class Reservation < ActiveRecord::Base
   def can_start_early?
     return false unless in_grace_period?
     # no other reservation ongoing; no res between now and reserve_start;
-    where = <<-SQL
-      reserve_start_at > ?
-      AND reserve_start_at < ?
-      AND actual_start_at IS NULL
-      AND reservations.product_id = ?
-      AND (order_detail_id IS NULL OR order_details.state = 'new' OR order_details.state = 'inprocess')
-    SQL
 
-    Reservation.joins(:order_detail).where(where, Time.zone.now, reserve_start_at, product_id).first.nil?
+    Reservation
+      .not_started
+      .where("reserve_start_at > :now", now: Time.current)
+      .where("reserve_start_at < :reserve_start_at", reserve_start_at: reserve_start_at)
+      .where(product_id: product_id)
+      .joins(:order_detail)
+      .where("order_detail_id IS NULL OR order_details.state IN ('new', 'inprocess')")
+      .none?
   end
 
   def canceled?

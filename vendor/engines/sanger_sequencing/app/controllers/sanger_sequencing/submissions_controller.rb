@@ -14,6 +14,16 @@ module SangerSequencing
     before_action :prevent_after_purchase, except: [:show]
     before_action :assert_sanger_enabled_for_facility
 
+    rescue_from CanCan::AccessDenied, with: :redirect_to_admin
+
+    def self.permitted_sample_attributes
+      @permitted_sample_attributes ||= [:id, :customer_sample_id, :_destroy]
+    end
+
+    def self.permitted_submission_params
+      @permitted_submission_params ||= []
+    end
+
     def new
       clean_samples
       @submission.create_samples!(params[:quantity]) if @submission.samples.empty?
@@ -31,7 +41,6 @@ module SangerSequencing
       if SubmissionUpdater.new(@submission).update_attributes(submission_params)
         redirect_to "#{params[:success_url]}&#{external_return_options.to_query}"
       else
-        flash.now[:alert] = @submission.errors.messages.values.join(". ")
         render :edit
       end
     end
@@ -42,10 +51,18 @@ module SangerSequencing
     end
 
     def current_ability
-      SangerSequencing::Ability.new(current_user)
+      SangerSequencing::Ability.new(acting_user)
     end
 
     private
+
+    def redirect_to_admin(error)
+      if action_name == "show" && SangerSequencing::Ability.new(acting_user, current_facility).can?(:show, @submission)
+        redirect_to facility_sanger_sequencing_admin_submission_path(current_facility, @submission)
+      else
+        render_403(error)
+      end
+    end
 
     def current_facility
       @current_facility ||= @submission.try(:facility)
@@ -58,7 +75,8 @@ module SangerSequencing
 
     def submission_params
       params.require(:sanger_sequencing_submission)
-            .permit(samples_attributes: [:id, :customer_sample_id, :_destroy])
+            .permit(self.class.permitted_submission_params,
+                    samples_attributes: self.class.permitted_sample_attributes)
     end
 
     def external_return_options
@@ -77,7 +95,7 @@ module SangerSequencing
 
     def load_and_authorize_on_new
       order_detail = ::OrderDetail.find(params[:receiver_id])
-      @submission = Submission.where(order_detail_id: order_detail.id).first_or_create
+      @submission = SangerSequencing::Submission.where(order_detail_id: order_detail.id).first_or_create
       authorize! :create, @submission
     end
 

@@ -1,0 +1,50 @@
+-# This view overrides the sanger_sequencing engine's view
+= content_for :head_content do
+  = stylesheet_link_tag "acgt/application"
+
+%div
+  %p.text-center
+    %strong= text("caption", order_detail: submission.order_detail)
+  %table.table.table-striped.table-tight
+    %thead
+      %tr
+        - if submission.plate_format?
+          %th
+          %th
+          %th.acgt__tableSpacer
+        %th{colspan: 6}
+          .text-center= SangerSequencing::Sample.human_attribute_name(:template)
+        %th.acgt__tableSpacer
+        %th{colspan: 2}
+          .text-center= SangerSequencing::Sample.human_attribute_name(:primer)
+      %tr
+        - if submission.plate_format?
+          %th Plate #
+          %th Position
+          %th.acgt__tableSpacer
+        %th= SangerSequencing::Sample.human_attribute_name(:customer_sample_id)
+        %th= SangerSequencing::Sample.human_attribute_name(:template_concentration)
+        %th= SangerSequencing::Sample.human_attribute_name(:high_gc)
+        %th= SangerSequencing::Sample.human_attribute_name(:hair_pin)
+        %th= SangerSequencing::Sample.human_attribute_name(:template_type)
+        %th= SangerSequencing::Sample.human_attribute_name(:pcr_product_size)
+        %th.acgt__tableSpacer
+        %th= SangerSequencing::Sample.human_attribute_name(:primer_name)
+        %th= SangerSequencing::Sample.human_attribute_name(:primer_concentration)
+
+    %tbody
+      - submission.samples.each do |sample|
+        %tr
+          - if submission.plate_format?
+            %td= sample.well_plate_number
+            %td= sample.well_position
+            %td.acgt__tableSpacer
+          %td= sample.customer_sample_id
+          %td= sample.template_concentration
+          %td= t_boolean(sample.high_gc) if sample.high_gc?
+          %td= t_boolean(sample.hair_pin) if sample.hair_pin?
+          %td= sample.template_type
+          %td= sample.pcr_product_size
+          %td.acgt__tableSpacer
+          %td= sample.primer_name
+          %td= sample.primer_concentration

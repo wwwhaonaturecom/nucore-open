@@ -1,11 +1,8 @@
 require "rails_helper"
+require_relative "../support/shared_contexts/setup_sanger_service"
 
 RSpec.describe "Sanger Sequencing Administration" do
-  let(:facility) { FactoryGirl.create(:setup_facility, sanger_sequencing_enabled: true) }
-  let!(:service) { FactoryGirl.create(:setup_service, facility: facility) }
-  let(:purchaser) { FactoryGirl.create(:user) }
-  let!(:account) { FactoryGirl.create(:nufs_account, :with_account_owner, owner: purchaser) }
-  let!(:price_policy) { FactoryGirl.create(:service_price_policy, price_group: PriceGroup.base.first, product: service) }
+  include_context "Setup Sanger Service"
 
   describe "as facility staff" do
     let(:facility_staff) { FactoryGirl.create(:user, :staff, facility: facility) }
@@ -45,6 +42,25 @@ RSpec.describe "Sanger Sequencing Administration" do
 
         it "is not found" do
           expect(page.status_code).to eq(404)
+        end
+      end
+
+      describe "accessing via the 'View Order Form' link" do
+        let!(:order_detail) { FactoryGirl.create(:purchased_order, product: service, account: account).order_details.first }
+        let!(:submission) { FactoryGirl.create(:sanger_sequencing_submission, order_detail: order_detail) }
+        let(:external_service) { FactoryGirl.build_stubbed(:external_service) }
+        let!(:receiver) { ExternalServiceReceiver.create(external_service: external_service,
+          receiver: order_detail,
+          response_data: { show_url: sanger_sequencing_submission_path(submission) }.to_json) }
+
+        before do
+          visit facility_orders_path(facility)
+          click_link "View Order Form"
+        end
+
+        it "can view the submission" do
+          expect(page).to have_content "Submission ##{submission.id}"
+          expect(current_path).to eq(facility_sanger_sequencing_admin_submission_path(facility, submission))
         end
       end
     end

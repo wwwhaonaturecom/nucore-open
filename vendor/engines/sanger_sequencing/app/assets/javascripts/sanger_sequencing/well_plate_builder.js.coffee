@@ -1,31 +1,16 @@
-window.SangerSequencing = new Object()
+#= require sanger_sequencing/odd_first_ordering_strategy
 
-class SangerSequencing.WellPlateBuilder
+exports = exports ? @
 
-  class Util
-    @flattenArray: (arrays) ->
-      concatFunction = (total, submission) ->
-        total.concat submission
-      arrays.reduce(concatFunction, [])
-
-  class OddFirstOrderingStrategy
-    fillOrder: ->
-      odds = (column for column, i in @_cellsByColumn() when i % 2 == 0)
-      evens = (column for column, i in @_cellsByColumn() when i % 2 == 1)
-      Util.flattenArray(odds.concat(evens))
-
-    _cellsByColumn: ->
-      cells = for num in ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"]
-        for ch in "ABCDEFGH"
-          "#{ch}#{num}"
+class exports.SangerSequencing.WellPlateBuilder
 
   constructor: ->
     @submissions = []
     # This array maintains all of the submissions that have ever been added
     # in order to keep consistent colors when removing and adding samples.
     @allSubmissions = []
-    @reservedCells = ["A01", "A02"]
-    @orderingStrategy = new OddFirstOrderingStrategy
+    @_reservedCells = ["A01", "A02"]
+    @_orderingStrategy = new SangerSequencing.OddFirstOrderingStrategy
     @_render()
 
   addSubmission: (submission) ->
@@ -38,6 +23,10 @@ class SangerSequencing.WellPlateBuilder
     @submissions.splice(index, 1) if index > -1
     @_render()
 
+  setReservedCells: (cells) ->
+    @_reservedCells = cells if cells?
+    @_render()
+
   isInPlate: (submission) ->
     @submissions.indexOf(submission) >= 0
 
@@ -48,7 +37,7 @@ class SangerSequencing.WellPlateBuilder
     @plates[plateIndex][cell]
 
   samples: ->
-    Util.flattenArray(@submissions.map (submission) ->
+    SangerSequencing.Util.flattenArray(@submissions.map (submission) ->
       submission.samples.map (s) ->
         if s instanceof SangerSequencing.Sample then s else new SangerSequencing.Sample(s)
     )
@@ -66,7 +55,8 @@ class SangerSequencing.WellPlateBuilder
   # Private
 
   _render: ->
-    @_plateCount = Math.max(1, Math.ceil(@samples().length / @_fillOrder().length))
+    wellsInPlate = @_fillOrder().length - @_reservedCells.length
+    @_plateCount = Math.max(1, Math.ceil(@samples().length / wellsInPlate))
 
     samples = @samples()
     allPlates = []
@@ -80,17 +70,23 @@ class SangerSequencing.WellPlateBuilder
     plate = {}
 
     for cellName in @_fillOrder()
-      plate[cellName] = if @reservedCells.indexOf(cellName) < 0
+      plate[cellName] = if @_reservedCells.indexOf(cellName) < 0
         if sample = samples.shift()
           sample
         else
           new SangerSequencing.Sample.Blank
       else
-        new SangerSequencing.Sample.Reserved
+        # Reserved will actually take up a cell, while ReservedButUnused is
+        # for when we have not actually reached that cell in the fill order,
+        # so it will instead be treated as blank.
+        if samples.length > 0
+          new SangerSequencing.Sample.Reserved
+        else
+          new SangerSequencing.Sample.ReservedButUnused
 
        sample
 
     plate
 
   _fillOrder: ->
-    @orderingStrategy.fillOrder()
+    @_orderingStrategy.fillOrder()

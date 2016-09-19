@@ -15,6 +15,8 @@ module Reports
 
     delegate :reports, :format_username, to: "self.class"
 
+    helper_method :export_raw_visible?
+
     def initialize
       @active_tab = "admin_reports"
       super
@@ -35,6 +37,10 @@ module Reports
       "#{name} (#{user.username})"
     end
 
+    def export_raw_visible?
+      true
+    end
+
     protected
 
     def tab_offset
@@ -46,6 +52,10 @@ module Reports
     end
 
     private
+
+    def xhr_html_template
+      "reports/report_table"
+    end
 
     def init_report_params
       @date_start = parse_usa_date(params[:date_start])
@@ -92,9 +102,9 @@ module Reports
         format.html do
           if request.xhr?
             init_report(&report_on)
-            render template: "reports/report_table", layout: false
+            render template: xhr_html_template, layout: false
           else
-            render template: "reports/report"
+            render template: html_template
           end
         end
 
@@ -103,6 +113,10 @@ module Reports
           render_csv("#{@report_by}_report")
         end
       end
+    end
+
+    def html_template
+      "reports/report"
     end
 
     def render_report_download(report_prefix)

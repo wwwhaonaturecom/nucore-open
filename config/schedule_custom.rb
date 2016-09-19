@@ -20,3 +20,7 @@ end
 every :day, at: "7:00am", roles: [:db] do
   rake "pmu:import"
 end
+
+every 30.minutes, roles: [:db] do
+  rake "acgt:update_order_details"
+end

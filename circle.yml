@@ -4,6 +4,8 @@ machine:
     PATH: "$PATH:$ORACLE_HOME/bin"
     LD_LIBRARY_PATH: "$LD_LIBRARY_PATH:$ORACLE_HOME/lib"
     NLS_LANG: "AMERICAN_AMERICA.WE8MSWIN1252"
+  pre:
+    - sudo curl --output /usr/local/bin/phantomjs https://s3.amazonaws.com/circle-downloads/phantomjs-2.1.1
   ruby:
     version: 2.2.4
   services:
