@@ -68,7 +68,7 @@ namespace :order_details do
       old_subsidy = od.actual_subsidy
       old_total = od.actual_total
       old_price_group = od.price_policy.try(:price_group)
-      od.assign_price_policy(od.fulfilled_at || Time.zone.now)
+      od.assign_price_policy
 
       next unless od.price_group && (od.price_group != old_price_group)
       # Manually uncomment this line on the server before running to save changes
