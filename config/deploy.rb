@@ -3,7 +3,7 @@ lock "3.4.1" # config valid only for Capistrano 3.4
 set :application, "nucore"
 set :repo_url, "git@github.com:tablexi/nucore-nu.git"
 
-set :linked_files, %w(config/database.yml config/settings.local.yml config/ldap.yml config/eye.yml.erb)
+set :linked_files, %w(config/database.yml config/settings.local.yml config/ldap.yml config/eye.yml.erb config/skylight.yml)
 set :linked_dirs, %w(bin log tmp/pids tmp/cache tmp/sockets vendor/bundle public/system)
 
 namespace :deploy do
