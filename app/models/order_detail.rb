@@ -24,7 +24,7 @@ class OrderDetail < ActiveRecord::Base
   after_validation :reset_dispute
 
   before_save :clear_statement, if: :account_id_changed?
-  before_save :reassign_price, if: ->(o) { o.account_id_changed? || o.quantity_changed? }
+  before_save :reassign_price, if: :auto_reassign_pricing?
   before_save :update_journal_row_amounts, if: :actual_cost_changed?
 
   before_save :set_problem_order
@@ -125,6 +125,8 @@ class OrderDetail < ActiveRecord::Base
     joins("LEFT JOIN products ON products.id = order_details.product_id")
       .where("products.type" => product_type)
   }
+
+  scope :non_canceled, -> { where.not(state: "canceled") }
 
   def self.for_facility(facility)
     for_facility_id(facility.id)
@@ -343,7 +345,7 @@ class OrderDetail < ActiveRecord::Base
     search = search.joins(:journal) if action.to_sym == :journal_date
 
     # If we're searching on fulfilled_at, ignore any order details that don't have a fulfilled date
-    search = search.where("fulfilled_at IS NOT NULL") if action.to_sym == :fulfilled_at
+    search = search.where("#{action} IS NOT NULL") if [:reconciled_at, :fulfilled_at].include?(action.to_sym)
 
     if start_date
       search = search.where("#{action} >= ?", start_date.beginning_of_day)
@@ -425,7 +427,7 @@ class OrderDetail < ActiveRecord::Base
     new_state = new_status.state_name
     # don't try to change state if it's not a valid state or it's the same as it was before
     if OrderDetail.aasm.states.map(&:name).include?(new_state) && new_state != state.to_sym
-      raise AASM::InvalidTransition, "Event '#{new_state}' cannot transition from '#{state}'" unless send("to_#{new_state}!")
+      send("to_#{new_state}")
     end
     # don't try to change status if it's the same as before
     unless new_status == order_status
@@ -468,7 +470,7 @@ class OrderDetail < ActiveRecord::Base
     end
     change_status!(OrderStatus.complete.first) do |od|
       od.fulfilled_at = event_time
-      od.assign_price_policy(event_time)
+      od.assign_price_policy
     end
   end
 
@@ -643,6 +645,16 @@ class OrderDetail < ActiveRecord::Base
     end
   end
 
+  def auto_reassign_pricing?
+    !@manually_priced && (account_id_changed? || quantity_changed?)
+  end
+
+  # Mark the instance as manually priced to prevent the price assignment callback
+  # from overwriting the params.
+  def manually_priced!
+    @manually_priced = true
+  end
+
   def reassign_price
     if cost_estimated?
       assign_estimated_price
@@ -655,10 +667,9 @@ class OrderDetail < ActiveRecord::Base
     JournalRowUpdater.new(self).update
   end
 
-  def assign_estimated_price(second_account = nil, date = Time.zone.now)
+  def assign_estimated_price(date = fulfilled_at || Time.current)
     self.estimated_cost    = nil
     self.estimated_subsidy = nil
-    second_account = account unless second_account
 
     # is account valid for facility
     return unless product.facility.can_pay_with_account?(account)
@@ -667,8 +678,8 @@ class OrderDetail < ActiveRecord::Base
     assign_estimated_price_from_policy @estimated_price_policy
   end
 
-  def assign_estimated_price!(second_account = nil, date = Time.zone.now)
-    assign_estimated_price(second_account, date)
+  def assign_estimated_price!
+    assign_estimated_price(Time.current)
     save!
   end
 
@@ -682,16 +693,16 @@ class OrderDetail < ActiveRecord::Base
     self.estimated_subsidy = costs[:subsidy]
   end
 
-  def assign_price_policy(time = Time.zone.now)
+  def assign_price_policy
     clear_costs
 
     # is account valid for facility
     return unless product.facility.can_pay_with_account?(account)
-    assign_actual_price(time)
+    assign_actual_price
   end
 
-  def assign_actual_price(time = Time.zone.now)
-    pp = product.cheapest_price_policy(self, time)
+  def assign_actual_price
+    pp = product.cheapest_price_policy(self, time_for_policy_lookup)
     return unless pp
     costs = pp.calculate_cost_and_subsidy_from_order_detail(self)
     return unless costs
@@ -856,9 +867,17 @@ class OrderDetail < ActiveRecord::Base
     !product.is_a?(Instrument) || (reservation && (reservation.canceled_at || reservation.actual_end_at || reservation.reserve_end_at < Time.zone.now))
   end
 
+  def time_for_policy_lookup
+    if fulfilled_at
+      fulfilled_at
+    elsif reservation.try(:canceled?)
+      Time.current
+    end
+  end
+
   def make_complete
-    assign_price_policy
     self.fulfilled_at = Time.zone.now
+    assign_price_policy
     self.reviewed_at = Time.zone.now unless SettingsHelper.has_review_period?
   end
 

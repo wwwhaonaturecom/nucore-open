@@ -13,6 +13,7 @@ class User < ActiveRecord::Base
 
   include Overridable
   include Role
+  include NUCore::Database::WhereIdsIn
 
   # ldap_authenticatable is included via a to_prepare hook if ldap is enabled
   devise :database_authenticatable, :encryptable, :trackable, :recoverable
@@ -49,10 +50,9 @@ class User < ActiveRecord::Base
   end
 
   def self.with_recent_orders(facility)
-    order_query = Order.recent.for_facility(facility)
-    select("DISTINCT users.*")
+    distinct
       .joins(:orders)
-      .merge(order_query)
+      .merge(Order.recent.for_facility(facility))
   end
 
   def self.sort_last_first

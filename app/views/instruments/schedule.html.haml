@@ -24,7 +24,7 @@
     new_facility_instrument_reservation_path,
     class: "btn-add"
 
-  - if current_user.administrator? # TODO: restrict to global admins until the offline feature is complete
+  - if current_ability.can?(:create, OfflineReservation)
     - if @instrument.online?
       = link_to t(".mark_instrument_offline"),
         new_facility_instrument_offline_reservation_path(current_facility, @instrument),
@@ -35,6 +35,8 @@
         facility_instrument_bring_online_path(current_facility, @instrument),
         method: :put,
         class: "btn-add"
+
+  = render_view_hook "after_offline_toggle"
 
 - if @admin_reservations.empty?
   %p.notice= t(".no_upcoming_admin_reservations")
@@ -67,19 +69,17 @@
               = link_to reservation,
                 facility_instrument_reservation_edit_admin_path(current_facility, @instrument, reservation)
 
-            %td= reservation_category_label(reservation.category)
+            %td= reservation_category_label(reservation)
             %td= reservation.admin_note
 
           - else
-
-            - if current_user.administrator? # TODO: restrict to global admins until the offline feature is complete
-              %td
-              %td= reservation.class.model_name.human
-              %td
-                = link_to reservation,
-                  edit_facility_instrument_offline_reservation_path(current_facility, @instrument, reservation)
-              %td= reservation_category_label(reservation.category)
-              %td= reservation.admin_note
+            %td
+            %td= reservation.class.model_name.human
+            %td
+              = link_to reservation,
+                edit_facility_instrument_offline_reservation_path(current_facility, @instrument, reservation)
+            %td= reservation_category_label(reservation)
+            %td= reservation.admin_note
 
 %h3= t(".reservations_calendar")
 

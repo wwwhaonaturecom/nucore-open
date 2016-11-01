@@ -97,6 +97,7 @@ en:
     not_applicable: N/A
     remove: Remove
     save: Save
+    search: Search
     select_all: Select All
     select_none: Select None
     upload: Upload
@@ -234,10 +235,6 @@ en:
       instructions: "Please review the following orders. Check those that are paid, record any notes, and click 'Reconcile Orders'."
       owner: "Owner: %{owner}"
       balance: "Balance: %{balance}"
-      reconcile_table:
-        th:
-          order: "Order"
-          reconcile_note: "Reconcile Note"
 
   facility_users:
     title: "!Facility! Staff"
@@ -526,6 +523,14 @@ en:
       update: Update the note
     new:
       mark_offline: Take instrument offline
+
+  admin_reservations:
+    categories:
+      maintenance: Maintenance
+      training: Training
+      reserved_for_staff: Reserved For Staff
+      instrument_unavailable: Instrument Unavailable
+      other: Other
 
   order_management:
     order_details:

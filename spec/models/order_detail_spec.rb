@@ -29,32 +29,33 @@ RSpec.describe OrderDetail do
     expect(@order_detail.order_status).to be_nil
   end
 
-  context "#assign_price_policy" do
-    before :each do
-      create(:account_price_group_member, account: account, price_group: price_group)
-      order_detail.update_attribute(:price_policy_id, nil)
+  shared_context "define price policies" do
+    before { create(:account_price_group_member, account: account, price_group: price_group) }
+
+    let!(:previous_price_policy) do
+      item.item_price_policies.create(attributes_for(:item_price_policy,
+                                                     unit_cost: 10.00,
+                                                     unit_subsidy: 2.00,
+                                                     price_group_id: price_group.id,
+                                                     start_date: 8.years.ago,
+                                                     expire_date: nil,
+                                                    ))
     end
 
-    shared_context "define price policies" do
-      let!(:previous_price_policy) do
-        item.item_price_policies.create(attributes_for(:item_price_policy,
-                                                       unit_cost: 10.00,
-                                                       unit_subsidy: 2.00,
-                                                       price_group_id: price_group.id,
-                                                       start_date: 8.years.ago,
-                                                       expire_date: nil,
-                                                      ))
-      end
+    let!(:current_price_policy) do
+      item.item_price_policies.create(attributes_for(:item_price_policy,
+                                                     unit_cost: 20.00,
+                                                     unit_subsidy: 3.00,
+                                                     price_group_id: price_group.id,
+                                                     start_date: 1.day.ago,
+                                                     expire_date: nil,
+                                                    ))
+    end
+  end
 
-      let!(:current_price_policy) do
-        item.item_price_policies.create(attributes_for(:item_price_policy,
-                                                       unit_cost: 20.00,
-                                                       unit_subsidy: 3.00,
-                                                       price_group_id: price_group.id,
-                                                       start_date: 1.day.ago,
-                                                       expire_date: nil,
-                                                      ))
-      end
+  context "#assign_price_policy" do
+    before :each do
+      order_detail.update_attribute(:price_policy_id, nil)
     end
 
     context "when assigning policies based on a time in the past" do
@@ -70,20 +71,20 @@ RSpec.describe OrderDetail do
           end
 
           it "assigns the expected price policy" do
-            expect { order_detail.assign_price_policy(order_detail.fulfilled_at) }
+            expect { order_detail.assign_price_policy }
               .to change { order_detail.price_policy }
               .from(nil).to(current_price_policy)
           end
 
           it "assigns an actual cost" do
-            expect { order_detail.assign_price_policy(order_detail.fulfilled_at) }
+            expect { order_detail.assign_price_policy }
               .to change { order_detail.actual_cost }
               .from(nil)
               .to(current_price_policy.unit_cost)
           end
 
           it "assigns an actual subsidy" do
-            expect { order_detail.assign_price_policy(order_detail.fulfilled_at) }
+            expect { order_detail.assign_price_policy }
               .to change { order_detail.actual_subsidy }
               .from(nil)
               .to(current_price_policy.unit_subsidy)
@@ -99,20 +100,20 @@ RSpec.describe OrderDetail do
           end
 
           it "assigns the expected price policy" do
-            expect { order_detail.assign_price_policy(order_detail.fulfilled_at) }
+            expect { order_detail.assign_price_policy }
               .to change { order_detail.price_policy }
               .from(nil).to(previous_price_policy)
           end
 
           it "assigns an actual cost" do
-            expect { order_detail.assign_price_policy(order_detail.fulfilled_at) }
+            expect { order_detail.assign_price_policy }
               .to change { order_detail.actual_cost }
               .from(nil)
               .to(previous_price_policy.unit_cost)
           end
 
           it "assigns an actual subsidy" do
-            expect { order_detail.assign_price_policy(order_detail.fulfilled_at) }
+            expect { order_detail.assign_price_policy }
               .to change { order_detail.actual_subsidy }
               .from(nil)
               .to(previous_price_policy.unit_subsidy)
@@ -128,43 +129,8 @@ RSpec.describe OrderDetail do
           end
 
           it "it does not assign a price policy" do
-            expect { order_detail.assign_price_policy(order_detail.fulfilled_at) }
+            expect { order_detail.assign_price_policy }
               .not_to change { order_detail.price_policy }
-          end
-        end
-      end
-
-      context "when no compatible price policies exist" do
-        it "it does not assign a price policy" do
-          expect { order_detail.assign_price_policy }
-            .not_to change { order_detail.price_policy }
-        end
-      end
-    end
-
-    context "when assigning policies based on the current time" do
-      context "when compatible price policies exist" do
-        include_context "define price policies"
-
-        context "when fulfilled_at matches the current policy date range" do
-          it "assigns the expected price policy" do
-            expect { order_detail.assign_price_policy }
-              .to change { order_detail.price_policy }
-              .from(nil).to(current_price_policy)
-          end
-
-          it "assigns an actual cost" do
-            expect { order_detail.assign_price_policy }
-              .to change { order_detail.actual_cost }
-              .from(nil)
-              .to(current_price_policy.unit_cost)
-          end
-
-          it "assigns an actual subsidy" do
-            expect { order_detail.assign_price_policy }
-              .to change { order_detail.actual_subsidy }
-              .from(nil)
-              .to(current_price_policy.unit_subsidy)
           end
         end
       end
@@ -267,13 +233,14 @@ RSpec.describe OrderDetail do
     end
 
     context "with actual costs" do
+      include_context "define price policies"
+
       it "re-assigns actual pricing" do
-        expect(order_detail).to receive(:cost_estimated?).and_return false
-        expect(order_detail).to receive(:actual_cost).exactly(2).times.and_return 50
-        expect(order_detail).to receive :assign_actual_price
+        order_detail.backdate_to_complete!(Time.current)
         order_detail.quantity = new_quantity
         order_detail.save!
         expect(order_detail.reload.quantity).to eq new_quantity
+        expect(order_detail.actual_cost).to eq(current_price_policy.unit_cost * new_quantity)
       end
     end
   end
@@ -760,6 +727,15 @@ RSpec.describe OrderDetail do
       end
 
     end
+
+    describe "invalid quantity" do
+      it "does not transition to complete" do
+        @order_detail.quantity = 0
+        expect { @order_detail.change_status!(OrderStatus.complete_status) }
+          .to raise_error(ActiveRecord::RecordInvalid)
+        expect(@order_detail.reload.state).to eq("new")
+      end
+    end
   end
 
   context "statement" do
@@ -983,12 +959,24 @@ RSpec.describe OrderDetail do
           @statement = create(:statement, facility: @facility, created_by: @user.id, account: @account, created_at: 1.day.ago)
           @order_detail.to_complete!
           @order_detail2.to_complete!
-          @order_detail.update_attribute :journal_id, @journal.id
-          @order_detail2.update_attribute :statement_id, @statement.id
+          @order_detail.update_attributes(journal_id: @journal.id, fulfilled_at: 5.days.ago, reconciled_at: 4.days.ago)
+          @order_detail2.update_attributes(statement_id: @statement.id, fulfilled_at: 7.days.ago, reconciled_at: 6.days.ago)
         end
 
         it "should return nothing when searching wrong date range" do
           expect(OrderDetail.action_in_date_range(:journal_or_statement_date, 7.days.ago, 6.days.ago)).to be_empty
+        end
+
+        it "should work for fulfilled at date" do
+          expect(OrderDetail.action_in_date_range(:fulfilled_at, 4.days.ago, 2.days.ago)).to be_empty
+          expect(OrderDetail.action_in_date_range(:fulfilled_at, 6.days.ago, 3.days.ago)).to eq([@order_detail])
+          expect(OrderDetail.action_in_date_range(:fulfilled_at, 8.days.ago, 3.days.ago)).to match_array([@order_detail, @order_detail2])
+        end
+
+        it "should work for reconciled_at date" do
+          expect(OrderDetail.action_in_date_range(:reconciled_at, 2.days.ago, 1.day.ago)).to eq([])
+          expect(OrderDetail.action_in_date_range(:reconciled_at, 5.days.ago, 2.days.ago)).to eq([@order_detail])
+          expect(OrderDetail.action_in_date_range(:reconciled_at, 7.days.ago, 2.days.ago)).to match_array([@order_detail, @order_detail2])
         end
 
         it "should work for journal date" do
@@ -998,6 +986,16 @@ RSpec.describe OrderDetail do
         it "should return both statemented and journaled" do
           expect(OrderDetail.action_in_date_range(:journal_or_statement_date, 3.days.ago, Time.zone.now)).to match_array([@order_detail, @order_detail2])
         end
+      end
+    end
+
+    describe "non_canceled" do
+      let!(:order_detail) { create(:order_detail, order_status: OrderStatus.canceled.first, state: "canceled", order: Order.last, product: Product.last) }
+      let!(:active_order_detail) { create(:order_detail, order_status: OrderStatus.complete.first, order: Order.last, product: Product.last) }
+
+      it "should return only order details with non-cancelled status" do
+        expect(OrderDetail.non_canceled).to include(active_order_detail)
+        expect(OrderDetail.non_canceled).to_not include(order_detail)
       end
     end
   end
