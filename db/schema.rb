@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20160908162845) do
+ActiveRecord::Schema.define(version: 20161024213800) do
 
   create_table "account_users", force: :cascade do |t|
     t.integer  "account_id", limit: nil,                null: false
@@ -70,6 +70,17 @@ ActiveRecord::Schema.define(version: 20160908162845) do
     t.string   "account",    limit: 20
     t.datetime "starts_at",             null: false
     t.datetime "expires_at",            null: false
+  end
+
+  create_table "bulk_email_jobs", force: :cascade do |t|
+    t.integer  "facility_id",     limit: nil, null: false
+    t.integer  "user_id",         limit: nil, null: false
+    t.string   "subject",                     null: false
+    t.text     "body",                        null: false
+    t.text     "recipients",                  null: false
+    t.text     "search_criteria",             null: false
+    t.datetime "created_at",                  null: false
+    t.datetime "updated_at",                  null: false
   end
 
   create_table "bundle_products", force: :cascade do |t|
@@ -655,10 +666,10 @@ ActiveRecord::Schema.define(version: 20160908162845) do
   add_index "sanger_sequencing_samples", ["submission_id"], name: "i_san_seq_sam_sub_id"
 
   create_table "sanger_sequencing_submissions", force: :cascade do |t|
-    t.integer  "order_detail_id", limit: nil
+    t.integer  "order_detail_id",       limit: nil
     t.datetime "created_at"
     t.datetime "updated_at"
-    t.integer  "batch_id",        limit: nil
+    t.integer  "batch_id",              limit: nil
     t.string   "well_plate_fill_order"
   end
 
@@ -804,8 +815,11 @@ ActiveRecord::Schema.define(version: 20160908162845) do
   add_index "versions", ["version_number"], name: "index_versions_on_number", tablespace: "bc_nucore"
   add_index "versions", ["versioned_id", "versioned_type"], name: "i_ver_ver_id_ver_typ", tablespace: "bc_nucore"
 
+  add_foreign_key "account_users", "accounts", name: "fk_accounts"
   add_foreign_key "accounts", "facilities", name: "fk_account_facility_id"
   add_foreign_key "bi_netids", "facilities", name: "sys_c0019397"
+  add_foreign_key "bulk_email_jobs", "facilities"
+  add_foreign_key "bulk_email_jobs", "users"
   add_foreign_key "bundle_products", "products", column: "bundle_product_id", name: "fk_bundle_prod_prod"
   add_foreign_key "bundle_products", "products", name: "fk_bundle_prod_bundle"
   add_foreign_key "email_events", "users"
@@ -822,9 +836,9 @@ ActiveRecord::Schema.define(version: 20160908162845) do
   add_foreign_key "order_imports", "facilities", name: "fk_order_imports_facilities"
   add_foreign_key "orders", "accounts", name: "sys_c008808"
   add_foreign_key "orders", "facilities", name: "orders_facility_id_fk"
-  add_foreign_key "payments", "accounts", name: "payments_account_id_fk"
-  add_foreign_key "payments", "statements", name: "payments_statement_id_fk"
-  add_foreign_key "payments", "users", column: "paid_by_id", name: "payments_paid_by_id_fk"
+  add_foreign_key "payments", "accounts"
+  add_foreign_key "payments", "statements"
+  add_foreign_key "payments", "users", column: "paid_by_id"
   add_foreign_key "price_group_members", "price_groups", name: "sys_c008583"
   add_foreign_key "price_groups", "facilities", name: "sys_c008578"
   add_foreign_key "price_policies", "price_groups", name: "sys_c008589"
@@ -834,11 +848,11 @@ ActiveRecord::Schema.define(version: 20160908162845) do
   add_foreign_key "products", "schedules", name: "fk_instruments_schedule"
   add_foreign_key "reservations", "order_details", name: "res_ord_det_id_fk"
   add_foreign_key "reservations", "products", name: "reservations_product_id_fk"
-  add_foreign_key "schedule_rules", "products", column: "instrument_id", name: "sys_c008573"
   add_foreign_key "sanger_seq_product_groups", "products"
   add_foreign_key "sanger_sequencing_batches", "facilities"
   add_foreign_key "sanger_sequencing_samples", "sanger_sequencing_submissions", column: "submission_id", on_delete: :cascade
   add_foreign_key "sanger_sequencing_submissions", "sanger_sequencing_batches", column: "batch_id", on_delete: :nullify
+  add_foreign_key "schedule_rules", "products", column: "instrument_id", name: "sys_c008573"
   add_foreign_key "schedules", "facilities", name: "fk_schedules_facility"
   add_foreign_key "statements", "facilities", name: "fk_statement_facilities"
   add_foreign_key "stored_files", "order_details", name: "fk_files_od"
