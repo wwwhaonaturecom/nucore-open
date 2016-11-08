@@ -1,6 +1,10 @@
 class JxmlHoliday < ActiveRecord::Base
 
+  include ActiveModel::ForbiddenAttributesProtection
+
   validates_presence_of :date
+
+  scope :current_and_upcoming, -> { where('"JXML_HOLIDAYS"."DATE" >= ?', Time.current.to_date) }
 
   def self.is?(date)
     day_of_week = date.cwday

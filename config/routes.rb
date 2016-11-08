@@ -2,6 +2,7 @@ Nucore::Application.routes.draw do
   get "/users/sign_in.pdf" => redirect("/users/sign_in")
   devise_for :users
   mount SangerSequencing::Engine => "/" if defined?(SangerSequencing)
+  mount Jxml::Engine => "/jxml" if defined?(JxmlHoliday)
 
   mount NuCardconnect::Engine => "/"
 
