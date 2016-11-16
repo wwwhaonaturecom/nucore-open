@@ -1,0 +1,27 @@
+en:
+  jxml_holidays:
+    index:
+      title: Holidays
+      new: Add Holiday
+      date: Date
+      edit: Edit
+      delete: Delete
+      confirm_delete: Delete this holiday?
+      recency: "Note: only upcoming holidays are displayed."
+    create:
+      success: Holiday successfully added
+    destroy:
+      success: Holiday successfully deleted
+    edit:
+      delete: Delete
+      delete_confirm: Are you sure you want to delete this holiday?
+      header: Edit Holiday
+    form:
+      submit: Submit
+      cancel: Cancel
+    new:
+      header: New Holiday
+    update:
+      success: Holiday successfully updated
+  pages:
+    holidays: Holidays

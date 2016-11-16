@@ -9,6 +9,25 @@ RSpec.describe SangerSequencing::Sample do
     end
   end
 
+  describe "validations" do
+    describe "when there is a special character" do
+      let(:submission) { SangerSequencing::Submission.create! }
+      subject(:sample) { described_class.new(submission: submission, customer_sample_id: sample_id) }
+
+      context "when special character is a period" do
+        let(:sample_id) { "p103.728" }
+
+        it { is_expected.to be_valid }
+      end
+
+      context "when special character is not a period" do
+        let(:sample_id) { "Δ216" }
+
+        it { is_expected.not_to be_valid }
+      end
+    end
+  end
+
   describe "updating the sample" do
     let(:submission) { FactoryGirl.build_stubbed(:sanger_sequencing_submission) }
     subject(:sample) { FactoryGirl.build_stubbed(:sanger_sequencing_sample, submission: submission) }

@@ -9,6 +9,7 @@ module Acgt
       validates :pcr_product_size, presence: true, if: :pcr?, on: :update
       validates :template_concentration, :primer_concentration, presence: true, if: :standard_product?, on: :update
       validates :customer_sample_id, :primer_name, length: { maximum: 10 }
+      validates :customer_sample_id, format: { with: /\A[a-zA-Z0-9.]*\z/, message: "does not allow special characters." }
     end
 
     private
