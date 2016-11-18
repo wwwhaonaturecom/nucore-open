@@ -87,8 +87,9 @@ RSpec.describe UsersController do
       end
 
       context "search" do
+        let!(:user) { FactoryGirl.create(:user) }
+
         before :each do
-          @user = FactoryGirl.create(:user)
           @method = :post
           @action = :search
         end
@@ -106,12 +107,22 @@ RSpec.describe UsersController do
 
         context "user already exists in database" do
           before :each do
-            @params.merge!(username_lookup: @user.username)
+            @params.merge!(username_lookup: user.username)
           end
 
           it_should_allow_operators_only do
-            expect(assigns(:user)).to eq(@user)
+            expect(assigns(:user)).to eq(user)
             expect(assigns(:user)).to be_persisted
+          end
+        end
+
+        describe "user exists but admin included extra spaces" do
+          before do
+            @params.merge!(username_lookup: " #{user.username}")
+          end
+
+          it_should_allow_operators_only do
+            expect(assigns(:user)).to eq(user)
           end
         end
 
@@ -145,13 +156,12 @@ RSpec.describe UsersController do
         before :each do
           @method = :post
           @action = :create
-
         end
 
         context "external user" do
           context "with successful parameters" do
             before :each do
-              @params.merge!(group_name: UserRole::FACILITY_DIRECTOR, user: FactoryGirl.attributes_for(:user))
+              @params.merge!(user: FactoryGirl.attributes_for(:user))
             end
 
             it_should_allow_operators_only :redirect do
@@ -171,6 +181,18 @@ RSpec.describe UsersController do
               expect(response).to render_template "new_external"
             end
           end
+
+          describe "with extra spaces around the username/email" do
+            before do
+              @params[:user] = FactoryGirl.attributes_for(:user, username: " email@example.com", email: "email@example.com")
+            end
+
+            it_should_allow_operators_only :redirect do
+              expect(assigns(:user)).to be_persisted
+              expect(assigns(:user).email).to eq("email@example.com")
+              expect(assigns(:user).username).to eq("email@example.com")
+            end
+          end
         end
 
         context "internal user" do
@@ -179,9 +201,35 @@ RSpec.describe UsersController do
           end
 
           context "user already exists" do
+            let!(:user) { FactoryGirl.create(:user) }
             before :each do
-              @user = FactoryGirl.create(:user)
-              @params[:username] = @user.username
+              @params[:username] = user.username
+              do_request
+            end
+
+            it "flashes an error" do
+              is_expected.to set_flash
+              expect(response).to redirect_to facility_users_path
+            end
+          end
+
+          describe "user not found" do
+            before do
+              @params[:username] = "doesnotexist"
+              do_request
+            end
+
+            it "flashes an error" do
+              is_expected.to set_flash
+              expect(response).to redirect_to facility_users_path
+            end
+          end
+
+          describe "user is invalid" do
+            let(:user) { build(:user, first_name: "") }
+            before do
+              allow(controller).to receive(:username_lookup).and_return user
+              @params[:username] = user.username
               do_request
             end
 
