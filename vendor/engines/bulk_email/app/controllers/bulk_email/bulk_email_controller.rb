@@ -16,9 +16,7 @@ module BulkEmail
 
     before_action :init_search_options, only: [:search]
 
-    helper_method :bulk_email_cancel_path
     helper_method :bulk_email_content_generator
-    helper_method :bulk_email_recipient_search_params
     helper_method :datepicker_field_input
     helper_method :user_type_selected?
 
@@ -45,13 +43,25 @@ module BulkEmail
         flash[:notice] = text("bulk_email.delivery.success", count: @delivery_form.recipient_ids.count)
         redirect_to delivery_success_path
       else
-        flash[:error] = text("bulk_email.delivery.failure")
+        flash.now[:error] = text("bulk_email.delivery.failure")
         @users = User.where_ids_in(@delivery_form.recipient_ids)
+        populate_flow_state_params
         render :create
       end
     end
 
     private
+
+    # There are several hidden parameters in the bulk email compose form that
+    # hold state on how the user got here, what product(s) the mail is about,
+    # and how the recipients were chosen. If there is a form error, these params
+    # need to be set to keep that state in the redisplayed form.
+    def populate_flow_state_params
+      return if params[:bulk_email_delivery_form].blank?
+      search_criteria = JSON.parse(params[:bulk_email_delivery_form][:search_criteria])
+      params.merge!(search_criteria.slice("bulk_email", "start_date", "end_date", "products"))
+      params.merge!(params[:bulk_email_delivery_form].slice(:product_id, :recipient_ids))
+    end
 
     def bulk_email_cancel_path
       if cancel_params.present?
@@ -61,26 +71,15 @@ module BulkEmail
       end
     end
 
+    def subject_product
+      product_id = params[:product_id].presence ||
+                   params[:bulk_email_delivery_form].try(:[], :product_id)
+      Product.find(product_id) if product_id.present?
+    end
+
     def bulk_email_content_generator
-      @content_generator ||=
-        if params[:product_id].present?
-          ContentGenerator.new(current_facility, Product.find(params[:product_id]))
-        else
-          ContentGenerator.new(current_facility)
-        end
-    end
-
-    def bulk_email_recipient_search_params
-      @bulk_email_recipient_search_params ||= params.slice(:start_date,
-                                                           :end_date,
-                                                           :bulk_email,
-                                                           :products,
-                                                           :product_id)
-    end
-
-    def cancel_params
-      @cancel_params ||=
-        bulk_email_recipient_search_params.merge(return_path: params[:return_path])
+      @bulk_email_content_generator ||=
+        ContentGenerator.new(current_facility, subject_product)
     end
 
     def delivery_success_path
@@ -100,7 +99,7 @@ module BulkEmail
     end
 
     def init_delivery_form
-      @delivery_form = DeliveryForm.new(current_user, current_facility)
+      @delivery_form = DeliveryForm.new(current_user, current_facility, bulk_email_content_generator)
       @delivery_form.assign_attributes(params[:bulk_email_delivery_form])
     end
 

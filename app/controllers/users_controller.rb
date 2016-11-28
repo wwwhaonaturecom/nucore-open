@@ -77,7 +77,7 @@ class UsersController < ApplicationController
   def create_internal
     @user = username_lookup(params[:username])
     if @user.nil?
-      flash[:error] = I18n.t("users.search.notice1")
+      flash[:error] = text("users.search.netid_not_found")
       redirect_to facility_users_path
     elsif @user.persisted?
       flash[:error] = text("users.search.user_already_exists", username: @user.username)
@@ -85,7 +85,7 @@ class UsersController < ApplicationController
     elsif @user.save
       save_user_success
     else
-      flash[:error] = I18n.t("users.create.error")
+      flash[:error] = text("create.error", message: @user.errors.full_messages.to_sentence)
       redirect_to facility_users_path
     end
   end
@@ -104,7 +104,8 @@ class UsersController < ApplicationController
     # order details for this facility
     @order_details = @user.order_details
                           .non_reservations
-                          .where("orders.facility_id = ? AND orders.ordered_at IS NOT NULL", current_facility.id)
+                          .for_facility(current_facility)
+                          .purchased
                           .order("orders.ordered_at DESC")
                           .paginate(page: params[:page])
   end
@@ -183,7 +184,7 @@ class UsersController < ApplicationController
 
   def username_lookup(username)
     return nil unless username.present?
-    username_database_lookup(username) || service_username_lookup(username)
+    username_database_lookup(username.strip) || service_username_lookup(username.strip)
   end
 
   def username_database_lookup(username)
