@@ -92,7 +92,7 @@ RSpec.describe "Purchasing a Sequencing service from ACGT", :aggregate_failures 
     before { click_link "Submit as a plate" }
 
     it "supports the various plate mode features" do
-      fill_in_row("TEST123")
+      fill_in_row("") # Customer Sample values are not required in plate mode
       fill_in_row("TEST124", 1)
       # Starting place
       expect(page).to have_content("A01")
