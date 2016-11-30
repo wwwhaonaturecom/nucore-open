@@ -253,7 +253,7 @@ en:
       th:
         amount: Amount
         order_number: "Order #"
-        order_status: Order Status
+        order_status: Current Order Status
         product: Product
         transaction_date: Transaction Date
       unassigned: Unassigned
@@ -635,12 +635,6 @@ en:
         instrument: "* Instrument pricing is estimated; the final price may vary based on actual time used."
       td:
         total: Estimated Totals
-      th:
-        product: Product
-        quantity: Quantity
-        cost: Estimated Price
-        adjust: Estimated Adjustment
-        extend: Estimated Total
     receipt:
       crumbs:
         orders: "My Orders"
@@ -1035,11 +1029,7 @@ en:
 
   facility_statements:
     new:
-      instructions: Please review the following payment sources. A statement will be generated for each of the payment sources and an email with a link to the statement will be sent.
       no_orders: There are no completed orders that require statements.
-    index:
-      head: Statement History
-      no_statements: No statements have been sent yet
 
   instruments:
     manage:
