@@ -12,6 +12,10 @@ machine:
     - docker
   timezone: "America/Chicago"
 
+checkout:
+  post:
+    - cp config/settings.local.yml.template config/settings.local.yml
+
 dependencies:
   cache_directories:
     - "~/instantclient_deb"
@@ -21,7 +25,7 @@ dependencies:
 database:
   pre:
     - cp config/circle/database.yml config/database.yml
-    - docker run -d -p 1521:1521 wnameless/oracle-xe-11g; sleep 10
+    - docker run -d -p 1521:1521 wnameless/oracle-xe-11g:14.04.4; sleep 10
     - bash config/circle/database_create.sh
   override:
     - export RAILS_ENV="test"; export RACK_ENV="test"; bundle exec rake db:schema:load
@@ -32,6 +36,8 @@ test:
         parallel: true
         files:
           - spec/**/*_spec.rb
+          - vendor/engines/acgt/spec/**/*_spec.rb
+          - vendor/engines/bulk_email/spec/**/*_spec.rb
           - vendor/engines/c2po/spec/**/*_spec.rb
           - vendor/engines/dataprobe/spec/**/*_spec.rb
           - vendor/engines/jxml/spec/**/*_spec.rb
