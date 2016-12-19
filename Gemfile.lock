@@ -83,7 +83,7 @@ GEM
   remote: https://rubygems.org/
   specs:
     Ascii85 (1.0.2)
-    aasm (4.10.1)
+    aasm (4.11.1)
     actionmailer (4.2.7.1)
       actionpack (= 4.2.7.1)
       actionview (= 4.2.7.1)
@@ -123,7 +123,7 @@ GEM
     addressable (2.4.0)
     afm (0.2.2)
     arel (6.0.3)
-    ast (2.2.0)
+    ast (2.3.0)
     awesome_nested_set (3.0.3)
       activerecord (>= 4.0.0, < 5)
     awesome_print (1.1.0)
@@ -136,10 +136,7 @@ GEM
     bootstrap-sass (2.3.2.2)
       sass (~> 3.2)
     builder (3.2.2)
-    byebug (3.5.1)
-      columnize (~> 0.8)
-      debugger-linecache (~> 1.2)
-      slop (~> 3.6)
+    byebug (9.0.6)
     cancancan (1.10.0)
     capistrano (3.4.1)
       i18n
@@ -229,11 +226,9 @@ GEM
       coffee-script
       execjs
       json
-    columnize (0.9.0)
     concurrent-ruby (1.0.2)
     daemons (1.1.9)
     debug_inspector (0.0.2)
-    debugger-linecache (1.2.0)
     delayed_job (4.0.6)
       activesupport (>= 3.0, < 5.0)
     delayed_job_active_record (4.0.3)
@@ -260,7 +255,7 @@ GEM
     exception_notification (4.0.1)
       actionmailer (>= 3.0.4)
       activesupport (>= 3.0.4)
-    excon (0.49.0)
+    excon (0.51.0)
     execjs (2.7.0)
     eye (0.8.1)
       celluloid (~> 0.17.3)
@@ -281,12 +276,12 @@ GEM
     faraday_middleware (0.9.2)
       faraday (>= 0.7.4, < 0.10)
     ffi (1.9.10)
-    fog-aws (0.9.2)
-      fog-core (~> 1.27)
+    fog-aws (0.9.4)
+      fog-core (~> 1.38)
       fog-json (~> 1.0)
       fog-xml (~> 0.1)
       ipaddress (~> 0.8)
-    fog-core (1.40.0)
+    fog-core (1.42.0)
       builder
       excon (~> 0.49)
       formatador (~> 0.2)
@@ -383,7 +378,7 @@ GEM
       activesupport (>= 3.2.0)
       cocaine (~> 0.5.5)
       mime-types
-    parser (2.3.1.2)
+    parser (2.3.1.4)
       ast (~> 2.2)
     pdf-reader (1.4.0)
       Ascii85 (~> 1.0.0)
@@ -410,8 +405,8 @@ GEM
       coderay (~> 1.1.0)
       method_source (~> 0.8.1)
       slop (~> 3.4)
-    pry-byebug (2.0.0)
-      byebug (~> 3.4)
+    pry-byebug (3.4.2)
+      byebug (~> 9.0)
       pry (~> 0.10)
     pry-rails (0.3.4)
       pry (>= 0.9.10)
@@ -477,7 +472,7 @@ GEM
     rspec-mocks (3.5.0)
       diff-lcs (>= 1.2.0, < 2.0)
       rspec-support (~> 3.5.0)
-    rspec-rails (3.5.1)
+    rspec-rails (3.5.2)
       actionpack (>= 3.0)
       activesupport (>= 3.0)
       railties (>= 3.0)
@@ -489,8 +484,8 @@ GEM
     rspec_junit_formatter (0.2.3)
       builder (< 4)
       rspec-core (>= 2, < 4, != 2.12.0)
-    rubocop (0.40.0)
-      parser (>= 2.3.1.0, < 3.0)
+    rubocop (0.44.1)
+      parser (>= 2.3.1.1, < 3.0)
       powerpack (~> 0.1)
       rainbow (>= 1.99.1, < 3.0)
       ruby-progressbar (~> 1.7)
@@ -569,14 +564,14 @@ GEM
     uglifier (2.7.2)
       execjs (>= 0.3.0)
       json (>= 1.8.0)
-    unicode-display_width (1.0.5)
+    unicode-display_width (1.1.1)
     unicorn (5.1.0)
       kgio (~> 2.6)
       raindrops (~> 0.7)
     vuejs-rails (1.0.24)
     warden (1.2.6)
       rack (>= 1.0)
-    web-console (3.2.0)
+    web-console (3.3.0)
       activemodel (>= 4.2)
       debug_inspector
       railties (>= 4.2)
@@ -594,7 +589,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  aasm (~> 4.10.1)
+  aasm (~> 4.11.1)
   acgt (~> 0.0.1)!
   activerecord-oracle_enhanced-adapter (~> 1.6.0)
   awesome_nested_set (= 3.0.3)
@@ -652,8 +647,8 @@ DEPENDENCIES
   prawn (= 0.12)
   prawn_rails (= 0.0.11)
   protected_attributes
-  pry-byebug (~> 2.0.0)
-  pry-rails (~> 0.3.2)
+  pry-byebug (~> 3.4.1)
+  pry-rails (~> 0.3.4)
   quiet_assets
   rails (= 4.2.7.1)
   rails-observers
@@ -662,7 +657,7 @@ DEPENDENCIES
   rollbar (~> 2.8.0)
   rspec-activejob
   rspec-collection_matchers
-  rspec-rails (~> 3.5.1)
+  rspec-rails (~> 3.5.2)
   rspec_junit_formatter (= 0.2.3)
   rubocop
   ruby-oci8 (~> 2.2.0)
@@ -693,4 +688,4 @@ DEPENDENCIES
   will_paginate (~> 3.0.5)
 
 BUNDLED WITH
-   1.11.2
+   1.13.6

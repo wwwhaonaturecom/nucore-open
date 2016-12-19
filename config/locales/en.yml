@@ -93,6 +93,7 @@ en:
     create: Create
     confirm_message: Are you sure?
     delete: Delete
+    dispute: Dispute
     edit: Edit
     not_applicable: N/A
     remove: Remove
@@ -635,12 +636,6 @@ en:
         instrument: "* Instrument pricing is estimated; the final price may vary based on actual time used."
       td:
         total: Estimated Totals
-      th:
-        product: Product
-        quantity: Quantity
-        cost: Estimated Price
-        adjust: Estimated Adjustment
-        extend: Estimated Total
     receipt:
       crumbs:
         orders: "My Orders"
@@ -822,6 +817,10 @@ en:
         search: "Search by name, NetID, or username"
 
   accounts:
+    index:
+      transaction_in_review:
+        one: You have one transaction in review
+        other: You have %{count} transactions in review
     member_table:
       add_access: Add Access
       remove_access: Remove Access
@@ -1035,11 +1034,7 @@ en:
 
   facility_statements:
     new:
-      instructions: Please review the following payment sources. A statement will be generated for each of the payment sources and an email with a link to the statement will be sent.
       no_orders: There are no completed orders that require statements.
-    index:
-      head: Statement History
-      no_statements: No statements have been sent yet
 
   instruments:
     manage:
@@ -1090,7 +1085,11 @@ en:
           min_reserve: "Minimum amount of time for a reservation (optional; must be a multiple of the reservation interval)"
           max_reserve: "Maximum amount of time for a reservation (optional)"
           cancel_hours: "Minimum length of time before a reservation begins that a user may cancel a reservation without invoking the reservation cost"
-          auto_cancel: "The duration a due but unactivated reservation can exist before the system cancels it"
+          auto_cancel: |
+            The number of minutes the system will wait before automatically
+            canceling an unstarted reservation.
+            This field should be blank for instruments managed by reservation only.
+            When blank or set to 0, the system will not cancel unstarted reservations.
           lock_window: "Window of time within which a customer may no longer move their reservation. Cancellations are permitted but may invoke a fee."
         label:
           restrict: "Reservation Restrictions"
@@ -1100,6 +1099,9 @@ en:
           cancel_hours: "Cancelation Minimum (hours)"
           auto_cancel: "Automatic Cancelation (minutes)"
           lock_window: "Reservation Lock Window (hours)"
+        warning:
+          auto_cancel_mins:
+            zero: Automatic cancellation will be disabled for this instrument
       schedule:
         unshared: Unshared schedule
         shared: Shared schedule
@@ -1130,6 +1132,11 @@ en:
         Visit <a href="%{link}">here</a> to give them access.
       link: "Visit here to give them access: %{link}"
       subject: "%{facility} - User Requested Training"
+
+  transactions:
+    in_review: Transactions in Review
+    none: You have no transactions in review, or any recently reviewed.
+    recently_reviewed: Recently Reviewed
 
   activerecord:
     errors:
