@@ -4,7 +4,7 @@ RSpec.describe JxmlRenderer do
   let(:weekday) { Date.parse("2013-02-14") }
   let(:weekend) { Date.parse("2013-02-16") }
 
-  describe "rendering with respect to today's date", :timecop_freeze do
+  describe "rendering with respect to today's date", :time_travel do
     let(:renderer) { described_class.new("/tmp") }
 
     describe "on weekends" do
@@ -36,7 +36,7 @@ RSpec.describe JxmlRenderer do
     end
   end
 
-  describe "rendering", :timecop_freeze do
+  describe "rendering", :time_travel do
     let(:now) { weekday }
 
     let(:journal) { double("Journal", journal_rows: []) }

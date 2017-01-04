@@ -277,7 +277,7 @@ RSpec.describe NucsValidator do
 
   it "does raise an error if chart string is expired, compared with a prior fulfillment date, and is outside the 90 day window" do
     today = Time.zone.today
-    Timecop.freeze today + 91.days do
+    travel_and_return(91.days) do
       define_gl066(non_grant_chart_string, expires_at: today - 1)
       expect { NucsValidator.new(non_grant_chart_string, non_revenue_account).account_is_open!((today - 2).to_datetime) }
         .to raise_error NucsErrors::DatedGL066Error
