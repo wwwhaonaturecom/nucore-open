@@ -130,7 +130,7 @@ RSpec.describe NucsGl066 do
     end
 
     def fiscal_year_test(chart_string, date, expected_year)
-      Timecop.freeze(Time.zone.parse(date)) do
+      travel_to_and_return(Time.zone.parse(date)) do
         tokens = NucsGl066.tokenize_source_line chart_string
         expect(tokens.first).to eq(expected_year)
       end

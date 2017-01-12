@@ -27,7 +27,6 @@ group :development, :test do
   gem "ruby-debug", "0.10.3"
   gem "single_test", "0.4.0"
   gem "ci_reporter"
-  gem "timecop"
 end
 
 group :production, :staging do
