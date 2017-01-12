@@ -555,7 +555,6 @@ GEM
     thor (0.19.1)
     thread_safe (0.3.5)
     tilt (2.0.5)
-    timecop (0.6.3)
     timers (4.1.1)
       hitimes
     ttfunk (1.0.3)
@@ -678,7 +677,6 @@ DEPENDENCIES
   text_helpers
   therubyracer
   thin
-  timecop (~> 0.6.3)
   uglifier (~> 2.7.2)
   unicorn
   vestal_versions (= 1.2.4.3)!
