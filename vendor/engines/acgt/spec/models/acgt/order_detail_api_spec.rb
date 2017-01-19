@@ -32,7 +32,7 @@ RSpec.describe Acgt::OrderDetailApi do
         }.to_json
       end
 
-      it "is is new" do
+      it "is is new", :aggregate_failures do
         expect(api).to be_new
 
         expect(api).not_to be_in_process
@@ -63,7 +63,7 @@ RSpec.describe Acgt::OrderDetailApi do
         }.to_json
       end
 
-      it "is is in process" do
+      it "is is in process", :aggregate_failures do
         expect(api).to be_in_process
 
         expect(api).not_to be_new
@@ -90,7 +90,7 @@ RSpec.describe Acgt::OrderDetailApi do
         }.to_json
       end
 
-      it "is completed" do
+      it "is completed", :aggregate_failures do
         expect(api).to be_complete
 
         expect(api).not_to be_new
@@ -117,7 +117,35 @@ RSpec.describe Acgt::OrderDetailApi do
         }.to_json
       end
 
-      it "is canceled" do
+      it "is canceled", :aggregate_failures do
+        expect(api).to be_canceled
+
+        expect(api).not_to be_new
+        expect(api).not_to be_in_process
+        expect(api).not_to be_complete
+      end
+    end
+
+    # This is perhaps incorrect behavior
+    describe "when it is canceled with 'canceled' status" do
+      let(:json) do
+        {
+          order: [
+            {
+              orderid: "301172-349110",
+              orderstatus: "Canceled",
+              orderdate: "2016-05-20T14:38:23Z",
+              completeddate: "",
+              firstname: "Kwang",
+              lastname: "Shin",
+              emailaddress: "kwang_shin@acgtinc.com",
+              samplenumber: "1"
+            }
+          ]
+        }.to_json
+      end
+
+      it "is canceled", :aggregate_failures do
         expect(api).to be_canceled
 
         expect(api).not_to be_new
