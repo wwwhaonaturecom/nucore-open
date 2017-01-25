@@ -585,6 +585,7 @@ ActiveRecord::Schema.define(version: 20170112204251) do
     t.text     "training_request_contacts"
     t.boolean  "note_available_to_users",   limit: nil,                default: false, null: false
     t.string   "acgt_service_type"
+    t.integer  "cutoff_hours",                          precision: 38, default: 0,     null: false
   end
 
   add_index "products", ["facility_account_id"], name: "i_products_facility_account_id", tablespace: "bc_nucore"
