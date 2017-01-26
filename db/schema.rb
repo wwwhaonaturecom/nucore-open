@@ -364,6 +364,7 @@ ActiveRecord::Schema.define(version: 20170112204251) do
     t.boolean  "problem",                 limit: nil,                          default: false, null: false
     t.integer  "dispute_by_id",           limit: nil
     t.datetime "reconciled_at"
+    t.integer  "project_id",              limit: nil
   end
 
   add_index "order_details", ["account_id"], name: "i_order_details_account_id", tablespace: "bc_nucore"
@@ -592,6 +593,18 @@ ActiveRecord::Schema.define(version: 20170112204251) do
   add_index "products", ["facility_id"], name: "index_products_on_facility_id", tablespace: "bc_nucore"
   add_index "products", ["schedule_id"], name: "i_instruments_schedule_id", tablespace: "bc_nucore"
   add_index "products", ["url_name"], name: "index_products_on_url_name", tablespace: "bc_nucore"
+
+  create_table "projects", force: :cascade do |t|
+    t.string   "name",                                   null: false
+    t.text     "description"
+    t.integer  "facility_id", limit: nil,                null: false
+    t.datetime "created_at",                             null: false
+    t.datetime "updated_at",                             null: false
+    t.boolean  "active",      limit: nil, default: true, null: false
+  end
+
+  add_index "projects", ["facility_id", "name"], name: "i_projects_facility_id_name", unique: true
+  add_index "projects", ["facility_id"], name: "index_projects_on_facility_id"
 
   create_table "relays", force: :cascade do |t|
     t.integer  "instrument_id",       limit: nil
@@ -847,6 +860,7 @@ ActiveRecord::Schema.define(version: 20170112204251) do
   add_foreign_key "products", "facilities", name: "sys_c008556"
   add_foreign_key "products", "facility_accounts", name: "fk_facility_accounts"
   add_foreign_key "products", "schedules", name: "fk_instruments_schedule"
+  add_foreign_key "projects", "facilities"
   add_foreign_key "reservations", "order_details", name: "res_ord_det_id_fk"
   add_foreign_key "reservations", "products", name: "reservations_product_id_fk"
   add_foreign_key "sanger_seq_product_groups", "products"

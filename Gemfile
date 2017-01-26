@@ -73,7 +73,7 @@ gem "nucs", "~> 1.0.0", path: "vendor/engines/nucs"
 gem "pmu", "~> 1.0.0", path: "vendor/engines/pmu"
 gem "jxml", "~> 1.0.0", path: "vendor/engines/jxml"
 gem "nu_cardconnect", "~> 0.0.1", path: "vendor/engines/nu_cardconnect"
-# gem "projects", "~> 0.0.1", path: "vendor/engines/projects"
+gem "projects", "~> 0.0.1", path: "vendor/engines/projects", group: [:development, :stage, :test]
 gem "sanger_sequencing", path: "vendor/engines/sanger_sequencing"
 # ACGT needs to be after sanger so that its views and locales take precedence
 gem "acgt", "~> 0.0.1", path: "vendor/engines/acgt"
