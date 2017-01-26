@@ -62,7 +62,7 @@ gem "daemons", "1.1.9"
 gem "lograge"
 gem "logstash-event"
 gem "oj", "~> 2.12.14"
-gem "rollbar", "~> 2.8.0"
+gem "rollbar", "~> 2.8.1"
 
 ## custom
 gem "bulk_email", path: "vendor/engines/bulk_email"
@@ -88,7 +88,7 @@ group :development do
 end
 
 group :development, :deployment do
-  gem "capistrano", "~> 3.4.0", require: false
+  gem "capistrano", require: false
   gem "capistrano-rails",   require: false
   gem "capistrano-rvm",     require: false
   gem "capistrano-bundler", require: false
