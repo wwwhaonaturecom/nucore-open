@@ -141,7 +141,7 @@ Nucore::Application.routes.draw do
         end
         get "switch_to",    to: 'users#switch_to'
         get "orders",       to: 'users#orders'
-        resources :reservations, only: [:index], controller: "facility_user_reservations" do
+        resources :reservations, only: [:index], param: :order_detail_id, controller: "facility_user_reservations" do
           member do
             put "cancel"
           end
@@ -154,7 +154,7 @@ Nucore::Application.routes.draw do
       resources :users, except: [:edit, :update, :new, :create], constraints: { id: /\d+/ } do
         get "switch_to",    to: 'users#switch_to'
         get "orders",       to: 'users#orders'
-        resources :reservations, only: [:index], controller: "facility_user_reservations" do
+        resources :reservations, only: [:index], param: :order_detail_id, controller: "facility_user_reservations" do
           member do
             put "cancel"
           end
