@@ -1,0 +1,12 @@
+= content_for :head_content do
+  = render "form_head"
+
+= content_for :h1 do
+  = current_facility
+
+= content_for :sidebar do
+  = render "admin/shared/sidenav_users", sidenav_tab: "users"
+
+%h2= text("head", user: @user.full_name)
+%p= text("subhead")
+= render "form", button_text: text("shared.update")

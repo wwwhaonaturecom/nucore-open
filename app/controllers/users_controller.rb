@@ -18,7 +18,8 @@ class UsersController < ApplicationController
   before_action :authenticate_user!, except: [:password_reset]
   before_action :check_acting_as
 
-  load_and_authorize_resource except: [:password, :password_reset], id_param: :user_id
+  load_and_authorize_resource except: [:password, :password_reset, :edit, :update], id_param: :user_id
+  load_and_authorize_resource only: [:edit, :update], id_param: :id
 
   layout "two_column"
 
@@ -124,7 +125,7 @@ class UsersController < ApplicationController
   # GET /facilities/:facility_id/users/:user_id/access_list
   def access_list
     @facility = current_facility
-    @products_by_type = @facility.products_requiring_approval_by_type
+    @products_by_type = Product.for_facility(@facility).requiring_approval_by_type
     @training_requested_product_ids = @user.training_requests.pluck(:product_id)
   end
 
@@ -142,7 +143,28 @@ class UsersController < ApplicationController
   def email
   end
 
+  # GET /facilities/:facility_id/users/:id/edit
+  def edit
+    @user = User.find(params[:id])
+  end
+
+  # PUT /facilities/:facility_id/users/:id
+  def update
+    @user = User.find(params[:id])
+    if @user.update_attributes(edit_user_params)
+      flash[:notice] = text("update.success")
+      redirect_to facility_user_path(current_facility, @user)
+    else
+      flash[:error] = text("update.error", message: @user.errors.full_messages.to_sentence)
+      render action: "edit"
+    end
+  end
+
   private
+
+  def edit_user_params
+    params.require(:user).permit(:email, :first_name, :last_name)
+  end
 
   def update_access_list_approvals
     if update_approvals.grants_changed?
@@ -158,7 +180,7 @@ class UsersController < ApplicationController
 
   def update_approvals
     @update_approvals ||= ProductApprover.new(
-      current_facility.products_requiring_approval,
+      Product.for_facility(current_facility).requiring_approval,
       @user,
       session_user,
     ).update_approvals(approved_products_from_params, params[:product_access_group])

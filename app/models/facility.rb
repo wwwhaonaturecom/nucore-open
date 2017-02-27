@@ -50,7 +50,6 @@ class Facility < ActiveRecord::Base
             if: -> { SettingsHelper.feature_on?(:limit_short_description) }
 
   delegate :in_dispute, to: :order_details, prefix: true
-  delegate :requiring_approval, :requiring_approval_by_type, to: :products, prefix: true
 
   scope :active, -> { where(is_active: true) }
   scope :sorted, -> { order(:name) }
@@ -66,6 +65,14 @@ class Facility < ActiveRecord::Base
 
   def self.urls_from_ids(ids)
     where("id in (?)", ids).select(:url_name).map(&:url_name)
+  end
+
+  def products(type = nil)
+    if type
+      super.where(type: type)
+    else
+      super
+    end
   end
 
   def destroy

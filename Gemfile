@@ -12,10 +12,10 @@ gem "activerecord-oracle_enhanced-adapter", "~> 1.6.0"
 gem "ruby-oci8",        "~> 2.2.0"
 
 ## auth
+gem "cancancan", "1.15"
 gem "devise",           "~> 3.5.10"
 gem "devise-encryptable", "~> 0.2.0"
 gem "devise_ldap_authenticatable", "~> 0.8.5"
-gem "cancancan",        "1.10"
 
 ## models
 gem "aasm", "~> 4.11.1"
@@ -28,7 +28,7 @@ gem "rails-observers"
 ## views
 gem "bootstrap-sass",   "~> 2.3.2"
 gem "haml",             "~> 4.0.5"
-gem "will_paginate",    "~> 3.0.5"
+gem "will_paginate", "~> 3.1.5"
 gem "dynamic_form",     "~> 1.1.4"
 gem "ckeditor", "~> 4.1.6"
 gem "jquery-rails"
@@ -77,6 +77,7 @@ gem "projects", "~> 0.0.1", path: "vendor/engines/projects", group: [:developmen
 gem "sanger_sequencing", path: "vendor/engines/sanger_sequencing"
 # ACGT needs to be after sanger so that its views and locales take precedence
 gem "acgt", "~> 0.0.1", path: "vendor/engines/acgt"
+# gem "secure_rooms", path: "vendor/engines/secure_rooms"
 gem "split_accounts", "~> 0.0.1", path: "vendor/engines/split_accounts"
 gem "synaccess_connect", "0.2.2", github: "tablexi/synaccess"
 
@@ -97,7 +98,7 @@ end
 
 group :development, :test do
   gem "awesome_print", "1.1.0"
-  gem "factory_girl_rails", "~> 4.5.0"
+  gem "factory_girl_rails", "~> 4.8.0"
   gem "guard-rspec", require: false
   gem "guard-teaspoon", require: false
   gem "pry-rails", "~> 0.3.4"

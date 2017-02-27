@@ -93,10 +93,12 @@ api:
 # For these settings use SettingsHelper#feature_on?
 feature:
   billing_administrator_on: true
+  billing_administrator_users_tab_on: true
   create_users_on: true
   netids_on: true
   limit_short_description_on: true
   manage_payment_sources_with_users_on: true
+  order_assignment_notifications_on: true
   password_update_on: true
   recharge_accounts_on: true
   expense_accounts_on: true

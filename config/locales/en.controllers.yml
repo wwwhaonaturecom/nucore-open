@@ -66,6 +66,8 @@ en:
         error: "An error was encountered while adding the product %{product}."
         success: "%{product} was successfully added to this order."
         notices: "%{product} needs your attention before it is added to the order."
+        invalid_status: |
+          %{product} may not be set initially to an order status of %{status}.
 
     facility_order_details:
       edit:
@@ -119,6 +121,9 @@ en:
       create:
         no_selection: "You must select a payment source before reserving"
         success: "The reservation was successfully created."
+      order_detail_removed: |
+        The instrument order has been removed from your cart.
+        Please add it again to make a reservation.
       update:
         failure: The reservation cannot be updated.
 
@@ -139,8 +144,21 @@ en:
       errors:
         remove_active_policy: "Sorry, but you cannot remove an active price policy. If you really want to do so move the start date to the future and try again."
         save: There was an error saving the policy
+        same_start_date: "You have chosen a start date that matches an active policy with existing orders. Please choose another start date."
       new:
         success: Price Rules were successfully created.
+
+    product_users:
+      new:
+        success: The user has been successfully authorized for this %{model}
+      index:
+        not_required: This %{model} does not require user authorization
+      destroy:
+        success: The user has been successfully removed from this %{model}
+        failure: An error was encountered while attempting to remove the user from this %{model}
+      update_restrictions:
+        success: "The users' scheduling groups have been updated."
+
 
     orders:
       purchase:
