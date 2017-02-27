@@ -1,4 +1,4 @@
-lock "3.4.1" # config valid only for Capistrano 3.4
+lock "3.5.0" # config valid only for Capistrano 3.5
 
 set :application, "nucore"
 set :repo_url, "git@github.com:tablexi/nucore-nu.git"
