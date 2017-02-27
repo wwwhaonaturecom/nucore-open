@@ -10,8 +10,7 @@ module ApplicationHelper
   end
 
   def can_create_users?
-    SettingsHelper.feature_on?(:create_users) &&
-      current_ability.can?(:manage_users, current_facility || Facility.cross_facility)
+    SettingsHelper.feature_on?(:create_users) && current_ability.can?(:create, User)
   end
 
   def html_title(title = nil)
@@ -64,6 +63,13 @@ module ApplicationHelper
   def menu_facilities
     return [] unless session_user
     session_user.facilities
+  end
+
+  def render_if_exists(partial, options = {})
+    # The third argument `true` checks for partials (prefixed with _)
+    if lookup_context.template_exists?(partial, lookup_context.prefixes, true)
+      render partial, options
+    end
   end
 
 end

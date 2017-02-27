@@ -8,11 +8,12 @@ class PricePoliciesController < ApplicationController
   before_action :init_current_facility
   before_action :init_product
   before_action :init_price_policy, except: [:index, :new]
-  before_action :build_price_policies!, only: [:create, :edit, :update]
+  before_action :build_price_policies!, only: [:create, :update]
+  before_action :build_price_policies_for_edit!, only: :edit
   before_action :set_expire_date_from_params, only: [:create, :update]
   before_action :set_max_expire_date, only: [:edit, :update]
 
-  load_and_authorize_resource
+  load_and_authorize_resource instance_name: :price_policy
 
   layout "two_column"
 
@@ -61,11 +62,15 @@ class PricePoliciesController < ApplicationController
     return flash_remove_active_policy_warning_and_redirect if @start_date <= Date.today
 
     if PricePolicyUpdater.destroy_all_for_product!(@product, @start_date)
-      flash[:notice] = I18n.t("controllers.price_policies.destroy.success")
+      flash[:notice] = text("destroy.success")
     else
-      flash[:error] = I18n.t("controllers.price_policies.destroy.failure")
+      flash[:error] = text("destroy.failure")
     end
     redirect_to facility_product_price_policies_path
+  end
+
+  def translation_scope
+    "controllers.price_policies"
   end
 
   private
@@ -74,48 +79,52 @@ class PricePoliciesController < ApplicationController
     @product.price_policies.current.any?
   end
 
+  def build_price_policies
+    @price_policies ||= PricePolicyBuilder.get(@product, @start_date)
+  end
+
   def build_price_policies!
-    @price_policies = PricePolicyBuilder.get(@product, @start_date)
+    build_price_policies
+    if @price_policies.blank?
+      redirect_to facility_product_price_policies_path,
+                  alert: text("errors.same_start_date")
+    end
+  end
+
+  def build_price_policies_for_edit!
+    build_price_policies
     raise ActiveRecord::RecordNotFound if @price_policies.blank?
   end
 
   def create_or_update(action)
     if update_policies_from_params!
-      flash[:notice] = I18n.t("controllers.price_policies.#{action}.success")
+      flash[:notice] = text("#{action}.success")
       redirect_to facility_product_price_policies_path
     else
-      flash[:error] = I18n.t("controllers.price_policies.errors.save")
+      flash[:error] = text("errors.save")
       render "price_policies/#{action}"
     end
   end
 
   def facility_product_price_policies_path
-    method("facility_#{product_var}_price_policies_path")
-      .call(current_facility, @product)
+    [current_facility, @product, PricePolicy]
   end
 
   # Override CanCan's find -- it won't properly search by zoned date
   def init_price_policy
     @start_date = start_date_from_params
 
-    instance_variable_set(
-      "@#{model_name.underscore}",
-      instance_variable_get("@#{product_var}")
-        .price_policies
-        .for_date(@start_date)
-        .first,
-    )
+    @price_policy = @product
+                    .price_policies
+                    .for_date(@start_date)
+                    .first
   end
 
   def init_product
-    @product = current_facility.method(product_var.pluralize)
-                               .call
-                               .find_by_url_name!(params["#{product_var}_id".to_sym])
-    instance_variable_set("@#{product_var}", @product)
-  end
-
-  def model_name
-    self.class.name.gsub(/Controller\z/, "").singularize
+    id_param = params.except(:facility_id).keys.detect { |k| k.end_with?("_id") }
+    clazz = id_param.sub(/_id\z/, "").camelize
+    @product = current_facility.products(clazz)
+                               .find_by!(url_name: params[id_param])
   end
 
   def new_start_date
@@ -123,13 +132,9 @@ class PricePoliciesController < ApplicationController
     Date.today + (active_policies? ? 1 : 0)
   end
 
-  def product_var
-    @product_var ||= model_name.gsub(/PricePolicy\z/, "").downcase
-  end
-
   def flash_remove_active_policy_warning_and_redirect
     flash[:error] =
-      I18n.t("controllers.price_policies.errors.remove_active_policy")
+      text("errors.remove_active_policy")
     redirect_to facility_product_price_policies_path
   end
 

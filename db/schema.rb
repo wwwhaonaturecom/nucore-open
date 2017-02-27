@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170112204251) do
+ActiveRecord::Schema.define(version: 20170210214106) do
 
   create_table "account_users", force: :cascade do |t|
     t.integer  "account_id", limit: nil,                null: false
@@ -50,8 +50,9 @@ ActiveRecord::Schema.define(version: 20170112204251) do
 
   create_table "affiliates", force: :cascade do |t|
     t.string   "name"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at",                                        null: false
+    t.datetime "updated_at",                                        null: false
+    t.boolean  "subaffiliates_enabled", limit: nil, default: false, null: false
   end
 
   create_table "bi_netids", force: :cascade do |t|
@@ -73,7 +74,7 @@ ActiveRecord::Schema.define(version: 20170112204251) do
   end
 
   create_table "bulk_email_jobs", force: :cascade do |t|
-    t.integer  "facility_id",     limit: nil, null: false
+    t.integer  "facility_id",     limit: nil
     t.integer  "user_id",         limit: nil, null: false
     t.string   "subject",                     null: false
     t.text     "body",                        null: false
@@ -352,7 +353,6 @@ ActiveRecord::Schema.define(version: 20170112204251) do
     t.integer  "response_set_id",         limit: nil
     t.integer  "group_id",                limit: nil
     t.integer  "bundle_product_id",       limit: nil
-    t.string   "note",                    limit: 100
     t.datetime "fulfilled_at"
     t.datetime "reviewed_at"
     t.integer  "statement_id",            limit: nil
@@ -365,6 +365,7 @@ ActiveRecord::Schema.define(version: 20170112204251) do
     t.integer  "dispute_by_id",           limit: nil
     t.datetime "reconciled_at"
     t.integer  "project_id",              limit: nil
+    t.text     "note"
   end
 
   add_index "order_details", ["account_id"], name: "i_order_details_account_id", tablespace: "bc_nucore"

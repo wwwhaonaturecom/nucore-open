@@ -46,6 +46,44 @@ RSpec.describe UsersController do
 
   end
 
+  describe "GET #edit", feature_setting: { create_users: true } do
+    let(:user) { FactoryGirl.create(:user, :external) }
+
+    before(:each) do
+      @method = :get
+      @action = :edit
+      @params[:id] = user.id
+    end
+
+    it_should_allow_admin_only { expect(assigns[:user]).to eq(user) }
+  end
+
+  describe "PUT #update", feature_setting: { create_users: true } do
+    let(:user) { FactoryGirl.create(:user, :external) }
+
+    before(:each) do
+      @method = :put
+      @action = :update
+      @params[:id] = user.id
+      @params[:user] = { first_name: "New", last_name: "Name" }
+    end
+
+    it_should_allow_admin_only(:found) do
+      expect(user.reload.first_name).to eq("New")
+      expect(response).to redirect_to facility_user_path(facility, user)
+    end
+
+    context "with bad params" do
+      before(:each) do
+        @params[:user] = { email: "test@example.com", username: "newusername" }
+      end
+
+      it_should_allow_admin_only(:found) do
+        expect(user.reload.first_name).to eq(user.first_name)
+      end
+    end
+  end
+
   describe "GET #access_list" do
     let(:facility) { FactoryGirl.create(:setup_facility) }
     let(:user) { FactoryGirl.create(:user) }
@@ -265,8 +303,10 @@ RSpec.describe UsersController do
 
     context "disabled" do
       include_context "feature disabled", :create_users
-      it "doesn't route route" do
+      it "doesn't route route", :aggregate_failures do
         expect(get: "/#{facilities_route}/url_name/users/new").not_to be_routable
+        expect(get: "/#{facilities_route}/url_name/users/edit").not_to be_routable
+        expect(put: "/#{facilities_route}/url_name/users/update").not_to be_routable
         expect(post: "/#{facilities_route}/url_name/users").not_to be_routable
         expect(get: "/#{facilities_route}/url_name/users/new_external").not_to be_routable
         expect(post: "/#{facilities_route}/url_name/users/search").not_to be_routable

@@ -95,7 +95,7 @@ class ReservationsController < ApplicationController
     flash.now[:notice] = existing_notices.concat(notices).join("<br />").html_safe unless notices.empty?
   end
 
-  # POST /orders/1/order_details/1/reservations
+  # POST /orders/:order_id/order_details/:order_detail_id/reservations
   def create
     raise ActiveRecord::RecordNotFound unless @reservation.nil?
 
@@ -123,11 +123,12 @@ class ReservationsController < ApplicationController
     end
   end
 
-  # GET /orders/1/order_details/1/reservations/new
+  # GET /orders/:order_id/order_details/:order_detail_id/reservations/new
   def new
     raise ActiveRecord::RecordNotFound unless @reservation.nil?
+
     options = current_user.can_override_restrictions?(@instrument) ? {} : { user: acting_user }
-    next_available = @instrument.next_available_reservation(1.minute.from_now, default_reservation_mins.minutes, options)
+    next_available = @instrument.next_available_reservation(after: 1.minute.from_now, duration: default_reservation_mins.minutes, options: options)
     @reservation = next_available || default_reservation
     @reservation.round_reservation_times
     unless @instrument.can_be_used_by?(@order_detail.user)
@@ -282,10 +283,13 @@ class ReservationsController < ApplicationController
     @order = Order.find(params[:order_id])
     # It's important that the order_detail be the same object as the one in @order.order_details.first
     @order_detail = @order.order_details.find { |od| od.id.to_i == params[:order_detail_id].to_i }
+    raise ActiveRecord::RecordNotFound if @order_detail.blank?
     @reservation = @order_detail.reservation
     @instrument = @order_detail.product
     @facility = @instrument.facility
-    nil
+  rescue ActiveRecord::RecordNotFound
+    flash[:error] = text("order_detail_removed")
+    redirect_to facility_path(@order.facility)
   end
 
   def load_and_check_resources
@@ -300,11 +304,19 @@ class ReservationsController < ApplicationController
 
   # TODO: you shouldn't be able to edit reservations that have passed or are outside of the cancellation period (check to make sure order has been placed)
   def invalid_for_update?
-    can_edit = @reservation.admin_editable?
-    can_edit &&= @reservation.can_customer_edit? unless current_user.administrator?
     params[:id].to_i != @reservation.id ||
       @reservation.actual_end_at ||
-      !can_edit
+      !editable_by_current_user?
+  end
+
+  def editable_by_current_user?
+    if current_user.administrator? && @reservation.admin_editable?
+      true
+    elsif @reservation.can_customer_edit?
+      true
+    else
+      false
+    end
   end
 
   def save_reservation_and_order_detail

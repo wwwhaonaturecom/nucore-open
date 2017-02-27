@@ -172,6 +172,8 @@ en:
         other: Users
     # Model Attributes
     attributes:
+      affiliate:
+        subaffiliates_enabled: Allows subaffiliates
       schedule_rule:
         start_time: Start Time
         end_time: End Time
@@ -197,6 +199,7 @@ en:
         revenue_account: Revenue Account
         is_active: "Is Active?"
       product:
+        can_be_used_by?: Approved?
         url: URL
         url_name: URL Name
         requires_approval: Requires Approval?
@@ -204,6 +207,7 @@ en:
         initial_order_status: Initial Order Status
         is_archived: Is Inactive?
         is_hidden: Is Hidden?
+        facility_account: Recharge Chart String
         training_request_contacts: Training Request Contacts
       instrument:
         min_reserve_mins: Minimum Reservation Minutes
