@@ -19,9 +19,6 @@ class AddBiTable < ActiveRecord::Migration
         <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
       WARN
     end
-
-    add_index :bi_netids, :netid
-    add_index :bi_netids, :facility_id
   end
 
   def self.down
