@@ -21,6 +21,7 @@ dependencies:
     - "~/instantclient_deb"
   pre:
     - bash config/circle/instantclient.sh
+    - cp config/secrets.yml.template config/secrets.yml
 
 database:
   pre:

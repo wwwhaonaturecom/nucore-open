@@ -26,6 +26,10 @@ gem "nokogiri",         "~> 1.6.1"
 gem "rails-observers"
 
 ## views
+gem "sass-rails", "~> 5.0.6"
+gem "coffee-rails", "~> 4.1.1"
+gem "uglifier",     "~> 2.7.2"
+gem "therubyracer"
 gem "bootstrap-sass",   "~> 2.3.2"
 gem "haml",             "~> 4.0.5"
 gem "will_paginate", "~> 3.1.5"
@@ -48,7 +52,6 @@ gem "prawn",            "0.12"
 gem "prawn_rails",      "0.0.11"
 
 ## monitoring
-gem "eye-patch", require: false
 gem "aws-ses"
 gem "skylight"
 
@@ -57,12 +60,7 @@ gem "delayed_job_active_record", "~> 4.0.1"
 gem "fog-aws"
 gem "rake"
 gem "spreadsheet", "~> 1.1.4"
-gem "exception_notification", "~> 4.0.1"
 gem "daemons", "1.1.9"
-gem "lograge"
-gem "logstash-event"
-gem "oj", "~> 2.12.14"
-gem "rollbar", "~> 2.8.1"
 
 ## custom
 gem "bulk_email", path: "vendor/engines/bulk_email"
@@ -93,7 +91,6 @@ group :development, :deployment do
   gem "capistrano-rails",   require: false
   gem "capistrano-rvm",     require: false
   gem "capistrano-bundler", require: false
-  gem "whenever",           require: false
 end
 
 group :development, :test do
@@ -125,14 +122,17 @@ group :test do
   gem "poltergeist"
 end
 
-group :assets do
-  gem "sass-rails", "~> 5.0.6"
-  gem "coffee-rails", "~> 4.1.1"
-  gem "uglifier",     "~> 2.7.2"
-  gem "therubyracer"
+group :stage, :production do
+  gem "eye-patch", require: false
+  gem "exception_notification", "~> 4.0.1"
+  gem "lograge"
+  gem "logstash-event"
+  gem "oj", "~> 2.12.14"
+  gem "rollbar"
+  gem "unicorn", require: false
+  gem "whenever", require: false
 end
 
 group :production, :staging do
   gem "dispatcher"
-  gem "unicorn"
 end

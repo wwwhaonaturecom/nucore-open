@@ -1,6 +1,3 @@
-# see https://github.com/sosedoff/capistrano-unicorn/blob/master/examples/rails3.rb
-# see https://ariejan.net/2011/09/14/lighting-fast-zero-downtime-deployments-with-git-capistrano-nginx-and-unicorn/
-
 # env
 env = ENV["RAILS_ENV"] || "stage"
 
@@ -25,11 +22,6 @@ pid               "tmp/pids/unicorn.pid"
 stderr_path "log/unicorn.stderr.log"
 stdout_path "log/unicorn.stdout.log"
 
-# use correct Gemfile
-before_exec do |_server|
-  ENV["BUNDLE_GEMFILE"] = "#{app_path}/current/Gemfile"
-end
-
 # zero downtime
 before_fork do |server, _worker|
   # the following is highly recomended for Rails + "preload_app true"
@@ -48,6 +40,10 @@ before_fork do |server, _worker|
   end
 end
 
-after_fork do |_server, _worker|
+after_fork do |_, _|
   ActiveRecord::Base.establish_connection if defined?(ActiveRecord::Base)
+end
+
+before_exec do |_|
+  ENV["BUNDLE_GEMFILE"] = "#{app_path}/current/Gemfile"
 end

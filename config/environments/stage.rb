@@ -24,7 +24,6 @@ Nucore::Application.configure do
   # If you have no front-end server that supports something like X-Sendfile,
   # just comment this out and Rails will serve the files
 
-  # Default for everything but production is :debug
   config.log_level = :info
 
   # Use a different logger for distributed setups
@@ -37,20 +36,12 @@ Nucore::Application.configure do
   # In production, Apache or nginx will already do this
   config.serve_static_files = false
 
-  # Compress JavaScript and CSS
-  config.assets.compress = true
-
-  # fallback to compile assets
-  config.assets.compile = false
-
-  # Generate digests for assets URLs
-  config.assets.digest = true
-
   # Enable serving of images, stylesheets, and javascripts from an asset server
   # config.action_controller.asset_host = "http://assets.example.com"
 
   # Disable delivery errors, bad email addresses will be ignored
   config.action_mailer.raise_delivery_errors = false
+
   config.action_mailer.delivery_method       = :smtp
   Rails.application.routes.default_url_options =
     config.action_mailer.default_url_options   = { host: "nucore-staging.northwestern.edu", protocol: "https" }
@@ -94,4 +85,3 @@ end
 
 # What's this for?
 GOOGLE_ANALYTICS_KEY = nil
-RAKE_PATH = "/opt/ruby-enterprise/bin/".freeze
