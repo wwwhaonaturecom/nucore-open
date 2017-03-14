@@ -664,7 +664,7 @@ DEPENDENCIES
   rails-observers
   rails_config (= 0.3.3)
   rake
-  rollbar (~> 2.8.1)
+  rollbar
   rspec-activejob
   rspec-collection_matchers
   rspec-rails (~> 3.5.2)
