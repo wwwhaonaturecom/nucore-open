@@ -44,6 +44,7 @@ test:
           - vendor/engines/jxml/spec/**/*_spec.rb
           - vendor/engines/nu/spec/**/*_spec.rb
           - vendor/engines/nu_cardconnect/spec/**/*_spec.rb
+          - vendor/engines/nu_research_safety/spec/**/*_spec.rb
           - vendor/engines/nucs/spec/**/*_spec.rb
           - vendor/engines/pmu/spec/**/*_spec.rb
           - vendor/engines/split_accounts/spec/**/*_spec.rb

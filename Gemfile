@@ -67,6 +67,7 @@ gem "bulk_email", path: "vendor/engines/bulk_email"
 gem "c2po", "~> 1.0.0", path: "vendor/engines/c2po"
 gem "dataprobe", "~> 1.0.0", path: "vendor/engines/dataprobe"
 gem "nu", "~> 1.0.0", path: "vendor/engines/nu"
+gem "nu_research_safety", path: "vendor/engines/nu_research_safety", group: [:development, :stage, :test]
 gem "nucs", "~> 1.0.0", path: "vendor/engines/nucs"
 gem "pmu", "~> 1.0.0", path: "vendor/engines/pmu"
 gem "jxml", "~> 1.0.0", path: "vendor/engines/jxml"

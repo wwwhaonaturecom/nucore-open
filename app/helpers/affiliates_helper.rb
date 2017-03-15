@@ -4,7 +4,7 @@ module AffiliatesHelper
     link_to(
       I18n.t("affiliates.remove.label"),
       affiliate_path(affiliate),
-      confirm: I18n.t("affiliates.remove.confirm", name: affiliate.name),
+      data: { confirm: I18n.t("affiliates.remove.confirm", name: affiliate.name) },
       method: :delete,
     )
   end

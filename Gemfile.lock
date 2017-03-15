@@ -54,6 +54,12 @@ PATH
       rails
 
 PATH
+  remote: vendor/engines/nu_research_safety
+  specs:
+    nu_research_safety (0.0.1)
+      rails (~> 4.2.7.1)
+
+PATH
   remote: vendor/engines/nu
   specs:
     nu (1.0.0)
@@ -648,6 +654,7 @@ DEPENDENCIES
   nokogiri (~> 1.6.1)
   nu (~> 1.0.0)!
   nu_cardconnect (~> 0.0.1)!
+  nu_research_safety!
   nucs (~> 1.0.0)!
   oj (~> 2.12.14)
   paperclip (~> 4.2.0)

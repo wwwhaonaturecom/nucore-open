@@ -8,7 +8,7 @@ Gem::Specification.new do |s|
   s.name        = "nu_cardconnect"
   s.version     = NuCardconnect::VERSION
   s.authors     = ["Table XI"]
-  s.email       = ["devs@tablexi.com  "]
+  s.email       = ["devs@tablexi.com"]
   s.homepage    = ""
   s.summary     = "CardConnect integration for Northwestern University."
   s.description = "CardConnect integration for Northwestern University."
