@@ -6,10 +6,14 @@ module NuResearchSafety
 
     self.table_name = "nu_safety_certificates"
 
-    validates :name, presence: true, uniqueness: true
+    belongs_to :deleted_by, class_name: 'User'
+
+    acts_as_paranoid # soft-delete functionality
+
+    validates :name, presence: true
+    validates :name, uniqueness: { scope: :deleted_at }
 
     scope :ordered, -> { order(:name) }
-
   end
 
 end

@@ -44,5 +44,10 @@ RSpec.describe "Managing Certificates" do
       expect(current_path).to eq certificates_path
       expect(page).to have_content("Certificate #{certificate.name} removed")
     end
+
+    it "soft-deletes the certificate and sets deleted_by_id", :aggregate_failures do
+      expect(certificate.reload.deleted_at).not_to be_nil
+      expect(certificate.reload.deleted_by_id).to eq administrator.id
+    end
   end
 end

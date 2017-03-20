@@ -37,6 +37,7 @@ module NuResearchSafety
 
     def destroy
       if @certificate.destroy
+        @certificate.update_attributes(deleted_by_id: current_user.id)
         flash[:notice] = text('.destroy.notice', certificate_name: @certificate.name)
       else
         flash[:error] = text('.destroy.error', certificate_name: @certificate.name)

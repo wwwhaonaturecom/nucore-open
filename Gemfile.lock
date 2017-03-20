@@ -393,6 +393,8 @@ GEM
       activesupport (>= 3.2.0)
       cocaine (~> 0.5.5)
       mime-types
+    paranoia (2.2.1)
+      activerecord (>= 4.0, < 5.1)
     parser (2.4.0.0)
       ast (~> 2.2)
     pdf-reader (2.0.0)
@@ -658,6 +660,7 @@ DEPENDENCIES
   nucs (~> 1.0.0)!
   oj (~> 2.12.14)
   paperclip (~> 4.2.0)
+  paranoia (~> 2.2)
   pmu (~> 1.0.0)!
   poltergeist
   prawn (= 0.12)
