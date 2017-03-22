@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170306212934) do
+ActiveRecord::Schema.define(version: 20170315192738) do
 
   create_table "account_users", force: :cascade do |t|
     t.integer  "account_id", limit: nil,                null: false
@@ -255,6 +255,18 @@ ActiveRecord::Schema.define(version: 20170306212934) do
   end
 
   add_index "notifications", ["user_id"], name: "index_notifications_on_user_id", tablespace: "bc_nucore"
+
+  create_table "nu_product_cert_requirements", force: :cascade do |t|
+    t.integer  "product_id",               limit: nil
+    t.integer  "nu_safety_certificate_id", limit: nil
+    t.datetime "deleted_at"
+    t.integer  "deleted_by_id",            limit: nil
+    t.datetime "created_at",                           null: false
+    t.datetime "updated_at",                           null: false
+  end
+
+  add_index "nu_product_cert_requirements", ["nu_safety_certificate_id"], name: "i_nu_pro_cer_req_nu_saf_cer_id"
+  add_index "nu_product_cert_requirements", ["product_id"], name: "i_nu_pro_cer_req_pro_id"
 
   create_table "nu_safety_certificates", force: :cascade do |t|
     t.string   "name",                      null: false
@@ -851,6 +863,8 @@ ActiveRecord::Schema.define(version: 20170306212934) do
   add_foreign_key "email_events", "users"
   add_foreign_key "facility_accounts", "facilities", name: "fk_facilities"
   add_foreign_key "instrument_statuses", "products", column: "instrument_id", name: "fk_int_stats_product"
+  add_foreign_key "nu_product_cert_requirements", "nu_safety_certificates"
+  add_foreign_key "nu_product_cert_requirements", "products"
   add_foreign_key "nu_safety_certificates", "users", column: "deleted_by_id"
   add_foreign_key "order_details", "accounts", name: "fk_od_accounts"
   add_foreign_key "order_details", "order_details", column: "parent_order_detail_id", name: "ord_det_par_ord_det_id_fk"

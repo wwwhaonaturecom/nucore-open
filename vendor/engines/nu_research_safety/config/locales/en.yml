@@ -4,6 +4,9 @@ en:
       nu_research_safety/certificate:
         one: Certificate
         other: Certificates
+      nu_research_safety/product_certification_requirement:
+        one: Certification Requirement
+        other: Certification Requirements
   views:
     nu_research_safety:
       certificates:
@@ -12,6 +15,13 @@ en:
           remove:
             label: Remove
             confirm: Are you sure?
+      product_certification_requirements:
+        index:
+          description: Here you may define one or more safety certifications that are required for use of this product.
+          add: Add Certification Requirement
+          none: No certification requirements currently defined for this product
+          remove: Remove
+
   controllers:
     nu_research_safety/certificates:
       create:
@@ -21,3 +31,11 @@ en:
       destroy:
         notice: "Certificate %{certificate_name} removed"
         error: "Certificate %{certificate_name} could not be removed"
+
+    nu_research_safety/product_certification_requirements:
+      create:
+        notice: "Certification requirement %{certificate_name} added"
+        error: "Certification requirement %{certificate_name} could not be added"
+      destroy:
+        notice: "Certification requirement %{certificate_name} removed"
+        error: "Certification requirement %{certificate_name} could not be removed"

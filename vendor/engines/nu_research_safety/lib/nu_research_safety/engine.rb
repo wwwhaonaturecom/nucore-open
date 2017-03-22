@@ -3,9 +3,14 @@ module NuResearchSafety
   class Engine < ::Rails::Engine
 
     config.to_prepare do
+      ::AbilityExtensionManager.extensions << "NuResearchSafety::AbilityExtension"
+      Product.send :include, NuResearchSafety::ProductExtension
       ViewHook.add_hook "admin.shared.sidenav_global",
                         "after",
                         "nu_research_safety/shared/certificates_tab"
+      ViewHook.add_hook "admin.shared.tabnav_product",
+                        "after",
+                        "nu_research_safety/shared/product_certification_requirements_tab"
     end
 
     initializer :append_migrations do |app|

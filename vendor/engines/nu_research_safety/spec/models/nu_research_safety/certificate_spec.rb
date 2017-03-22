@@ -1,7 +1,8 @@
 require "rails_helper"
 
 RSpec.describe NuResearchSafety::Certificate do
-  let(:certificate) { FactoryGirl.create(:certificate) }
+  let(:product_certification_requirement) { FactoryGirl.create(:product_certification_requirement) }
+  let(:certificate) { product_certification_requirement.certificate }
 
   context "validations" do
     it { is_expected.to validate_presence_of(:name) }
@@ -12,6 +13,10 @@ RSpec.describe NuResearchSafety::Certificate do
     it "soft deletes certificate" do
       certificate.destroy
       expect(certificate.deleted_at).to be_present
+    end
+    it "soft deletes associated product_certification_requirements" do
+      certificate.destroy
+      expect(product_certification_requirement.reload.deleted_at).to be_present
     end
   end
 end
