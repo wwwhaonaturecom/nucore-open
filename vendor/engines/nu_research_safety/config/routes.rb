@@ -7,5 +7,10 @@ Rails.application.routes.draw do
                                                      path: "certification_requirements",
                                                      controller: "nu_research_safety/product_certification_requirements"
     end
+    resources :user, only: [] do
+      resources :user_certificates, only: [:index], controller: "nu_research_safety/user_certificates" do
+        post "check_certificate", on: :collection
+      end
+    end
   end
 end

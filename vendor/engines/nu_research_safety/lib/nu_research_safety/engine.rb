@@ -11,6 +11,9 @@ module NuResearchSafety
       ViewHook.add_hook "admin.shared.tabnav_product",
                         "after",
                         "nu_research_safety/shared/product_certification_requirements_tab"
+      ViewHook.add_hook "admin.shared.tabnav_users",
+                        "after",
+                        "nu_research_safety/shared/user_certificates_tab"
     end
 
     initializer :append_migrations do |app|

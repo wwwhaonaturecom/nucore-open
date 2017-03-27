@@ -21,6 +21,12 @@ en:
           add: Add Certification Requirement
           none: No certification requirements currently defined for this product
           remove: Remove
+      user_certificates:
+        tab: "Certifications"
+        index:
+          title: "%{name} Research Safety Certifications"
+          none: "There are no certificates available to check"
+          submit: "Check Certificate"
 
   controllers:
     nu_research_safety/certificates:
@@ -39,3 +45,8 @@ en:
       destroy:
         notice: "Certification requirement %{certificate_name} removed"
         error: "Certification requirement %{certificate_name} could not be removed"
+
+    nu_research_safety/user_certificates:
+      check_certificate:
+        success: "%{user_name} is certified in %{certificate_name}"
+        error: "%{user_name} is not certified in %{certificate_name}"
