@@ -12,3 +12,8 @@ inherit_from:
 # Metrics/CyclomaticComplexity:
 #   Enabled: false # We've got nasty methods!
 #
+
+Style/EmptyMethod:
+  EnforcedStyle: expanded
+Style/HashSyntax:
+  EnforcedStyle: ruby19

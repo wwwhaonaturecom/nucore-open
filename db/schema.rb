@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170315192738) do
+ActiveRecord::Schema.define(version: 20170316090613) do
 
   create_table "account_users", force: :cascade do |t|
     t.integer  "account_id", limit: nil,                null: false
@@ -714,20 +714,22 @@ ActiveRecord::Schema.define(version: 20170315192738) do
   add_index "sanger_sequencing_submissions", ["order_detail_id"], name: "i_san_seq_sub_ord_det_id"
 
   create_table "schedule_rules", force: :cascade do |t|
-    t.integer "instrument_id",    limit: nil,                                        null: false
-    t.decimal "discount_percent",             precision: 10, scale: 2, default: 0.0, null: false
-    t.integer "start_hour",                   precision: 38,                         null: false
-    t.integer "start_min",                    precision: 38,                         null: false
-    t.integer "end_hour",                     precision: 38,                         null: false
-    t.integer "end_min",                      precision: 38,                         null: false
-    t.boolean "on_sun",           limit: nil,                                        null: false
-    t.boolean "on_mon",           limit: nil,                                        null: false
-    t.boolean "on_tue",           limit: nil,                                        null: false
-    t.boolean "on_wed",           limit: nil,                                        null: false
-    t.boolean "on_thu",           limit: nil,                                        null: false
-    t.boolean "on_fri",           limit: nil,                                        null: false
-    t.boolean "on_sat",           limit: nil,                                        null: false
+    t.integer "product_id",       limit: 4,                                        null: false
+    t.decimal "discount_percent",           precision: 10, scale: 2, default: 0.0, null: false
+    t.integer "start_hour",       limit: 4,                                        null: false
+    t.integer "start_min",        limit: 4,                                        null: false
+    t.integer "end_hour",         limit: 4,                                        null: false
+    t.integer "end_min",          limit: 4,                                        null: false
+    t.boolean "on_sun",                                                            null: false
+    t.boolean "on_mon",                                                            null: false
+    t.boolean "on_tue",                                                            null: false
+    t.boolean "on_wed",                                                            null: false
+    t.boolean "on_thu",                                                            null: false
+    t.boolean "on_fri",                                                            null: false
+    t.boolean "on_sat",                                                            null: false
   end
+
+  add_index "schedule_rules", ["product_id"], name: "fk_rails_6966bf4c0d", using: :btree
 
   create_table "schedules", force: :cascade do |t|
     t.string   "name"
@@ -737,6 +739,17 @@ ActiveRecord::Schema.define(version: 20170315192738) do
   end
 
   add_index "schedules", ["facility_id"], name: "i_schedules_facility_id", tablespace: "bc_nucore"
+
+  create_table "secure_rooms_card_readers", force: :cascade do |t|
+    t.integer  "product_id",            limit: 4,   null: false
+    t.string   "card_reader_number",    limit: 255
+    t.string   "control_device_number", limit: 255
+    t.datetime "created_at",                        null: false
+    t.datetime "updated_at",                        null: false
+    t.string   "description",           limit: 255
+  end
+
+  add_index "secure_rooms_card_readers", ["card_reader_number", "control_device_number"], name: "i_secure_room_reader_ids", unique: true, using: :btree
 
   create_table "splits", force: :cascade do |t|
     t.integer "parent_split_account_id", limit: nil,                         null: false
@@ -894,7 +907,7 @@ ActiveRecord::Schema.define(version: 20170315192738) do
   add_foreign_key "sanger_sequencing_batches", "facilities"
   add_foreign_key "sanger_sequencing_samples", "sanger_sequencing_submissions", column: "submission_id", on_delete: :cascade
   add_foreign_key "sanger_sequencing_submissions", "sanger_sequencing_batches", column: "batch_id", on_delete: :nullify
-  add_foreign_key "schedule_rules", "products", column: "instrument_id", name: "sys_c008573"
+  add_foreign_key "schedule_rules", "products", name: "sys_c008573"
   add_foreign_key "schedules", "facilities", name: "fk_schedules_facility"
   add_foreign_key "statements", "facilities", name: "fk_statement_facilities"
   add_foreign_key "stored_files", "order_details", name: "fk_files_od"
