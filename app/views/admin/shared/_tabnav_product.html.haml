@@ -1,11 +1,11 @@
 - return nil if @product.nil? || @product.id.nil?
 %ul.nav.nav-tabs
   = tab "Details", [:manage, current_facility, @product], (secondary_tab == "details")
-  - if @product.is_a?(Instrument)
-    = tab "Scheduling", facility_instrument_schedule_rules_path(current_facility, @product), (secondary_tab == "schedule_rules")
+  - if @product.respond_to?(:schedule_rules)
+    = tab "Scheduling", [current_facility, @product, ScheduleRule], (secondary_tab == "schedule_rules")
   - if @product.requires_approval?
     = tab "Access List", [current_facility, @product, :users], (secondary_tab == "users")
-  - if @product.requires_approval? && @product.is_a?(Instrument)
+  - if @product.requires_approval? && @product.respond_to?(:product_access_groups)
     = tab ProductAccessGroup.model_name.human.pluralize, facility_instrument_product_access_groups_path(current_facility, @product), (secondary_tab == "restriction_levels")
   - if @product.is_a?(Bundle)
     = tab "Bundled Products", facility_bundle_bundle_products_path(current_facility, @product), (secondary_tab == "products")
@@ -25,4 +25,4 @@
   - if @product.respond_to?(:reservations)
     = tab "Accessories", facility_product_product_accessories_path(current_facility, @product), (secondary_tab == "accessories")
 
-  = render_view_hook "after", secondary_tab: secondary_tab
+  = render_view_hook "additional_tabs", secondary_tab: secondary_tab

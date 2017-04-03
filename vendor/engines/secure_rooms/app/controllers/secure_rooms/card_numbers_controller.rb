@@ -2,6 +2,8 @@ module SecureRooms
 
   class CardNumbersController < ApplicationController
 
+    include SecureRoomsHelper
+
     admin_tab :all
     customer_tab :password
 
@@ -17,7 +19,8 @@ module SecureRooms
       super
     end
 
-    def edit; end
+    def edit
+    end
 
     def update
       if @user.update_attributes(update_user_params)
@@ -49,8 +52,7 @@ module SecureRooms
 
     def load_and_authorize_user_with_card_number
       @user = User.find(params[:user_id])
-      ability = SecureRooms::CardNumberAbility.new(current_user, current_facility)
-      raise CanCan::AccessDenied unless ability.can? :edit, @user
+      raise CanCan::AccessDenied unless secure_room_ability.can? :edit, @user
     end
 
   end

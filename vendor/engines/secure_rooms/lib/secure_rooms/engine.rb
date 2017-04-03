@@ -5,17 +5,27 @@ module SecureRooms
     isolate_namespace SecureRooms
 
     config.to_prepare do
+      ::AbilityExtensionManager.extensions << "SecureRooms::AbilityExtension"
+
       bundle_index = Product.types.index(Bundle) || -1
       Product.types.insert(bundle_index, SecureRoom)
 
       ViewHook.add_hook "users.show",
                         "additional_user_fields",
                         "secure_rooms/shared/card_number_form_field"
+
+      ViewHook.add_hook "admin.shared.tabnav_product",
+                        "additional_tabs",
+                        "secure_rooms/shared/tabnav_secure_room"
+
+      ViewHook.add_hook "admin.shared.tabnav_users",
+                        "after",
+                        "secure_rooms/shared/tabnav_users"
     end
 
-    initializer :append_migrations do |app|
-      config.paths["db/migrate"].expanded.each do |expanded_path|
-        app.config.paths["db/migrate"] << expanded_path
+    initializer "secure_rooms.action_controller" do
+      ActiveSupport.on_load :action_controller do
+        helper SecureRooms::SecureRoomsHelper
       end
     end
 
