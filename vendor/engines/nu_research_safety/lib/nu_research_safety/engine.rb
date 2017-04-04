@@ -4,6 +4,7 @@ module NuResearchSafety
 
     config.to_prepare do
       ::AbilityExtensionManager.extensions << "NuResearchSafety::AbilityExtension"
+      OrderPurchaser.additional_validations << NuResearchSafety::OrderCertificateValidator
       Product.send :include, NuResearchSafety::ProductExtension
       ViewHook.add_hook "admin.shared.sidenav_global",
                         "after",
