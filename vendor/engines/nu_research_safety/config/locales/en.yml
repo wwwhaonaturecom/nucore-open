@@ -50,3 +50,4 @@ en:
       check_certificate:
         success: "%{user_name} is certified in %{certificate_name}"
         error: "%{user_name} is not certified in %{certificate_name}"
+        none: "No certificate specified"
