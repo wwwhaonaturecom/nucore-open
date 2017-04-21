@@ -114,7 +114,7 @@ feature:
   daily_view_on: true
   split_accounts_on: true
   print_order_detail_on: false
-  user_based_price_groups_on: true
+  user_based_price_groups_on: false
   my_files_on: true
   # results file notifications requires that my_files be on as well
   results_file_notifications_on: true
