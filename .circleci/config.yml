@@ -1,0 +1,59 @@
+version: 2
+jobs:
+  build:
+    working_directory: /users/nucore-open
+    docker:
+      - image: circleci/ruby:2.2.7
+        env:
+          - RAILS_ENV=test
+      - image: circleci/mysql:5.7.17
+        env:
+          - MYSQL_ROOT_HOST="%"
+          - MYSQL_ALLOW_EMPTY_PASSWORD=true
+
+    environment:
+      TZ: "/usr/share/zoneinfo/America/Chicago"
+
+    steps:
+      - checkout
+
+      - type: cache-restore
+        key: rails-demo-{{ checksum "Gemfile.lock" }}
+
+      - run: bundle install --path vendor/bundle --without oracle
+
+      - type: cache-save
+        key: rails-demo-{{ checksum "Gemfile.lock" }}
+        paths:
+          - vendor/bundle
+
+      - run: cp config/secrets.yml.template config/secrets.yml
+      - run: cp config/database.yml.mysql.template config/database.yml
+
+      - run: bundle exec rake db:create
+      - run: bundle exec rake db:schema:load
+
+      - run:
+          name: rspec
+          command: |
+            bundle exec rspec \
+              --format RspecJunitFormatter \
+              --out $CIRCLE_TEST_REPORTS/rspec.xml \
+              --format progress \
+              $(circleci tests glob "spec/**/*_spec.rb" "vendor/engines/**/spec/**/*_spec.rb" | circleci tests split --split-by=timings)
+
+      - run:
+          name: teaspoon
+          command: bundle exec teaspoon --suppress-log --format junit > $CIRCLE_TEST_REPORTS/teaspoon.xml
+
+      - run: bundle exec report_coverage
+
+      - type: store_test_results
+        path: /tmp/test-results
+
+      - deploy:
+          name: deploy from master
+          command: |
+            if [ "${CIRCLE_BRANCH}" == "master" ]; then
+              bundle exec cap staging deploy
+            fi
