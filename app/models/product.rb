@@ -1,6 +1,7 @@
 class Product < ActiveRecord::Base
 
   include TextHelpers::Translation
+  include WholeValueEnum
 
   belongs_to :facility
   belongs_to :initial_order_status, class_name: "OrderStatus"
@@ -18,9 +19,10 @@ class Product < ActiveRecord::Base
   # Allow us to use `product.hidden?`
   alias_attribute :hidden, :is_hidden
 
+  whole_value_enum :user_notes_field_mode, class_name: "Products::UserNoteMode"
+
   validates_presence_of :name, :type
   validate_url_name :url_name, :facility_id
-  validates :user_notes_field_mode, presence: true, inclusion: Products::UserNoteMode.all
 
   if SettingsHelper.feature_on? :expense_accounts
     validates(
@@ -273,14 +275,6 @@ class Product < ActiveRecord::Base
 
   def training_request_contacts=(str)
     self[:training_request_contacts] = CsvArrayString.new(str).to_s
-  end
-
-  def user_notes_field_mode
-    Products::UserNoteMode.from_string(self[:user_notes_field_mode])
-  end
-
-  def user_notes_field_mode=(str_value)
-    self[:user_notes_field_mode] = Products::UserNoteMode.from_string(str_value)
   end
 
   protected

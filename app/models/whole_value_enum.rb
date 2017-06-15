@@ -1,5 +1,21 @@
 module WholeValueEnum
 
+  extend ActiveSupport::Concern
+
+  class_methods do
+    def whole_value_enum(attribute, class_name: attribute.to_s.classify)
+      validates attribute, presence: true, inclusion: class_name.constantize.all
+
+      define_method attribute do
+        class_name.constantize[self[attribute]]
+      end
+
+      define_method "#{attribute}=" do |value|
+        self[attribute] = class_name.constantize[value]
+      end
+    end
+  end
+
   class Value
 
     attr_reader :raw_value
@@ -8,11 +24,13 @@ module WholeValueEnum
       valid_values.map { |value| new(value) }
     end
 
-    def self.from_string(raw_value)
-      if valid_values.include?(raw_value)
+    def self.[](raw_value)
+      if raw_value.is_a?(self)
+        raw_value
+      elsif valid_values.include?(raw_value)
         new(raw_value)
       else
-        InvalidEnumValue.new(raw_value)
+        InvalidValue.new(raw_value)
       end
     end
 
@@ -43,20 +61,22 @@ module WholeValueEnum
       end
     end
 
-    class InvalidEnumValue
+  end
 
-      def initialize(raw_value)
-        @raw_value = raw_value
-      end
+  class InvalidValue
 
-      def to_label
-        "Invalid User Note Mode: #{@raw_value}"
-      end
+    def initialize(raw_value)
+      @raw_value = raw_value
+    end
 
-      def to_s
-        to_label
-      end
+    def to_label
+      "Invalid User Note Mode: #{@raw_value}"
+    end
+
+    def to_s
+      to_label
     end
 
   end
+
 end
