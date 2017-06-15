@@ -511,8 +511,7 @@ en:
     new:
       mark_offline: Take instrument offline
 
-  products:
-    user_notes_field_mode:
+  products/user_note_mode:
       hidden: "No"
       optional: Optional
       required: Required
