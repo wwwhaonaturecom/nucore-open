@@ -1,0 +1,16 @@
+defaults: &defaults
+  adapter: mysql2
+  username: <%= ENV['DB_USERNAME'] || 'root' %>
+  password: <%= ENV['DB_PASSWORD'] %>
+  encoding: utf8
+  pool: 5
+  timeout: 5000
+  host: <%= ENV['DB_HOST'] || '127.0.0.1' %>
+
+development:
+  <<: *defaults
+  database: nucore_open_development
+
+test:
+  <<: *defaults
+  database: nucore_open_test

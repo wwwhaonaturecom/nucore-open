@@ -28,7 +28,8 @@ jobs:
           - vendor/bundle
 
       - run: cp config/secrets.yml.template config/secrets.yml
-      - run: cp config/database.yml.mysql.template config/database.yml
+      - run: cp config/database.yml.circle.template config/database.yml
+      - run: mkdir tmp/test-results
 
       - run: bundle exec rake db:create
       - run: bundle exec rake db:schema:load
