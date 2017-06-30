@@ -1,7 +1,7 @@
 version: 2
 jobs:
   build:
-    working_directory: /users/nucore-open
+    working_directory: ~/circleci-nucore
     docker:
       - image: circleci/ruby:2.2.7
         environment:
