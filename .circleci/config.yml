@@ -29,23 +29,21 @@ jobs:
 
       - run: cp config/secrets.yml.template config/secrets.yml
       - run: cp config/database.yml.circle.template config/database.yml
-      - run: mkdir tmp/test-results
+      - run: mkdir -p tmp/test-results
 
       - run: bundle exec rake db:create
       - run: bundle exec rake db:schema:load
 
-      - run:
-          name: rspec
-          command: |
-            bundle exec rspec \
-              --format RspecJunitFormatter \
-              --out $CIRCLE_TEST_REPORTS/rspec.xml \
-              --format progress \
-              $(circleci tests glob "spec/**/*_spec.rb" "vendor/engines/**/spec/**/*_spec.rb" | circleci tests split --split-by=timings)
+      - type: shell
+        command: |
+          bundle exec rspec \
+            --format RspecJunitFormatter \
+            --out $CIRCLE_TEST_REPORTS/rspec.xml \
+            --format progress \
+            $(circleci tests glob "spec/**/*_spec.rb" "vendor/engines/**/spec/**/*_spec.rb" | circleci tests split --split-by=timings)
 
-      - run:
-          name: teaspoon
-          command: bundle exec teaspoon --suppress-log --format junit > $CIRCLE_TEST_REPORTS/teaspoon.xml
+      - type: shell
+        command: bundle exec teaspoon --suppress-log --format junit > $CIRCLE_TEST_REPORTS/teaspoon.xml
 
       - run: bundle exec report_coverage
 
