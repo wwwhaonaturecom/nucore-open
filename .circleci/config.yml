@@ -4,12 +4,12 @@ jobs:
     working_directory: /users/nucore-open
     docker:
       - image: circleci/ruby:2.2.7
-        env:
-          RAILS_ENV: test
+        environment:
+          - RAILS_ENV: test
       - image: circleci/mysql:5.7.17
-        env:
-          MYSQL_ROOT_HOST: %"
-          MYSQL_ALLOW_EMPTY_PASSWORD: true
+        environment:
+          - MYSQL_ROOT_HOST: "%"
+          - MYSQL_ALLOW_EMPTY_PASSWORD: true
 
     environment:
       TZ: "/usr/share/zoneinfo/America/Chicago"
