@@ -38,12 +38,12 @@ jobs:
         command: |
           bundle exec rspec \
             --format RspecJunitFormatter \
-            --out $CIRCLE_TEST_REPORTS/rspec.xml \
+            --out tmp/test-results/rspec.xml \
             --format progress \
             $(circleci tests glob "spec/**/*_spec.rb" "vendor/engines/**/spec/**/*_spec.rb" | circleci tests split --split-by=timings)
 
       - type: shell
-        command: bundle exec teaspoon --suppress-log --format junit > $CIRCLE_TEST_REPORTS/teaspoon.xml
+        command: bundle exec teaspoon --suppress-log --format junit > tmp/test-results/teaspoon.xml
 
       - run: bundle exec report_coverage
 
