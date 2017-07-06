@@ -9,6 +9,9 @@ engines:
       - "vendor/assets"
   coffeelint:
     enabled: true
+    checks:
+      no_empty_functions:
+        enabled: false
   duplication:
     enabled: true
     exclude_paths:
