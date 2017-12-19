@@ -10,17 +10,68 @@ class FacilityAccountsReconciliationController < ApplicationController
   before_action :init_current_facility
   before_action :check_billing_access
   before_action :set_billing_navigation
-  before_action { @accounts = account_class.need_reconciling(current_facility) }
+
+  class TransactionSearcher
+    def initialize(*searchers)
+      @searchers = Array(searchers)
+    end
+
+    def search(order_details, params)
+      params = params.to_h
+      searchers = []
+      filtered_order_details = order_details
+
+      @searchers.each do |searcher_class|
+        searcher = searcher_class.new(filtered_order_details)
+        filtered_order_details = searcher.search(Array(params[searcher_class.key]).reject(&:blank?))
+
+        searchers << searcher_class.new(order_details)
+      end
+
+      TransactionSearchResults.new(filtered_order_details, searchers)
+    end
+  end
+
+  class TransactionSearchResults
+    attr_reader :order_details, :options
+
+    def initialize(order_details, options)
+      @order_details = order_details
+      @options = options
+    end
+  end
+
+  class SearchForm
+    include ActiveModel::Model
+
+    attr_accessor :accounts, :account_owners
+
+    def self.model_name
+      ActiveModel::Name.new(self, nil, "Search")
+    end
+  end
 
   def index
-    if @accounts.none?
-      # do nothing, just render
-    elsif selected_account
-      @unreconciled_details = unreconciled_details
-      @balance = selected_account.unreconciled_total(current_facility, @unreconciled_details)
-    else
-      redirect_to([account_route, :facility_accounts])
-    end
+    order_details = OrderDetail
+      .statemented(current_facility)
+      .joins(:account)
+      .where(accounts: { type: account_class })
+      .order(
+        %w(
+          order_details.account_id
+          order_details.statement_id
+          order_details.order_id
+          order_details.id
+        ),
+      )
+    @search_form = SearchForm.new(params[:search])
+
+    @search = TransactionSearcher.new(
+      TransactionSearch::AccountSearcher,
+      TransactionSearch::AccountOwnerSearcher,
+    ).search(order_details, params[:search])
+
+    @unreconciled_details = @search.order_details.paginate(page: params[:page])
   end
 
   def update
@@ -40,33 +91,19 @@ class FacilityAccountsReconciliationController < ApplicationController
   end
   helper_method :account_route
 
-  def selected_account
-    @selected_account ||= if params[:selected_account].present?
-                            @accounts.find_by(id: params[:selected_account])
-                          else
-                            @accounts.first
-    end
-  end
+  # def selected_account
+  #   @selected_account ||= if params[:selected_account].present?
+  #                           @accounts.find_by(id: params[:selected_account])
+  #                         else
+  #                           @accounts.first
+  #   end
+  # end
 
   def account_class
     # This is coming in from the router, not the user, so it should be safe
     params[:account_type].constantize
   end
   helper_method :account_class
-
-  def unreconciled_details
-    OrderDetail
-      .account_unreconciled(current_facility, selected_account)
-      .order(
-        %w(
-          order_details.account_id
-          order_details.statement_id
-          order_details.order_id
-          order_details.id
-        ),
-      )
-      .paginate(page: params[:page])
-  end
 
   def update_account
     reconciled_at = parse_usa_date(params[:reconciled_at])
