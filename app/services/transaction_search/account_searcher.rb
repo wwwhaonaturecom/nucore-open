@@ -9,11 +9,11 @@ module TransactionSearch
     end
 
     def search(params)
-      order_details.for_accounts(params)
+      order_details.includes(:account).for_accounts(params)
     end
 
     def optimized
-      order_details.includes(:account)
+      order_details
     end
 
     def label_method

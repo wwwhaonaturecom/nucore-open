@@ -11,6 +11,7 @@ class Statement < ActiveRecord::Base
   validates_numericality_of :account_id, :facility_id, :created_by, only_integer: true
 
   default_scope -> { order(created_at: :desc) }
+  scope :order_by_invoice_number, -> { reorder(:account_id, :id) }
 
   # Used in NU branch
   def first_order_detail_date

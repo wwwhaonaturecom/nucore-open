@@ -24,6 +24,7 @@ class FacilityAccountsReconciliationController < ApplicationController
       @searchers.each do |searcher_class|
         searcher = searcher_class.new(filtered_order_details)
         filtered_order_details = searcher.search(Array(params[searcher_class.key]).reject(&:blank?))
+        filtered_order_details = searcher_class.new(filtered_order_details).optimized
 
         searchers << searcher_class.new(order_details)
       end
@@ -44,7 +45,7 @@ class FacilityAccountsReconciliationController < ApplicationController
   class SearchForm
     include ActiveModel::Model
 
-    attr_accessor :accounts, :account_owners
+    attr_accessor :accounts, :account_owners, :statements
 
     def self.model_name
       ActiveModel::Name.new(self, nil, "Search")
@@ -69,6 +70,7 @@ class FacilityAccountsReconciliationController < ApplicationController
     @search = TransactionSearcher.new(
       TransactionSearch::AccountSearcher,
       TransactionSearch::AccountOwnerSearcher,
+      TransactionSearch::StatementSearcher,
     ).search(order_details, params[:search])
 
     @unreconciled_details = @search.order_details.paginate(page: params[:page])
