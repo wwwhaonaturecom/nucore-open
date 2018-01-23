@@ -5,7 +5,7 @@ ruby File.open(File.expand_path(".ruby-version", File.dirname(__FILE__))) { |f| 
 git_source(:github) { |repo_name| "git@github.com:#{repo_name}.git" }
 
 ## base
-gem "rails", "4.2.9"
+gem "rails", "4.2.9" # requires update work
 gem "protected_attributes"
 gem "rails_config",     "0.3.3" # gem itself is deprecated (config gem instead)
 
@@ -32,12 +32,12 @@ gem "icalendar"
 gem "paranoia"
 
 ## views
-gem "sass-rails", "~> 5.0.6" # behind
+gem "sass-rails"
 gem "coffee-rails"
 gem "uglifier"
 gem "therubyracer"
-gem "bootstrap-sass",   "~> 2.3.2" # behind
-gem "haml",             "~> 4.0.5" # behind
+gem "bootstrap-sass",   "~> 2.3.2" # will not update (need to stay on Bootstrap 2)
+gem "haml",             "~> 4.0.5" # requires update work
 gem "will_paginate"
 gem "dynamic_form"
 gem "ckeditor"
@@ -54,7 +54,7 @@ gem "fine_uploader", path: "vendor/engines/fine_uploader"
 gem "rubyzip"
 
 ## controllers
-gem "prawn", "0.12" # behind
+gem "prawn", "0.12" # requires update work
 gem "prawn_rails"
 
 ## other
@@ -105,7 +105,6 @@ group :development, :test do
   gem "spring"
   gem "spring-commands-rspec"
   gem "teaspoon-jasmine"
-  gem "test-unit" # why do we have this gem?
   gem "thin"
 end
 
@@ -123,7 +122,7 @@ end
 
 group :stage, :production do
   gem "eye-patch", require: false
-  gem "exception_notification", "~> 4.0.1" # behind
+  gem "exception_notification"
   gem "lograge"
   gem "logstash-event"
   gem "oj"
