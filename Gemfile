@@ -100,7 +100,7 @@ group :development, :test do
   gem "guard-teaspoon", require: false
   gem "pry-rails"
   gem "pry-byebug"
-  gem "rspec-rails", "~> 3.5.2" # behind
+  gem "rspec-rails"
   gem "rspec-activejob"
   gem "spring"
   gem "spring-commands-rspec"
