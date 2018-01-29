@@ -4,7 +4,7 @@ class User < ActiveRecord::Base
   include NUCore::Database::WhereIdsIn
 
   # ldap_authenticatable is included via a to_prepare hook if ldap is enabled
-  devise :database_authenticatable, :encryptable, :trackable, :recoverable
+  devise :saml_authenticatable, :database_authenticatable, :encryptable, :trackable, :recoverable
 
   has_many :accounts, through: :account_users
   has_many :account_users, -> { where(deleted_at: nil) }

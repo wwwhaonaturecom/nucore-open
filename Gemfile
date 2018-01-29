@@ -20,6 +20,7 @@ end
 gem "cancancan"
 gem "devise"
 gem "devise-encryptable"
+gem "devise_saml_authenticatable"
 
 ## models
 gem "aasm"

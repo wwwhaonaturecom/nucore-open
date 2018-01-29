@@ -132,4 +132,18 @@ Devise.setup do |config|
   # config.default_url_options do
   #   { :locale => I18n.locale }
   # end
+
+  idp_metadata_parser = OneLogin::RubySaml::IdpMetadataParser.new
+  config.saml_config = idp_metadata_parser.parse_remote("https://app.onelogin.com/saml/metadata/747214")
+  config.saml_configure do |settings|
+    settings.assertion_consumer_service_url = "http://localhost:3000/users/saml/auth"
+    settings.issuer                         = "http://localhost:3000/users/saml/metadata"
+
+    config.saml_session_index_key = :session_index
+    config.saml_use_subject = true
+    config.saml_create_user = false
+    config.saml_update_user = true
+    config.saml_default_user_key = :username
+  end
+
 end
