@@ -134,7 +134,8 @@ Devise.setup do |config|
   # end
 
   idp_metadata_parser = OneLogin::RubySaml::IdpMetadataParser.new
-  config.saml_config = idp_metadata_parser.parse_remote("https://app.onelogin.com/saml/metadata/747214")
+  config.saml_config = idp_metadata_parser.parse_remote("https://websso.dartmouth.edu/oamfed/idp/metadata")
+    #{}"https://app.onelogin.com/saml/metadata/747214")
   config.saml_configure do |settings|
     settings.assertion_consumer_service_url = "http://localhost:3000/users/saml/auth"
     settings.issuer                         = "http://localhost:3000/users/saml/metadata"
