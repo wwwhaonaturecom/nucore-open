@@ -1,6 +1,8 @@
 = content_for :h1 do
   = t('pages.login')
 
+= render_view_hook "before_login_form"
+
 = simple_form_for resource, as: resource_name, url: session_path(resource_name) do |f|
   .form-inputs
     = f.input :username, required: false, autofocus: true
@@ -11,5 +13,3 @@
 
 - if SettingsHelper.feature_on? :password_update
   = link_to "Forgot password?", :reset_password
-
-%p= link_to "SAML", new_saml_user_session_path

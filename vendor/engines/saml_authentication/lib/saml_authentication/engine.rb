@@ -8,6 +8,9 @@ module SamlAuthentication
 
     config.to_prepare do
       User.send(:devise, :saml_authenticatable)
+      ViewHook.add_hook "devise.sessions.new",
+                        "before_login_form",
+                        "saml_authentication/sessions/new"
     end
 
     config.after_initialize do
