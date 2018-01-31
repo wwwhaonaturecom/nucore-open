@@ -32,6 +32,13 @@ PATH
     projects (0.0.1)
 
 PATH
+  remote: vendor/engines/saml_authentication
+  specs:
+    saml_authentication (0.0.1)
+      devise_saml_authenticatable
+      rails (>= 4.2)
+
+PATH
   remote: vendor/engines/sanger_sequencing
   specs:
     sanger_sequencing (0.0.1)
@@ -636,7 +643,6 @@ DEPENDENCIES
   delayed_job_active_record
   devise
   devise-encryptable
-  devise_saml_authenticatable
   dynamic_form
   exception_notification
   eye-patch
@@ -683,6 +689,7 @@ DEPENDENCIES
   rubocop
   ruby-oci8
   rubyzip
+  saml_authentication!
   sanger_sequencing (~> 0.0.1)!
   sass-rails
   secure_rooms!
