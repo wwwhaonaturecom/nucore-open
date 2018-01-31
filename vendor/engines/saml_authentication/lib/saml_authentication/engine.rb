@@ -27,12 +27,11 @@ module SamlAuthentication
           config.saml_session_index_key = :session_index
           config.saml_use_subject = true
           config.saml_create_user = false
-          config.saml_update_user = false # TODO Fix me
+          config.saml_update_user = false # TODO: Fix me
           config.saml_default_user_key = :email # TODO change to :username
           config.saml_resource_locator
         end
       end
-
     end
 
   end

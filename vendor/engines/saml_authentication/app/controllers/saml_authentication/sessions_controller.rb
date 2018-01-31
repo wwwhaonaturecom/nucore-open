@@ -8,6 +8,7 @@ module SamlAuthentication
     def auth_options
       { scope: resource_name }
     end
+
   end
 
 end
