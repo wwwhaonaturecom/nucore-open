@@ -136,9 +136,14 @@ class FacilitiesController < ApplicationController
   end
 
   # GET /facilities/:facility_id/disputed_orders
-  def disputed_orders_with_search
-    @order_details = @order_details.in_dispute
-    paginate_order_details
+  def disputed_orders
+    @search_form = TransactionSearch::SearchForm.new(params[:search])
+    @search = TransactionSearch::Searcher.new.search(
+      OrderDetail.in_dispute.for_facility(current_facility),
+      @search_form
+    )
+    @date_range_field = @search_form.date_params[:field]
+    @order_details = @search.order_details.paginate(page: params[:page])
   end
 
   # GET /facilities/:facility_id/movable_transactions
